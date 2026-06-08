@@ -12,7 +12,7 @@ export default function AuthIllustration({ pwdFocused = false }) {
       </div>
 
       <div className="flex-1 flex items-end justify-center px-8">
-        <SikaCharacters pwdFocused={pwdFocused} />
+        <HOOVACharacters pwdFocused={pwdFocused} />
       </div>
 
       <div className="px-10 pt-4 pb-5 shrink-0">
