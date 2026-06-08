@@ -2,65 +2,65 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 const CATEGORIES = [
-  { name: 'Vehicles', slug: 'vehicles', icon_name: '🚗', children: [
+  { name: 'Vehicles', slug: 'vehicles', children: [
     { name: 'Cars', slug: 'cars' },
     { name: 'Motorcycles', slug: 'motorcycles' },
     { name: 'Trucks & SUVs', slug: 'trucks-suvs' },
     { name: 'Buses & Minivans', slug: 'buses-minivans' },
     { name: 'Auto Parts', slug: 'auto-parts' },
   ]},
-  { name: 'Electronics', slug: 'electronics', icon_name: '📱', children: [
+  { name: 'Electronics', slug: 'electronics', children: [
     { name: 'Phones & Tablets', slug: 'phones-tablets' },
     { name: 'Laptops & PCs', slug: 'laptops-pcs' },
     { name: 'TVs & Audio', slug: 'tvs-audio' },
     { name: 'Cameras', slug: 'cameras' },
     { name: 'Accessories', slug: 'electronics-accessories' },
   ]},
-  { name: 'Real Estate', slug: 'real-estate', icon_name: '🏠', children: [
+  { name: 'Real Estate', slug: 'real-estate', children: [
     { name: 'Houses for Sale', slug: 'houses-sale' },
     { name: 'Houses for Rent', slug: 'houses-rent' },
     { name: 'Land & Plots', slug: 'land-plots' },
     { name: 'Commercial Property', slug: 'commercial-property' },
     { name: 'Short Stay', slug: 'short-stay' },
   ]},
-  { name: 'Fashion', slug: 'fashion', icon_name: '👗', children: [
+  { name: 'Fashion', slug: 'fashion', children: [
     { name: "Women's Clothing", slug: 'womens-clothing' },
     { name: "Men's Clothing", slug: 'mens-clothing' },
     { name: 'Shoes', slug: 'shoes' },
     { name: 'Bags & Accessories', slug: 'bags-accessories' },
   ]},
-  { name: 'Jobs', slug: 'jobs', icon_name: '💼', children: [
+  { name: 'Jobs', slug: 'jobs', children: [
     { name: 'Accounting & Finance', slug: 'accounting-finance' },
     { name: 'IT & Software', slug: 'it-software' },
     { name: 'Sales & Marketing', slug: 'sales-marketing' },
     { name: 'Healthcare', slug: 'healthcare' },
     { name: 'Education', slug: 'education' },
   ]},
-  { name: 'Services', slug: 'services', icon_name: '🔧', children: [
+  { name: 'Services', slug: 'services', children: [
     { name: 'Home Services', slug: 'home-services' },
     { name: 'Professional Services', slug: 'professional-services' },
     { name: 'Beauty & Wellness', slug: 'beauty-wellness' },
     { name: 'Events & Photography', slug: 'events-photography' },
     { name: 'Tutoring & Lessons', slug: 'tutoring-lessons' },
   ]},
-  { name: 'Furniture', slug: 'furniture', icon_name: '🪑', children: [
+  { name: 'Furniture', slug: 'furniture', children: [
     { name: 'Living Room', slug: 'living-room' },
     { name: 'Bedroom', slug: 'bedroom' },
     { name: 'Office Furniture', slug: 'office-furniture' },
     { name: 'Kitchen & Dining', slug: 'kitchen-dining' },
   ]},
-  { name: 'Agriculture', slug: 'agriculture', icon_name: '🌾', children: [
+  { name: 'Agriculture', slug: 'agriculture', children: [
     { name: 'Farm Produce', slug: 'farm-produce' },
     { name: 'Farm Equipment', slug: 'farm-equipment' },
     { name: 'Livestock', slug: 'livestock' },
   ]},
-  { name: 'Sports', slug: 'sports', icon_name: '⚽' },
-  { name: 'Books & Education', slug: 'books', icon_name: '📚' },
-  { name: 'Babies & Kids', slug: 'babies', icon_name: '👶' },
-  { name: 'Health & Beauty', slug: 'health', icon_name: '💊' },
-  { name: 'Pets', slug: 'pets', icon_name: '🐾' },
-  { name: 'Food & Drinks', slug: 'food', icon_name: '🍔' },
-  { name: 'Other', slug: 'other', icon_name: '📦' },
+  { name: 'Sports', slug: 'sports' },
+  { name: 'Books & Education', slug: 'books' },
+  { name: 'Babies & Kids', slug: 'babies' },
+  { name: 'Health & Beauty', slug: 'health' },
+  { name: 'Pets', slug: 'pets' },
+  { name: 'Food & Drinks', slug: 'food' },
+  { name: 'Other', slug: 'other' },
 ]
 
 const LOCATIONS = [
@@ -101,8 +101,8 @@ async function main() {
   for (const cat of CATEGORIES) {
     const parent = await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: { name: cat.name, icon_name: cat.icon_name },
-      create: { name: cat.name, slug: cat.slug, icon_name: cat.icon_name },
+      update: { name: cat.name, icon_name: null },
+      create: { name: cat.name, slug: cat.slug },
     })
 
     if (cat.children) {

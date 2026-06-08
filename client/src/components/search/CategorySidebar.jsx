@@ -4,13 +4,7 @@ import { ChevronRight, ChevronDown } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import api from '../../services/api'
 import { MOCK_CATEGORIES } from '../../mocks/data'
-
-const ICONS = {
-  vehicles: '🚗', electronics: '📱', 'real-estate': '🏠', fashion: '👗',
-  jobs: '💼', services: '🔧', furniture: '🪑', agriculture: '🌾',
-  sports: '⚽', books: '📚', babies: '👶', health: '💊',
-  pets: '🐾', food: '🍔', other: '📦',
-}
+import { getCategoryStyle } from '../../utils/categoryStyles'
 
 // Subcategories shown on hover/expand
 const SUBCATEGORIES = {
@@ -63,8 +57,14 @@ export default function CategorySidebar() {
                 }}
               >
                 {/* Icon */}
-                <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-base shrink-0 group-hover:bg-brand-100 dark:group-hover:bg-brand-900/30 transition-colors">
-                  {ICONS[cat.slug] || '📦'}
+                <span
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+                  style={{ background: getCategoryStyle(cat.slug).bg }}
+                >
+                  <i
+                    className={`ti ti-${getCategoryStyle(cat.slug).icon}`}
+                    style={{ color: getCategoryStyle(cat.slug).color, fontSize: 15 }}
+                  />
                 </span>
 
                 {/* Label + count */}

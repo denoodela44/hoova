@@ -2,13 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import api from '../../services/api'
 import { MOCK_CATEGORIES } from '../../mocks/data'
-
-const ICONS = {
-  vehicles: '🚗', electronics: '📱', 'real-estate': '🏠', fashion: '👗',
-  jobs: '💼', services: '🔧', furniture: '🪑', agriculture: '🌾',
-  sports: '⚽', books: '📚', babies: '👶', health: '💊',
-  pets: '🐾', food: '🍔', other: '📦',
-}
+import { getCategoryStyle } from '../../utils/categoryStyles'
 
 export default function CategoryNav() {
   const [params] = useSearchParams()
@@ -31,17 +25,12 @@ export default function CategoryNav() {
   return (
     <nav className="overflow-x-auto scrollbar-none">
       <div className="flex gap-2 py-1 min-w-max">
-        <CategoryChip
-          label="All"
-          icon="🏷️"
-          to="/browse"
-          active={!active}
-        />
+        <CategoryChip label="All" slug="all" to="/browse" active={!active} />
         {top.map((cat) => (
           <CategoryChip
             key={cat.id}
             label={cat.name}
-            icon={ICONS[cat.slug] || '📦'}
+            slug={cat.slug}
             to={`/browse?category=${cat.slug}`}
             active={active === cat.slug}
           />
@@ -51,7 +40,9 @@ export default function CategoryNav() {
   )
 }
 
-function CategoryChip({ label, icon, to, active }) {
+function CategoryChip({ label, slug, to, active }) {
+  const style = slug === 'all' ? { icon: 'layout-grid', color: '#6B7280' } : getCategoryStyle(slug)
+
   return (
     <Link
       to={to}
@@ -61,7 +52,10 @@ function CategoryChip({ label, icon, to, active }) {
           : 'bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-gray-600 dark:text-gray-400 hover:border-brand-300 hover:text-brand-700'
         }`}
     >
-      <span>{icon}</span>
+      <i
+        className={`ti ti-${style.icon}`}
+        style={{ color: active ? '#fff' : style.color, fontSize: 15 }}
+      />
       {label}
     </Link>
   )

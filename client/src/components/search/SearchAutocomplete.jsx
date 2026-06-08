@@ -4,6 +4,7 @@ import { Search, TrendingUp, Tag, X, ArrowUpRight, Clock } from 'lucide-react'
 import { MOCK_LISTINGS, MOCK_CATEGORIES } from '../../mocks/data'
 import { formatPrice } from '../../utils/format'
 import api from '../../services/api'
+import { getCategoryStyle } from '../../utils/categoryStyles'
 
 const POPULAR = ['iPhone 15', 'Toyota Corolla', 'Laptop', '2 bedroom house', 'Generator', 'Samsung TV', 'Land for sale', 'PS5']
 const HISTORY_KEY = 'hoova-search-history'
@@ -295,7 +296,23 @@ function Dropdown({ query, loading, results, matchedCategories, history, activeI
                     onMouseEnter={(e) => e.currentTarget.style.background = '#fdf2f5'}
                     onMouseLeave={(e) => e.currentTarget.style.background = activeIndex === idx ? '#fdf2f5' : 'transparent'}
                   >
-                    <span className="w-8 h-8 flex items-center justify-center text-lg">{cat.icon_name}</span>
+                    <span
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: getCategoryStyle(cat.slug).bg,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <i
+                        className={`ti ti-${getCategoryStyle(cat.slug).icon}`}
+                        style={{ color: getCategoryStyle(cat.slug).color, fontSize: 15 }}
+                      />
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800"><Highlight text={cat.name} query={query} /></p>
                       <p className="text-xs text-gray-400">{cat.listing_count.toLocaleString()} listings</p>

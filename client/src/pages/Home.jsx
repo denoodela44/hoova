@@ -10,6 +10,7 @@ import SearchAutocomplete from '../components/search/SearchAutocomplete'
 import CategorySidebar from '../components/search/CategorySidebar'
 import SEO from '../components/seo/SEO'
 import { filterMockListings, MOCK_CATEGORIES } from '../mocks/data'
+import { getCategoryStyle } from '../utils/categoryStyles'
 
 async function fetchOrMock(url, mockFn) {
   try { return (await api.get(url)).data.data }
@@ -137,6 +138,23 @@ export default function Home() {
                   to={`/browse?category=${cat.slug}`}
                   className="hoova-cat-tile flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border border-gray-200 bg-white text-center transition-all duration-150 cursor-pointer"
                 >
+                  <span
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 10,
+                      background: getCategoryStyle(cat.slug).bg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <i
+                      className={`ti ti-${getCategoryStyle(cat.slug).icon}`}
+                      style={{ color: getCategoryStyle(cat.slug).color, fontSize: 20 }}
+                    />
+                  </span>
                   <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide leading-tight">
                     {cat.label}
                   </span>
