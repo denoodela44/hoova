@@ -1,4 +1,4 @@
-﻿export default function EmptyState({
+export default function EmptyState({
   title = 'Nothing here yet',
   subtitle = 'Try a different search or adjust your filters.',
   action,

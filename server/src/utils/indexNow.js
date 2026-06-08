@@ -1,4 +1,4 @@
-﻿const https = require('https')
+const https = require('https')
 
 const BASE_URL  = process.env.SITE_URL      || 'https://hoova.com.gh'
 const API_KEY   = process.env.INDEXNOW_KEY  || ''

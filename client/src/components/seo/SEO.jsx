@@ -1,4 +1,4 @@
-﻿import { Helmet } from 'react-helmet-async'
+import { Helmet } from 'react-helmet-async'
 
 export const SITE_NAME = 'HOOVA Ghana'
 export const BASE_URL  = 'https://hoova.com.gh'

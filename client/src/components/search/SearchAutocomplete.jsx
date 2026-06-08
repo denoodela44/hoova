@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, TrendingUp, Tag, X, ArrowUpRight, Clock } from 'lucide-react'
 import { MOCK_LISTINGS, MOCK_CATEGORIES } from '../../mocks/data'

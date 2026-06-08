@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Mail, MessageSquare, MapPin, CheckCircle } from 'lucide-react'
 import SEO from '../../components/seo/SEO'
 import api from '../../services/api'

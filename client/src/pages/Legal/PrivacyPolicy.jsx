@@ -1,4 +1,4 @@
-﻿import SEO from '../../components/seo/SEO'
+import SEO from '../../components/seo/SEO'
 
 const LAST_UPDATED = 'June 2025'
 

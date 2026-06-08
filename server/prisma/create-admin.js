@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Run once to create admin accounts:
  *   node prisma/create-admin.js
  */

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Megaphone, Send, Trash2, CheckCircle, Clock, Users } from 'lucide-react'
 import api from '../../services/api'

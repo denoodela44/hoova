@@ -1,4 +1,4 @@
-﻿const router = require('express').Router()
+const router = require('express').Router()
 const { body, query, validationResult } = require('express-validator')
 const prisma = require('../utils/prisma')
 const { requireAuth, optionalAuth } = require('../middleware/auth')

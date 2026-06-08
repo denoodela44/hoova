@@ -1,4 +1,4 @@
-﻿const router = require('express').Router()
+const router = require('express').Router()
 const prisma = require('../utils/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')

@@ -1,4 +1,4 @@
-﻿import { ShieldCheck, AlertTriangle, MapPin, Phone, CreditCard, Eye } from 'lucide-react'
+import { ShieldCheck, AlertTriangle, MapPin, Phone, CreditCard, Eye } from 'lucide-react'
 import SEO from '../../components/seo/SEO'
 
 const TIPS = [

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dynamic rendering for search-engine crawlers.
  *
  * Google recommends this pattern for JS SPAs: when a bot visits, serve a
