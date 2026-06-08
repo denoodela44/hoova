@@ -37,7 +37,7 @@ export default function Logo({ markColor = '#B81365', textColor = '#222222', siz
           userSelect: 'none',
         }}
       >
-        SIKA
+        Hoova
       </span>
     </span>
   )
