@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en-GH" class="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO -->
+    <title>SIKA Ghana — Buy and Sell Anything in Ghana | Cars, Electronics, Real Estate</title>
+    <meta name="description" content="Ghana's #1 classifieds marketplace. Buy and sell cars, phones, houses, fashion, jobs and more from verified sellers across all 16 regions. Post your free ad today." />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="keywords" content="buy and sell Ghana, Ghana classifieds, cars for sale Ghana, houses for sale Accra, electronics Ghana, jobs Ghana, SIKA Ghana, online marketplace Ghana" />
+    <meta name="author" content="SIKA Ghana" />
+    <meta name="rating" content="general" />
+    <link rel="canonical" href="https://sika.com.gh/" />
+
+    <!-- Geo targeting -->
+    <meta name="geo.region" content="GH" />
+    <meta name="geo.placename" content="Ghana" />
+    <meta name="ICBM" content="7.9465, -1.0232" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SIKA Ghana" />
+    <meta property="og:title" content="SIKA Ghana — Buy and Sell Anything in Ghana" />
+    <meta property="og:description" content="Ghana's #1 classifieds marketplace. Cars, phones, houses, fashion, jobs from verified sellers across all 16 regions." />
+    <meta property="og:url" content="https://sika.com.gh/" />
+    <meta property="og:image" content="https://sika.com.gh/og-default.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SIKA Ghana — Buy and Sell Anything in Ghana" />
+    <meta property="og:locale" content="en_GH" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@SIKAGhana" />
+    <meta name="twitter:title" content="SIKA Ghana — Buy and Sell Anything in Ghana" />
+    <meta name="twitter:description" content="Ghana's #1 classifieds marketplace. Cars, phones, houses, fashion, jobs and more." />
+    <meta name="twitter:image" content="https://sika.com.gh/og-default.jpg" />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#B81365" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="SIKA Ghana" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Organization + WebSite JSON-LD (sitelinks searchbox) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://sika.com.gh/#organization",
+          "name": "SIKA Ghana",
+          "url": "https://sika.com.gh",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://sika.com.gh/og-default.jpg",
+            "width": 512,
+            "height": 512
+          },
+          "description": "Ghana's #1 classifieds marketplace for buying and selling cars, electronics, real estate, fashion, jobs and services.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "GH",
+            "addressLocality": "Accra",
+            "addressRegion": "Greater Accra"
+          },
+          "contactPoint": [
+            {
+              "@type": "ContactPoint",
+              "contactType": "customer service",
+              "email": "hello@sika.com.gh",
+              "availableLanguage": ["English", "Twi"]
+            }
+          ],
+          "sameAs": [
+            "https://www.facebook.com/SIKAGhana",
+            "https://twitter.com/SIKAGhana",
+            "https://www.instagram.com/SIKAGhana"
+          ],
+          "areaServed": {
+            "@type": "Country",
+            "name": "Ghana"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://sika.com.gh/#website",
+          "url": "https://sika.com.gh",
+          "name": "SIKA Ghana",
+          "description": "Ghana's #1 classifieds marketplace",
+          "publisher": { "@id": "https://sika.com.gh/#organization" },
+          "inLanguage": "en-GH",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://sika.com.gh/browse?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
+  </head>
+  <body style="background:#ffffff;color:#222222">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

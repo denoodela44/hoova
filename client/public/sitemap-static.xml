@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- ── Core pages ── -->
+  <url>
+    <loc>https://sika.com.gh/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://sika.com.gh/browse</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Category pages ── -->
+  <url><loc>https://sika.com.gh/browse?category=vehicles</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=electronics</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=real-estate</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=fashion</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=jobs</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=services</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=furniture</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/browse?category=agriculture</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+
+  <!-- ── Category × City landing pages (programmatic SEO) ── -->
+  <!-- Vehicles -->
+  <url><loc>https://sika.com.gh/buy/vehicles/accra</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/buy/vehicles/kumasi</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://sika.com.gh/buy/vehicles/takoradi</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/buy/vehicles/tamale</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/vehicles/cape-coast</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/vehicles/tema</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+
+  <!-- Electronics -->
+  <url><loc>https://sika.com.gh/buy/electronics/accra</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/buy/electronics/kumasi</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://sika.com.gh/buy/electronics/takoradi</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/electronics/tamale</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/electronics/cape-coast</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/electronics/tema</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+
+  <!-- Real Estate -->
+  <url><loc>https://sika.com.gh/buy/real-estate/accra</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sika.com.gh/buy/real-estate/kumasi</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://sika.com.gh/buy/real-estate/takoradi</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/buy/real-estate/tamale</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/real-estate/cape-coast</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/real-estate/tema</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+
+  <!-- Fashion -->
+  <url><loc>https://sika.com.gh/buy/fashion/accra</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/buy/fashion/kumasi</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/fashion/takoradi</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/fashion/tamale</loc><changefreq>daily</changefreq><priority>0.65</priority></url>
+
+  <!-- Jobs -->
+  <url><loc>https://sika.com.gh/buy/jobs/accra</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://sika.com.gh/buy/jobs/kumasi</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/buy/jobs/takoradi</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/jobs/tamale</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/jobs/tema</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+
+  <!-- Services -->
+  <url><loc>https://sika.com.gh/buy/services/accra</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
+  <url><loc>https://sika.com.gh/buy/services/kumasi</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sika.com.gh/buy/services/takoradi</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/services/tema</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+
+  <!-- Furniture -->
+  <url><loc>https://sika.com.gh/buy/furniture/accra</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+  <url><loc>https://sika.com.gh/buy/furniture/kumasi</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+
+  <!-- Agriculture -->
+  <url><loc>https://sika.com.gh/buy/agriculture/accra</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/agriculture/kumasi</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/buy/agriculture/tamale</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
+
+  <!-- ── Legal / info pages ── -->
+  <url><loc>https://sika.com.gh/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sika.com.gh/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sika.com.gh/safety</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sika.com.gh/help</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sika.com.gh/privacy</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://sika.com.gh/terms</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+
+</urlset>

@@ -1,0 +1,380 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String?  @unique
+  phone             String?  @unique
+  password_hash     String?
+  name              String
+  store_slug        String?  @unique  // e.g. "kwame-asante-motors" → sika.com.gh/store/kwame-asante-motors
+  store_name        String?           // business display name, separate from personal name
+  cover_banner      String?           // store cover image URL
+  avatar            String?
+  bio               String?           // doubles as store tagline for sellers
+  phone_verified    Boolean  @default(false)
+  email_verified    Boolean  @default(false)
+  id_verified       Boolean  @default(false)
+  google_id         String?  @unique
+  subscription_tier String   @default("free") // free | pro | business
+  rating_avg        Float    @default(0)
+  review_count      Int      @default(0)
+  push_subscription Json?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  listings          Listing[]
+  sent_messages     Message[]       @relation("SentMessages")
+  buyer_convos      Conversation[]  @relation("BuyerConvos")
+  seller_convos     Conversation[]  @relation("SellerConvos")
+  saved_listings    SavedListing[]
+  saved_searches    SavedSearch[]
+  reviews_given     Review[]        @relation("ReviewsGiven")
+  reviews_received  Review[]        @relation("ReviewsReceived")
+  reports_given     Report[]        @relation("ReportsGiven")
+  notifications     Notification[]
+  subscriptions     Subscription[]
+  otp_codes         OtpCode[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id         String   @id @default(uuid())
+  user_id    String?
+  phone      String
+  code       String
+  purpose    String   // verify-phone | login
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+model Category {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  parent_id     String?
+  icon_name     String?
+  listing_count Int      @default(0)
+
+  parent        Category?  @relation("SubCategories", fields: [parent_id], references: [id])
+  children      Category[] @relation("SubCategories")
+  listings      Listing[]
+  sub_listings  Listing[]  @relation("SubCategory")
+
+  @@map("categories")
+}
+
+model Location {
+  id       String @id @default(uuid())
+  region   String
+  city     String
+  area     String?
+  lat      Float?
+  lng      Float?
+
+  listings Listing[]
+
+  @@map("locations")
+}
+
+model Listing {
+  id              String    @id @default(uuid())
+  user_id         String
+  title           String
+  description     String?
+  price           Float
+  currency        String    @default("GHS")
+  category_id     String?
+  subcategory_id  String?
+  location_id     String?
+  region          String?
+  city            String?
+  area            String?
+  condition        String    @default("used")   // new | used
+  status           String    @default("pending") // pending | soft_live | active | sold | expired | rejected
+  views_count      Int       @default(0)
+  boost_tier       String?                       // featured | spotlight | top
+  boost_ends_at    DateTime?
+  search_vector    String?
+  // Moderation
+  is_flagged       Boolean   @default(false)
+  flag_reasons     Json?                         // [{ rule, label, description }]
+  flag_note        String?                       // admin note on rejection/flag
+  auto_approve_at  DateTime?                     // when soft_live kicks in if admin idle
+  reviewed_by      String?                       // admin user id
+  reviewed_at      DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([is_flagged])
+
+  seller          User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  category        Category?     @relation(fields: [category_id], references: [id])
+  subcategory     Category?     @relation("SubCategory", fields: [subcategory_id], references: [id])
+  location        Location?     @relation(fields: [location_id], references: [id])
+  images          ListingImage[]
+  conversations   Conversation[]
+  saves           SavedListing[]
+  views           ListingView[]
+  price_history   PriceHistory[]
+  boosts          Boost[]
+
+  @@map("listings")
+}
+
+model ListingImage {
+  id         String  @id @default(uuid())
+  listing_id String
+  url        String
+  public_id  String?
+  order      Int     @default(0)
+  is_primary Boolean @default(false)
+
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+
+  @@map("listing_images")
+}
+
+model Conversation {
+  id              String    @id @default(uuid())
+  listing_id      String
+  buyer_id        String
+  seller_id       String
+  last_message_at DateTime?
+  created_at      DateTime  @default(now())
+
+  listing  Listing   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  buyer    User      @relation("BuyerConvos", fields: [buyer_id], references: [id], onDelete: Cascade)
+  seller   User      @relation("SellerConvos", fields: [seller_id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([listing_id, buyer_id])
+  @@map("conversations")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversation_id String
+  sender_id       String
+  content         String
+  is_read         Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model SavedListing {
+  id         String   @id @default(uuid())
+  user_id    String
+  listing_id String
+  created_at DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, listing_id])
+  @@map("saved_listings")
+}
+
+model SavedSearch {
+  id               String    @id @default(uuid())
+  user_id          String
+  query            String?
+  filters          Json?
+  notif_email      Boolean   @default(true)
+  notif_sms        Boolean   @default(false)
+  notif_push       Boolean   @default(true)
+  last_notified_at DateTime?
+  created_at       DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("saved_searches")
+}
+
+model PriceHistory {
+  id         String   @id @default(uuid())
+  listing_id String
+  price      Float
+  changed_at DateTime @default(now())
+
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+
+  @@map("price_history")
+}
+
+model ListingView {
+  id         String   @id @default(uuid())
+  listing_id String
+  user_id    String?
+  ip         String?
+  viewed_at  DateTime @default(now())
+
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+
+  @@map("listing_views")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  reviewer_id String
+  seller_id   String
+  listing_id  String?
+  rating      Int
+  comment     String?
+  created_at  DateTime @default(now())
+
+  reviewer User @relation("ReviewsGiven", fields: [reviewer_id], references: [id], onDelete: Cascade)
+  seller   User @relation("ReviewsReceived", fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Boost {
+  id         String   @id @default(uuid())
+  listing_id String
+  tier       String   // featured | spotlight | top
+  starts_at  DateTime @default(now())
+  ends_at    DateTime
+  paid       Boolean  @default(false)
+  amount     Float?
+  created_at DateTime @default(now())
+
+  listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+
+  @@map("boosts")
+}
+
+model Subscription {
+  id               String   @id @default(uuid())
+  user_id          String
+  plan             String   // free | pro | business
+  starts_at        DateTime @default(now())
+  ends_at          DateTime?
+  paystack_sub_code String?
+  active           Boolean  @default(true)
+  created_at       DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String
+  type       String   // price_drop | new_match | message | system
+  title      String
+  body       String?
+  data       Json?
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model SearchLog {
+  id            String   @id @default(uuid())
+  query         String
+  user_id       String?
+  results_count Int      @default(0)
+  category_slug String?
+  source        String   @default("hero") // hero | navbar | browse
+  created_at    DateTime @default(now())
+
+  @@index([query])
+  @@index([created_at])
+  @@map("search_logs")
+}
+
+// Aggregated search trends — one row per normalised query, incremented on every search
+model SearchTrend {
+  id                 String   @id @default(uuid())
+  query              String   @unique  // normalised key (lowercase, no punctuation)
+  display_query      String           // best raw version seen
+  count              Int      @default(1)
+  zero_results_count Int      @default(0)
+  category_slug      String?          // auto-detected from keywords
+  last_searched_at   DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  @@index([count])
+  @@index([category_slug])
+  @@map("search_trends")
+}
+
+model Report {
+  id           String   @id @default(uuid())
+  reporter_id  String
+  listing_id   String?
+  seller_id    String?
+  reason       String   // spam | scam | inappropriate | prohibited | wrong_category | duplicate | other
+  description  String?
+  status       String   @default("pending") // pending | reviewed | dismissed | actioned
+  reviewed_by  String?
+  reviewed_at  DateTime?
+  action_taken String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  reporter User @relation("ReportsGiven",    fields: [reporter_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([listing_id])
+  @@map("reports")
+}
+
+model Announcement {
+  id         String    @id @default(uuid())
+  title      String
+  body       String
+  type       String    @default("info") // info | warning | success | promo
+  target     String    @default("all")  // all | free | pro | business
+  sent_at    DateTime?
+  created_by String
+  created_at DateTime  @default(now())
+
+  @@map("announcements")
+}
+
+model SiteSetting {
+  key        String   @id   // e.g. "ga4_id", "meta_pixel_id"
+  value      String?
+  updated_at DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model Ad {
+  id         String   @id @default(uuid())
+  title      String
+  image_url  String
+  target_url String
+  placement  String   // homepage_hero | category_sidebar | search_top
+  impressions Int     @default(0)
+  clicks     Int      @default(0)
+  active     Boolean  @default(true)
+  starts_at  DateTime?
+  ends_at    DateTime?
+  created_at DateTime @default(now())
+
+  @@map("ads")
+}

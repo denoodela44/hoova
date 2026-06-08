@@ -1,0 +1,131 @@
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
+
+const CATEGORIES = [
+  { name: 'Vehicles', slug: 'vehicles', icon_name: '🚗', children: [
+    { name: 'Cars', slug: 'cars' },
+    { name: 'Motorcycles', slug: 'motorcycles' },
+    { name: 'Trucks & SUVs', slug: 'trucks-suvs' },
+    { name: 'Buses & Minivans', slug: 'buses-minivans' },
+    { name: 'Auto Parts', slug: 'auto-parts' },
+  ]},
+  { name: 'Electronics', slug: 'electronics', icon_name: '📱', children: [
+    { name: 'Phones & Tablets', slug: 'phones-tablets' },
+    { name: 'Laptops & PCs', slug: 'laptops-pcs' },
+    { name: 'TVs & Audio', slug: 'tvs-audio' },
+    { name: 'Cameras', slug: 'cameras' },
+    { name: 'Accessories', slug: 'electronics-accessories' },
+  ]},
+  { name: 'Real Estate', slug: 'real-estate', icon_name: '🏠', children: [
+    { name: 'Houses for Sale', slug: 'houses-sale' },
+    { name: 'Houses for Rent', slug: 'houses-rent' },
+    { name: 'Land & Plots', slug: 'land-plots' },
+    { name: 'Commercial Property', slug: 'commercial-property' },
+    { name: 'Short Stay', slug: 'short-stay' },
+  ]},
+  { name: 'Fashion', slug: 'fashion', icon_name: '👗', children: [
+    { name: "Women's Clothing", slug: 'womens-clothing' },
+    { name: "Men's Clothing", slug: 'mens-clothing' },
+    { name: 'Shoes', slug: 'shoes' },
+    { name: 'Bags & Accessories', slug: 'bags-accessories' },
+  ]},
+  { name: 'Jobs', slug: 'jobs', icon_name: '💼', children: [
+    { name: 'Accounting & Finance', slug: 'accounting-finance' },
+    { name: 'IT & Software', slug: 'it-software' },
+    { name: 'Sales & Marketing', slug: 'sales-marketing' },
+    { name: 'Healthcare', slug: 'healthcare' },
+    { name: 'Education', slug: 'education' },
+  ]},
+  { name: 'Services', slug: 'services', icon_name: '🔧', children: [
+    { name: 'Home Services', slug: 'home-services' },
+    { name: 'Professional Services', slug: 'professional-services' },
+    { name: 'Beauty & Wellness', slug: 'beauty-wellness' },
+    { name: 'Events & Photography', slug: 'events-photography' },
+    { name: 'Tutoring & Lessons', slug: 'tutoring-lessons' },
+  ]},
+  { name: 'Furniture', slug: 'furniture', icon_name: '🪑', children: [
+    { name: 'Living Room', slug: 'living-room' },
+    { name: 'Bedroom', slug: 'bedroom' },
+    { name: 'Office Furniture', slug: 'office-furniture' },
+    { name: 'Kitchen & Dining', slug: 'kitchen-dining' },
+  ]},
+  { name: 'Agriculture', slug: 'agriculture', icon_name: '🌾', children: [
+    { name: 'Farm Produce', slug: 'farm-produce' },
+    { name: 'Farm Equipment', slug: 'farm-equipment' },
+    { name: 'Livestock', slug: 'livestock' },
+  ]},
+  { name: 'Sports', slug: 'sports', icon_name: '⚽' },
+  { name: 'Books & Education', slug: 'books', icon_name: '📚' },
+  { name: 'Babies & Kids', slug: 'babies', icon_name: '👶' },
+  { name: 'Health & Beauty', slug: 'health', icon_name: '💊' },
+  { name: 'Pets', slug: 'pets', icon_name: '🐾' },
+  { name: 'Food & Drinks', slug: 'food', icon_name: '🍔' },
+  { name: 'Other', slug: 'other', icon_name: '📦' },
+]
+
+const LOCATIONS = [
+  { region: 'Greater Accra', city: 'Accra', area: 'East Legon' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Osu' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Labadi' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Cantonments' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Airport Residential' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Adabraka' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Madina' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Tema' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Achimota' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Dansoman' },
+  { region: 'Greater Accra', city: 'Accra', area: 'Spintex' },
+  { region: 'Greater Accra', city: 'Accra', area: 'North Kaneshie' },
+  { region: 'Ashanti', city: 'Kumasi', area: 'Adum' },
+  { region: 'Ashanti', city: 'Kumasi', area: 'Asokwa' },
+  { region: 'Ashanti', city: 'Kumasi', area: 'Bantama' },
+  { region: 'Ashanti', city: 'Kumasi', area: 'Nhyiaeso' },
+  { region: 'Ashanti', city: 'Kumasi', area: 'Suame' },
+  { region: 'Western', city: 'Takoradi', area: 'Market Circle' },
+  { region: 'Western', city: 'Takoradi', area: 'Airport Ridge' },
+  { region: 'Western', city: 'Sekondi', area: null },
+  { region: 'Eastern', city: 'Koforidua', area: null },
+  { region: 'Central', city: 'Cape Coast', area: null },
+  { region: 'Volta', city: 'Ho', area: null },
+  { region: 'Northern', city: 'Tamale', area: 'Lamashegu' },
+  { region: 'Northern', city: 'Tamale', area: 'Kalpohin' },
+  { region: 'Upper East', city: 'Bolgatanga', area: null },
+  { region: 'Upper West', city: 'Wa', area: null },
+  { region: 'Brong-Ahafo', city: 'Sunyani', area: null },
+]
+
+async function main() {
+  console.log('🌱 Seeding database...')
+
+  // Categories
+  for (const cat of CATEGORIES) {
+    const parent = await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: { name: cat.name, icon_name: cat.icon_name },
+      create: { name: cat.name, slug: cat.slug, icon_name: cat.icon_name },
+    })
+
+    if (cat.children) {
+      for (const child of cat.children) {
+        await prisma.category.upsert({
+          where: { slug: child.slug },
+          update: { name: child.name, parent_id: parent.id },
+          create: { name: child.name, slug: child.slug, parent_id: parent.id },
+        })
+      }
+    }
+  }
+  console.log(`✅ ${CATEGORIES.length} categories seeded`)
+
+  // Locations
+  for (const loc of LOCATIONS) {
+    await prisma.location.create({ data: loc }).catch(() => {})
+  }
+  console.log(`✅ ${LOCATIONS.length} locations seeded`)
+
+  console.log('🎉 Seed complete!')
+}
+
+main()
+  .catch((e) => { console.error(e); process.exit(1) })
+  .finally(() => prisma.$disconnect())
