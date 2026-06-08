@@ -1,4 +1,4 @@
-export default function EmptyState({
+﻿export default function EmptyState({
   title = 'Nothing here yet',
   subtitle = 'Try a different search or adjust your filters.',
   action,
@@ -18,7 +18,7 @@ export default function EmptyState({
   )
 }
 
-function SikaConfused() {
+function HOOVAConfused() {
   /*
    * Three characters, eyes looking DOWN (sad / confused)
    * Compact version — fits inside page content areas
@@ -34,21 +34,21 @@ function SikaConfused() {
     >
       <defs>
         <style>{`
-          @keyframes sika-float {
+          @keyframes hoova-float {
             0%, 100% { transform: translateY(0px); }
             50%       { transform: translateY(-5px); }
           }
-          @keyframes sika-float2 {
+          @keyframes hoova-float2 {
             0%, 100% { transform: translateY(0px); }
             50%       { transform: translateY(-7px); }
           }
-          @keyframes sika-float3 {
+          @keyframes hoova-float3 {
             0%, 100% { transform: translateY(0px); }
             50%       { transform: translateY(-4px); }
           }
-          .sika-char1 { animation: sika-float  3s ease-in-out infinite; }
-          .sika-char2 { animation: sika-float2 3.4s ease-in-out infinite 0.4s; }
-          .sika-char3 { animation: sika-float3 2.8s ease-in-out infinite 0.9s; }
+          .hoova-char1 { animation: hoova-float  3s ease-in-out infinite; }
+          .hoova-char2 { animation: hoova-float2 3.4s ease-in-out infinite 0.4s; }
+          .hoova-char3 { animation: hoova-float3 2.8s ease-in-out infinite 0.9s; }
         `}</style>
       </defs>
 
@@ -57,7 +57,7 @@ function SikaConfused() {
       <ellipse cx="130" cy="120" rx="130" ry="12" fill="#ECEAE6" />
 
       {/* ── Rose tall character ── */}
-      <g className="sika-char1">
+      <g className="hoova-char1">
         <rect x="28" y="28" width="64" height="108" rx="14" fill="#B81365" />
         {/* Left eye */}
         <circle cx="51" cy="66" r="9" fill="white" />
@@ -70,7 +70,7 @@ function SikaConfused() {
       </g>
 
       {/* ── Gold capsule character (center, tallest) ── */}
-      <g className="sika-char2">
+      <g className="hoova-char2">
         <rect x="98" y="14" width="64" height="118" rx="32" fill="#FBBF24" />
         {/* Left eye */}
         <circle cx="118" cy="62" r="8" fill="#111827" />
@@ -83,7 +83,7 @@ function SikaConfused() {
       </g>
 
       {/* ── Dark navy character ── */}
-      <g className="sika-char3">
+      <g className="hoova-char3">
         <rect x="168" y="46" width="60" height="90" rx="12" fill="#1a1a2e" />
         {/* Left eye */}
         <circle cx="188" cy="80" r="8" fill="white" />

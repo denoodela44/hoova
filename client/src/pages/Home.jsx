@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Plus, TrendingDown, Zap } from 'lucide-react'
@@ -70,7 +70,7 @@ export default function Home() {
     <div style={{ background: '#fff' }}>
       <SEO
         title="Buy and Sell Anything in Ghana — Cars, Electronics, Real Estate"
-        description="SIKA is Ghana's smartest classifieds marketplace."
+        description="HOOVA is Ghana's smartest classifieds marketplace."
         url="/"
       />
 
@@ -135,7 +135,7 @@ export default function Home() {
                 <Link
                   key={cat.slug}
                   to={`/browse?category=${cat.slug}`}
-                  className="sika-cat-tile flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border border-gray-200 bg-white text-center transition-all duration-150 cursor-pointer"
+                  className="hoova-cat-tile flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border border-gray-200 bg-white text-center transition-all duration-150 cursor-pointer"
                 >
                   <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide leading-tight">
                     {cat.label}
@@ -313,10 +313,10 @@ export default function Home() {
               </div>
             </section>
 
-            {/* ── WHY SIKA ──────────────────────────────────────── */}
+            {/* ── WHY HOOVA ──────────────────────────────────────── */}
             <section className="rounded-2xl p-8" style={{ background: '#ECEAE6' }}>
               <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                Why SIKA hits different
+                Why HOOVA hits different
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[

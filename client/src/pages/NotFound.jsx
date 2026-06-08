@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import { ArrowLeft, Search } from 'lucide-react'
 
 export default function NotFound() {
@@ -47,7 +47,7 @@ export default function NotFound() {
   )
 }
 
-function SikaLost() {
+function HOOVALost() {
   return (
     <svg
       viewBox="0 0 300 200"

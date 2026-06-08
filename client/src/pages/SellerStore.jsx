@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
@@ -12,12 +12,12 @@ import ListingCard from '../components/listings/ListingCard'
 import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
 import { MOCK_LISTINGS, SELLERS } from '../mocks/data'
 
-const BASE_URL = 'https://sika.com.gh'
+const BASE_URL = 'https://hoova.com.gh'
 
 const PLAN_META = {
   premium: { label: 'Premium Store', color: '#B45309', bg: '#FEF3C7', border: '#FDE68A' },
   pro:     { label: 'Pro Store',     color: '#B81365', bg: '#FDF2F8', border: '#FBCFE8' },
-  basic:   { label: 'SIKA Store',    color: '#1D4ED8', bg: '#EFF6FF', border: '#BFDBFE' },
+  basic:   { label: 'HOOVA Store',    color: '#1D4ED8', bg: '#EFF6FF', border: '#BFDBFE' },
 }
 
 function memberSince(dateStr) {
@@ -85,18 +85,18 @@ export default function SellerStore() {
 
   const handleShare = async () => {
     if (navigator.share) {
-      await navigator.share({ title: `${data?.store_name || data?.name} on SIKA`, url: storeUrl })
+      await navigator.share({ title: `${data?.store_name || data?.name} on HOOVA`, url: storeUrl })
     } else {
       handleCopy()
     }
   }
 
   const title = data
-    ? `${data.store_name || data.name} — ${data.total || 0} Listings | SIKA Ghana`
-    : 'Store | SIKA Ghana'
+    ? `${data.store_name || data.name} — ${data.total || 0} Listings | HOOVA Ghana`
+    : 'Store | HOOVA Ghana'
   const description = data?.bio
-    ? `${data.bio.slice(0, 150)} — Browse on SIKA Ghana.`
-    : `Browse listings from ${data?.name || 'this seller'} on SIKA Ghana.`
+    ? `${data.bio.slice(0, 150)} — Browse on HOOVA Ghana.`
+    : `Browse listings from ${data?.name || 'this seller'} on HOOVA Ghana.`
 
   return (
     <div style={{ background: '#f9f9f7', minHeight: '100vh' }}>

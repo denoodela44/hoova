@@ -1,4 +1,4 @@
-const router = require('express').Router()
+﻿const router = require('express').Router()
 const prisma = require('../utils/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
@@ -224,14 +224,14 @@ router.post('/moderation/:id/approve', async (req, res, next) => {
         user_id: listing.user_id,
         type:    'system',
         title:   'Listing approved!',
-        body:    `"${listing.title}" has been approved and is now fully live on SIKA.`,
+        body:    `"${listing.title}" has been approved and is now fully live on HOOVA.`,
         data:    { listing_id: listing.id, status: 'active' },
       },
     })
 
     // Now safe to ping IndexNow
     const { pingIndexNow } = require('../utils/indexNow')
-    const BASE_URL = process.env.SITE_URL || 'https://sika.com.gh'
+    const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
     pingIndexNow(`${BASE_URL}/listing/${listing.id}`)
 
     res.json({ success: true, data: listing })
@@ -304,7 +304,7 @@ router.post('/moderation/bulk-approve', async (req, res, next) => {
             user_id: l.user_id,
             type:    'system',
             title:   'Listing approved!',
-            body:    `"${l.title}" is now fully live on SIKA.`,
+            body:    `"${l.title}" is now fully live on HOOVA.`,
             data:    { listing_id: l.id, status: 'active' },
           },
         })

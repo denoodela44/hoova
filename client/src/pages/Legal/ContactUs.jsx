@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Mail, MessageSquare, MapPin, CheckCircle } from 'lucide-react'
 import SEO from '../../components/seo/SEO'
 import api from '../../services/api'
@@ -21,13 +21,13 @@ export default function ContactUs() {
   const contactSchema = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: 'Contact SIKA Ghana',
-    url: 'https://sika.com.gh/contact',
-    description: 'Get in touch with SIKA Ghana support team.',
+    name: 'Contact HOOVA Ghana',
+    url: 'https://hoova.com.gh/contact',
+    description: 'Get in touch with HOOVA Ghana support team.',
     mainEntity: {
       '@type': 'Organization',
-      name: 'SIKA Ghana',
-      email: 'hello@sika.com.gh',
+      name: 'HOOVA Ghana',
+      email: 'hello@hoova.com.gh',
       address: {
         '@type': 'PostalAddress',
         addressLocality: 'Accra',
@@ -41,7 +41,7 @@ export default function ContactUs() {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <SEO
         title="Contact Us"
-        description="Get help from the SIKA Ghana team. Contact us by email or WhatsApp — we respond within 24 hours."
+        description="Get help from the HOOVA Ghana team. Contact us by email or WhatsApp — we respond within 24 hours."
         url="/contact"
       />
       <script type="application/ld+json">{JSON.stringify(contactSchema)}</script>
@@ -58,8 +58,8 @@ export default function ContactUs() {
           <ContactCard
             icon={<Mail className="w-5 h-5" style={{ color: '#B81365' }} />}
             title="Email"
-            body="hello@sika.com.gh"
-            href="mailto:hello@sika.com.gh"
+            body="hello@hoova.com.gh"
+            href="mailto:hello@hoova.com.gh"
           />
           <ContactCard
             icon={<MessageSquare className="w-5 h-5 text-green-500" />}

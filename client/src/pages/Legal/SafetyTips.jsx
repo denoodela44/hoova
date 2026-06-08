@@ -1,4 +1,4 @@
-import { ShieldCheck, AlertTriangle, MapPin, Phone, CreditCard, Eye } from 'lucide-react'
+﻿import { ShieldCheck, AlertTriangle, MapPin, Phone, CreditCard, Eye } from 'lucide-react'
 import SEO from '../../components/seo/SEO'
 
 const TIPS = [
@@ -20,12 +20,12 @@ const TIPS = [
   {
     icon: <Phone className="w-5 h-5" style={{ color: '#B81365' }} />,
     title: 'Use in-app chat',
-    body: 'Keep conversations on the SIKA platform. Scammers often try to move communication to WhatsApp or SMS to avoid detection.',
+    body: 'Keep conversations on the HOOVA platform. Scammers often try to move communication to WhatsApp or SMS to avoid detection.',
   },
   {
     icon: <AlertTriangle className="w-5 h-5 text-orange-500" />,
     title: 'Too-good-to-be-true prices',
-    body: 'If a brand-new iPhone 15 Pro is listed for GHS 500 or a car for GHS 2,000, it is almost certainly a scam. Compare prices on SIKA before buying.',
+    body: 'If a brand-new iPhone 15 Pro is listed for GHS 500 or a car for GHS 2,000, it is almost certainly a scam. Compare prices on HOOVA before buying.',
   },
   {
     icon: <ShieldCheck className="w-5 h-5 text-green-500" />,
@@ -38,7 +38,7 @@ const SCAM_TYPES = [
   { name: 'Advance fee', desc: 'Seller asks for a deposit or fee before you can see the item. Always a scam.' },
   { name: 'Fake photos', desc: 'Photos stolen from the internet. Reverse image search on Google to verify.' },
   { name: 'Overpayment cheque', desc: 'Buyer sends a cheque for more than the price, asks for change. Cheque bounces after you send money.' },
-  { name: 'Fake escrow', desc: 'Scammer claims to use SIKA escrow. SIKA does not currently offer escrow — do not trust such claims.' },
+  { name: 'Fake escrow', desc: 'Scammer claims to use HOOVA escrow. HOOVA does not currently offer escrow — do not trust such claims.' },
   { name: 'Urgency pressure', desc: '"I have 3 other buyers" — scammers create artificial urgency to prevent you from thinking clearly.' },
 ]
 
@@ -57,7 +57,7 @@ export default function SafetyTips() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEO
         title="Safety Tips — Buy and Sell Safely in Ghana"
-        description="How to avoid scams on SIKA Ghana. Tips for safe buying and selling — never pay upfront, meet in public, check seller trust signals."
+        description="How to avoid scams on HOOVA Ghana. Tips for safe buying and selling — never pay upfront, meet in public, check seller trust signals."
         url="/safety"
         keywords="avoid scams Ghana, safe buying Ghana, online marketplace safety, MoMo scam Ghana, classifieds safety tips"
       />
@@ -70,7 +70,7 @@ export default function SafetyTips() {
         </h1>
       </div>
       <p className="text-sm text-gray-500 mb-10">
-        SIKA Ghana is committed to keeping buyers and sellers safe. Read these tips before your first transaction.
+        HOOVA Ghana is committed to keeping buyers and sellers safe. Read these tips before your first transaction.
       </p>
 
       {/* Tips grid */}
@@ -115,12 +115,12 @@ export default function SafetyTips() {
           Report suspicious listings using the "Report listing" button on any ad. Our team reviews reports within 24 hours.
         </p>
         <a
-          href="mailto:safety@sika.com.gh"
+          href="mailto:safety@hoova.com.gh"
           className="inline-flex items-center gap-2 bg-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
           style={{ color: '#B81365' }}
         >
           <ShieldCheck className="w-4 h-4" />
-          Email safety@sika.com.gh
+          Email safety@hoova.com.gh
         </a>
       </div>
     </div>

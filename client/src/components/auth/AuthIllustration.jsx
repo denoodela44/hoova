@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import Logo from '../layout/Logo'
 
 export default function AuthIllustration({ pwdFocused = false }) {
@@ -42,7 +42,7 @@ export default function AuthIllustration({ pwdFocused = false }) {
   )
 }
 
-function SikaCharacters({ pwdFocused }) {
+function HOOVACharacters({ pwdFocused }) {
   /*
    * Normal state  → pupils look RIGHT (toward the login form)
    * Password focus → pupils look DOWN (respectful of privacy)
@@ -74,7 +74,7 @@ function SikaCharacters({ pwdFocused }) {
     >
       <defs>
         <style>{`
-          .sika-pupil {
+          .hoova-pupil {
             transition:
               cx 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
               cy 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -85,21 +85,21 @@ function SikaCharacters({ pwdFocused }) {
       {/* ── Rose tall rectangle ── */}
       <rect x="90" y="18" width="142" height="290" rx="20" fill="#B81365" />
       <circle cx="140" cy="108" r="16" fill="white" />
-      <circle cx={rL.cx} cy={rL.cy} r="8.5" fill="#111827" className="sika-pupil" />
+      <circle cx={rL.cx} cy={rL.cy} r="8.5" fill="#111827" className="hoova-pupil" />
       <circle cx="184" cy="108" r="16" fill="white" />
-      <circle cx={rR.cx} cy={rR.cy} r="8.5" fill="#111827" className="sika-pupil" />
+      <circle cx={rR.cx} cy={rR.cy} r="8.5" fill="#111827" className="hoova-pupil" />
 
       {/* ── Dark navy rectangle ── */}
       <rect x="220" y="142" width="116" height="218" rx="18" fill="#1a1a2e" />
       <circle cx="258" cy="205" r="13" fill="white" />
-      <circle cx={dL.cx} cy={dL.cy} r="7" fill="#111827" className="sika-pupil" />
+      <circle cx={dL.cx} cy={dL.cy} r="7" fill="#111827" className="hoova-pupil" />
       <circle cx="296" cy="205" r="13" fill="white" />
-      <circle cx={dR.cx} cy={dR.cy} r="7" fill="#111827" className="sika-pupil" />
+      <circle cx={dR.cx} cy={dR.cy} r="7" fill="#111827" className="hoova-pupil" />
 
       {/* ── Peach blob ── */}
       <ellipse cx="195" cy="485" rx="182" ry="160" fill="#F4956A" />
-      <circle cx={bL.cx} cy={bL.cy} r="12" fill="#111827" className="sika-pupil" />
-      <circle cx={bR.cx} cy={bR.cy} r="12" fill="#111827" className="sika-pupil" />
+      <circle cx={bL.cx} cy={bL.cy} r="12" fill="#111827" className="hoova-pupil" />
+      <circle cx={bR.cx} cy={bR.cy} r="12" fill="#111827" className="hoova-pupil" />
 
       {/* ── Gold capsule (expressionless, static) ── */}
       <rect x="290" y="268" width="115" height="200" rx="56" fill="#FBBF24" />

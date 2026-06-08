@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -90,7 +90,7 @@ export default function ListingDetail() {
 
   const handleWhatsApp = () => {
     if (!listing?.seller?.phone) return
-    const text = `Hi, I'm interested in your listing on SIKA: "${listing.title}" — ${window.location.href}`
+    const text = `Hi, I'm interested in your listing on HOOVA: "${listing.title}" — ${window.location.href}`
     window.open(`https://wa.me/${listing.seller.phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -148,7 +148,7 @@ export default function ListingDetail() {
         >
           <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#B81365' }} />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold mb-1" style={{ color: '#B81365' }}>Stay safe on SIKA</p>
+            <p className="text-xs font-bold mb-1" style={{ color: '#B81365' }}>Stay safe on HOOVA</p>
             <ul className="text-xs text-gray-600 space-y-0.5">
               <li>Never send mobile money or cash to "hold" an item before you've seen it.</li>
               <li>Meet in a public place — a mall, bank, or police station forecourt works well.</li>
@@ -567,7 +567,7 @@ export default function ListingDetail() {
                 </div>
                 <p className="font-bold text-gray-900 mb-1">Report submitted</p>
                 <p className="text-sm text-gray-500">
-                  Our team will review this listing within 24 hours. Thank you for helping keep SIKA safe.
+                  Our team will review this listing within 24 hours. Thank you for helping keep HOOVA safe.
                 </p>
                 <button
                   onClick={() => setShowReport(false)}

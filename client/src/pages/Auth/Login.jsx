@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, LogIn, UserPlus } from 'lucide-react'
@@ -58,7 +58,7 @@ export default function Login() {
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-5">
               <p className="text-sm text-red-600 font-medium">{error}</p>
               <div className="flex items-center justify-between mt-2.5 pt-2.5" style={{ borderTop: '1px solid #fecaca' }}>
-                <p className="text-xs text-gray-500">New to SIKA?</p>
+                <p className="text-xs text-gray-500">New to HOOVA?</p>
                 <Link
                   to="/register"
                   className="text-xs font-bold hover:underline flex items-center gap-1"

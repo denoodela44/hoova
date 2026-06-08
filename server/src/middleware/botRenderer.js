@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dynamic rendering for search-engine crawlers.
  *
  * Google recommends this pattern for JS SPAs: when a bot visits, serve a
@@ -15,7 +15,7 @@
 
 const prisma = require('../utils/prisma')
 
-const BASE_URL = process.env.SITE_URL || 'https://sika.com.gh'
+const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 
 const BOT_RE = /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebot|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|embedly|pinterest/i
 
@@ -60,7 +60,7 @@ async function renderListing(id) {
   })
   if (!listing) return null
 
-  const title = `${listing.title} — GHS ${Number(listing.price).toLocaleString()} | SIKA Ghana`
+  const title = `${listing.title} — GHS ${Number(listing.price).toLocaleString()} | HOOVA Ghana`
   const description = `${listing.title} for sale in ${listing.location?.city || 'Ghana'}. Price: GHS ${Number(listing.price).toLocaleString()}. ${(listing.description || '').slice(0, 120)}`
   const image = listing.images?.[0]?.url || null
   const url = `${BASE_URL}/listing/${listing.id}`
@@ -81,7 +81,7 @@ async function renderListing(id) {
         url,
         seller: {
           '@type': 'Person',
-          name: listing.seller?.name || 'SIKA Seller',
+          name: listing.seller?.name || 'HOOVA Seller',
           url: `${BASE_URL}/seller/${listing.seller?.id}`,
         },
       },
@@ -122,10 +122,10 @@ async function renderSeller(id) {
   })
 
   const url = `${BASE_URL}/seller/${id}`
-  const title = `${seller.name}'s Store on SIKA Ghana — ${listings.length} Active Listings`
+  const title = `${seller.name}'s Store on HOOVA Ghana — ${listings.length} Active Listings`
   const description = seller.bio
-    ? `${seller.bio.slice(0, 150)} — Browse all listings from ${seller.name} on SIKA Ghana.`
-    : `Browse all ${listings.length} listings from ${seller.name} on SIKA Ghana. Verified seller with ${seller.review_count || 0} reviews.`
+    ? `${seller.bio.slice(0, 150)} — Browse all listings from ${seller.name} on HOOVA Ghana.`
+    : `Browse all ${listings.length} listings from ${seller.name} on HOOVA Ghana. Verified seller with ${seller.review_count || 0} reviews.`
 
   const ldJson = [
     {
@@ -176,7 +176,7 @@ module.exports = async function botRenderer(req, res, next) {
     if (!html) {
       // Generic fallback for all other routes bots may hit
       html = shell({
-        title: 'SIKA Ghana — Buy and Sell Anything in Ghana',
+        title: 'HOOVA Ghana — Buy and Sell Anything in Ghana',
         description: 'Ghana\'s fastest-growing classifieds marketplace. Find cars, electronics, real estate, fashion and more from verified local sellers.',
         canonical: `${BASE_URL}${req.path}`,
         ldJson: [],

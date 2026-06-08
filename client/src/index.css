@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -254,7 +254,7 @@
 }
 
 /* Category tile hover */
-.sika-cat-tile:hover {
+.hoova-cat-tile:hover {
   border-color: #F8C0C8;
   background: #fdf2f5;
   color: #B81365;

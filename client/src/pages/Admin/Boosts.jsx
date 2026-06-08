@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Zap, Clock, CheckCircle, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -27,7 +27,7 @@ const MOCK_BOOSTS = Array.from({ length: 15 }, (_, i) => ({
   listing: {
     id: `l${i}`, title: ['2019 Toyota Corolla', 'iPhone 15 Pro', '2-Bed Apartment'][i % 3],
     status: 'active', images: [],
-    seller: { id: `u${i}`, name: ['Kwame Motors', 'TechHub GH', 'HomePro'][i % 3], email: `seller${i}@sika.gh` },
+    seller: { id: `u${i}`, name: ['Kwame Motors', 'TechHub GH', 'HomePro'][i % 3], email: `seller${i}@hoova.gh` },
   },
 }))
 

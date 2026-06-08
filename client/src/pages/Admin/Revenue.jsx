@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+﻿import { useQuery } from '@tanstack/react-query'
 import { DollarSign, TrendingUp, Zap, Crown, ArrowUpRight } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import api from '../../services/api'
@@ -17,7 +17,7 @@ const MOCK = {
     id: `s${i}`,
     plan: ['pro', 'business', 'pro'][i % 3],
     starts_at: new Date(Date.now() - i * 86400000 * 2).toISOString(),
-    user: { name: ['Kwame Motors', 'TechHub GH', 'HomePro', 'ElectroCity'][i % 4], email: `seller${i}@sika.gh`, avatar: null },
+    user: { name: ['Kwame Motors', 'TechHub GH', 'HomePro', 'ElectroCity'][i % 4], email: `seller${i}@hoova.gh`, avatar: null },
   })),
   monthly_trend: [
     { month: 'Jan 25', amount: 14200 }, { month: 'Feb 25', amount: 16800 },

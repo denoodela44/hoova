@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -401,7 +401,7 @@ function ModerationCard({ listing: l, tab, selected, onToggle, onApprove, onReje
 
 const QUICK_REASONS = [
   'Does not meet our community guidelines.',
-  'Item is prohibited on SIKA.',
+  'Item is prohibited on HOOVA.',
   'Suspected scam or fraudulent listing.',
   'Price appears deceptive or misleading.',
   'Duplicate listing — please edit your existing one.',

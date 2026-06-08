@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Run once to create admin accounts:
  *   node prisma/create-admin.js
  */
@@ -8,8 +8,8 @@ const bcrypt = require('bcryptjs')
 const prisma = new PrismaClient()
 
 const ADMINS = [
-  { name: 'SIKA Admin',   email: 'admin@sika.com.gh',   password: 'SikaAdmin2024!' },
-  { name: 'Lali Dev',     email: 'lali@sika.com.gh',    password: 'SikaDev2024!'   },
+  { name: 'HOOVA Admin',   email: 'admin@hoova.com.gh',   password: 'HoovaAdmin2024!' },
+  { name: 'Lali Dev',     email: 'lali@hoova.com.gh',    password: 'HoovaDev2024!'   },
 ]
 
 async function main() {

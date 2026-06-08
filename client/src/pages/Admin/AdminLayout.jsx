@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+﻿import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import api from '../../services/api'
 import {
@@ -133,7 +133,7 @@ export default function AdminLayout() {
           style={{ background: 'rgba(245,244,241,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #e9e6e0' }}
         >
           <ShieldCheck className="w-4 h-4" style={{ color: '#B81365' }} />
-          <span className="text-sm font-semibold text-gray-700">SIKA Admin</span>
+          <span className="text-sm font-semibold text-gray-700">HOOVA Admin</span>
           <span className="ml-auto text-xs text-gray-400">
             {new Date().toLocaleDateString('en-GH', { weekday: 'long', month: 'long', day: 'numeric' })}
           </span>

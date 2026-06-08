@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Megaphone, Send, Trash2, CheckCircle, Clock, Users } from 'lucide-react'
 import api from '../../services/api'
@@ -18,7 +18,7 @@ const TARGET_META = {
 }
 
 const MOCK = [
-  { id: 'a1', title: 'Welcome to SIKA v2.0!', body: 'We just launched a major update with new features...', type: 'success', target: 'all', sent_at: new Date(Date.now() - 86400000 * 3).toISOString(), created_at: new Date(Date.now() - 86400000 * 4).toISOString() },
+  { id: 'a1', title: 'Welcome to HOOVA v2.0!', body: 'We just launched a major update with new features...', type: 'success', target: 'all', sent_at: new Date(Date.now() - 86400000 * 3).toISOString(), created_at: new Date(Date.now() - 86400000 * 4).toISOString() },
   { id: 'a2', title: 'Pro Seller Exclusive Deal', body: 'Get 2 extra boost credits this month...', type: 'promo', target: 'pro', sent_at: new Date(Date.now() - 86400000).toISOString(), created_at: new Date(Date.now() - 86400000).toISOString() },
   { id: 'a3', title: 'New Category: Agriculture', body: "We've added a dedicated Agriculture category...", type: 'info', target: 'all', sent_at: null, created_at: new Date().toISOString() },
 ]

@@ -1,11 +1,11 @@
-const router = require('express').Router()
+﻿const router = require('express').Router()
 const { body, query, validationResult } = require('express-validator')
 const prisma = require('../utils/prisma')
 const { requireAuth, optionalAuth } = require('../middleware/auth')
 const { pingIndexNow } = require('../utils/indexNow')
 const { moderateListing } = require('../utils/listingModerator')
 
-const BASE_URL = process.env.SITE_URL || 'https://sika.com.gh'
+const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 
 const LISTING_INCLUDE = {
   images: { orderBy: { order: 'asc' } },

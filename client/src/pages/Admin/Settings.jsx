@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Settings2, Code2, Palette, Save, CheckCircle2,
@@ -68,11 +68,11 @@ const SOCIAL_FIELDS = [
   { key: 'social_twitter',   label: 'X (Twitter)',color: '#000000', placeholder: 'https://x.com/yourhandle',          hint: 'Full URL to your X/Twitter profile' },
   { key: 'social_youtube',   label: 'YouTube',   color: '#ff0000', placeholder: 'https://youtube.com/@yourchannel',  hint: 'Full URL to your YouTube channel' },
   { key: 'social_whatsapp',  label: 'WhatsApp',  color: '#25d366', placeholder: '+233200000000',                      hint: 'Your WhatsApp Business number with country code' },
-  { key: 'social_linkedin',  label: 'LinkedIn',  color: '#0a66c2', placeholder: 'https://linkedin.com/company/sika', hint: 'Full URL to your LinkedIn company page' },
+  { key: 'social_linkedin',  label: 'LinkedIn',  color: '#0a66c2', placeholder: 'https://linkedin.com/company/hoova', hint: 'Full URL to your LinkedIn company page' },
 ]
 
 const BRANDING_FIELDS = [
-  { key: 'site_name',          label: 'Site Name',          icon: Type,    placeholder: 'SIKA', hint: 'Used in page titles and OG tags' },
+  { key: 'site_name',          label: 'Site Name',          icon: Type,    placeholder: 'HOOVA', hint: 'Used in page titles and OG tags' },
   { key: 'site_tagline',       label: 'Site Tagline',       icon: Type,    placeholder: "Ghana's best deals, no cap", hint: 'Short tagline shown in meta descriptions' },
   { key: 'brand_primary_color',label: 'Primary Brand Color',icon: Palette, placeholder: '#B81365', hint: 'Hex color for buttons, links, accents' },
   { key: 'brand_logo_url',     label: 'Logo URL',           icon: Image,   placeholder: 'https://...', hint: 'Full URL to your logo image (PNG/SVG)' },

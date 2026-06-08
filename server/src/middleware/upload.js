@@ -1,4 +1,4 @@
-const multer = require('multer')
+﻿const multer = require('multer')
 const { CloudinaryStorage } = require('multer-storage-cloudinary')
 const cloudinary = require('cloudinary').v2
 
@@ -11,7 +11,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (_req, file) => ({
-    folder: 'sika/listings',
+    folder: 'hoova/listings',
     transformation: [
       { width: 1200, height: 900, crop: 'limit', quality: 'auto:good', fetch_format: 'auto' },
     ],

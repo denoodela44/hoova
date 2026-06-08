@@ -1,4 +1,4 @@
-require('dotenv').config()
+﻿require('dotenv').config()
 const path = require('path')
 const express = require('express')
 const http = require('http')
@@ -97,4 +97,4 @@ app.use((err, _req, res, _next) => {
 })
 
 const PORT = process.env.PORT || 3001
-server.listen(PORT, () => console.log(`🚀 SIKA server running on http://localhost:${PORT}`))
+server.listen(PORT, () => console.log(`🚀 HOOVA server running on http://localhost:${PORT}`))

@@ -1,10 +1,10 @@
-import { Helmet } from 'react-helmet-async'
+﻿import { Helmet } from 'react-helmet-async'
 
-export const SITE_NAME = 'SIKA Ghana'
-export const BASE_URL  = 'https://sika.com.gh'
+export const SITE_NAME = 'HOOVA Ghana'
+export const BASE_URL  = 'https://hoova.com.gh'
 export const DEFAULT_IMAGE = `${BASE_URL}/og-default.jpg`
 export const DEFAULT_DESCRIPTION =
-  "Ghana's #1 classifieds marketplace. Buy and sell cars, phones, houses, fashion, jobs and more from verified sellers across all 16 regions. Post your free ad today on SIKA Ghana."
+  "Ghana's #1 classifieds marketplace. Buy and sell cars, phones, houses, fashion, jobs and more from verified sellers across all 16 regions. Post your free ad today on HOOVA Ghana."
 
 const CATEGORY_KEYWORDS = {
   vehicles:     'cars for sale Ghana, used cars Accra, Toyota Corolla Ghana, pickup trucks Ghana',
@@ -28,7 +28,7 @@ export default function SEO({
   keywords,
   children,
 }) {
-  const fullTitle    = title ? `${title} | SIKA Ghana` : 'SIKA Ghana — Buy and Sell Anything in Ghana'
+  const fullTitle    = title ? `${title} | HOOVA Ghana` : 'HOOVA Ghana — Buy and Sell Anything in Ghana'
   const fullUrl      = url ? `${BASE_URL}${url}` : BASE_URL
   const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : fullUrl
 
@@ -83,7 +83,7 @@ export function ListingSEO({ listing }) {
   const url       = `/listing/${listing.id}`
 
   const title = `${listing.title} for Sale in ${city} — ${price}`
-  const description = `${condition} ${listing.title} for sale in ${city}${region ? ', ' + region : ''}, Ghana. Price: ${price}. ${(listing.description || '').slice(0, 120).trim()}. Contact seller on SIKA Ghana classifieds.`
+  const description = `${condition} ${listing.title} for sale in ${city}${region ? ', ' + region : ''}, Ghana. Price: ${price}. ${(listing.description || '').slice(0, 120).trim()}. Contact seller on HOOVA Ghana classifieds.`
   const keywords = [
     listing.title,
     `${listing.title} for sale`,
@@ -92,7 +92,7 @@ export function ListingSEO({ listing }) {
     `buy ${listing.title} Ghana`,
     category,
     `${category} ${city}`,
-    'SIKA Ghana',
+    'HOOVA Ghana',
   ].filter(Boolean).join(', ')
 
   // JSON-LD: Product
@@ -159,14 +159,14 @@ export function ListingSEO({ listing }) {
 
   return (
     <Helmet>
-      <title>{title} | SIKA Ghana</title>
+      <title>{title} | HOOVA Ghana</title>
       <meta name="description"   content={description} />
       <meta name="keywords"      content={keywords} />
       <link rel="canonical"      href={`${BASE_URL}${url}`} />
       <meta name="robots"        content="index,follow,max-snippet:-1,max-image-preview:large" />
 
       <meta property="og:type"               content="product" />
-      <meta property="og:title"              content={`${title} | SIKA Ghana`} />
+      <meta property="og:title"              content={`${title} | HOOVA Ghana`} />
       <meta property="og:description"        content={description} />
       <meta property="og:image"             content={image} />
       <meta property="og:image:width"        content="1200" />
@@ -179,7 +179,7 @@ export function ListingSEO({ listing }) {
 
       <meta name="twitter:card"        content="summary_large_image" />
       <meta name="twitter:site"        content="@SIKAGhana" />
-      <meta name="twitter:title"       content={`${title} | SIKA Ghana`} />
+      <meta name="twitter:title"       content={`${title} | HOOVA Ghana`} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image"       content={image} />
 
@@ -198,26 +198,26 @@ export function BrowseSEO({ category, region, q, total = 0 }) {
 
   if (catName && cityName) {
     title       = `${catName} for Sale in ${cityName}, Ghana — ${total.toLocaleString()} Ads`
-    description = `Browse ${total.toLocaleString()} ${catName} listings in ${cityName}, Ghana. New and used items from verified sellers. Best prices, fast replies. SIKA Ghana classifieds.`
+    description = `Browse ${total.toLocaleString()} ${catName} listings in ${cityName}, Ghana. New and used items from verified sellers. Best prices, fast replies. HOOVA Ghana classifieds.`
     url         = `/browse?category=${category}&region=${encodeURIComponent(region)}`
     keywords    = `${catName} ${cityName}, buy ${catName} ${cityName}, ${catName} for sale ${cityName} Ghana, ${CATEGORY_KEYWORDS[category] || ''}`
   } else if (catName) {
-    title       = `Buy ${catName} in Ghana — ${total.toLocaleString()} Ads | SIKA Ghana`
-    description = `Find the best ${catName.toLowerCase()} deals in Ghana. ${total.toLocaleString()} listings from verified sellers in Accra, Kumasi, Takoradi and all regions. SIKA Ghana classifieds.`
+    title       = `Buy ${catName} in Ghana — ${total.toLocaleString()} Ads | HOOVA Ghana`
+    description = `Find the best ${catName.toLowerCase()} deals in Ghana. ${total.toLocaleString()} listings from verified sellers in Accra, Kumasi, Takoradi and all regions. HOOVA Ghana classifieds.`
     url         = `/browse?category=${category}`
     keywords    = `${catName} Ghana, buy ${catName} Ghana, ${catName} for sale, ${CATEGORY_KEYWORDS[category] || ''}`
   } else if (cityName) {
-    title       = `Buy and Sell in ${cityName}, Ghana — SIKA Classifieds`
+    title       = `Buy and Sell in ${cityName}, Ghana — HOOVA Classifieds`
     description = `Browse listings in ${cityName}, Ghana. Cars, electronics, real estate, fashion, jobs and more from local sellers near you.`
     url         = `/browse?region=${encodeURIComponent(region)}`
     keywords    = `buy sell ${cityName} Ghana, classifieds ${cityName}, online marketplace ${cityName} Ghana`
   } else if (q) {
-    title       = `"${q}" for Sale in Ghana — ${total.toLocaleString()} Results | SIKA Ghana`
-    description = `${total.toLocaleString()} listings matching "${q}" in Ghana. New and used from verified sellers. Find the best deal on SIKA Ghana.`
+    title       = `"${q}" for Sale in Ghana — ${total.toLocaleString()} Results | HOOVA Ghana`
+    description = `${total.toLocaleString()} listings matching "${q}" in Ghana. New and used from verified sellers. Find the best deal on HOOVA Ghana.`
     url         = `/browse?q=${encodeURIComponent(q)}`
     keywords    = `${q} for sale Ghana, buy ${q} Ghana, ${q} price Ghana`
   } else {
-    title       = 'Browse All Listings in Ghana — Cars, Electronics, Real Estate & More | SIKA'
+    title       = 'Browse All Listings in Ghana — Cars, Electronics, Real Estate & More | HOOVA'
     description = DEFAULT_DESCRIPTION
     url         = '/browse'
     keywords    = 'buy and sell Ghana, Ghana classifieds, online marketplace Ghana, free ads Ghana'
@@ -282,15 +282,15 @@ function buildCategoryFAQ(category, location) {
       name: `Where can I buy ${category.toLowerCase()} in ${location}?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `You can find ${category.toLowerCase()} listings from verified sellers in ${location} on SIKA Ghana. Browse hundreds of ads, compare prices and contact sellers directly.`,
+        text: `You can find ${category.toLowerCase()} listings from verified sellers in ${location} on HOOVA Ghana. Browse hundreds of ads, compare prices and contact sellers directly.`,
       },
     },
     {
       '@type': 'Question',
-      name: `Is it safe to buy ${category.toLowerCase()} on SIKA Ghana?`,
+      name: `Is it safe to buy ${category.toLowerCase()} on HOOVA Ghana?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `SIKA Ghana verifies sellers with Ghana Card verification and shows trust scores including reviews, account age and response rate. Always meet in a public place and inspect items before payment.`,
+        text: `HOOVA Ghana verifies sellers with Ghana Card verification and shows trust scores including reviews, account age and response rate. Always meet in a public place and inspect items before payment.`,
       },
     },
     {
@@ -298,7 +298,7 @@ function buildCategoryFAQ(category, location) {
       name: `How do I post a ${category.toLowerCase()} ad for free?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `Posting an ad on SIKA Ghana is completely free. Create an account, click "Post Free Ad", fill in your listing details, upload photos and publish. Your ad will be live within minutes.`,
+        text: `Posting an ad on HOOVA Ghana is completely free. Create an account, click "Post Free Ad", fill in your listing details, upload photos and publish. Your ad will be live within minutes.`,
       },
     },
   ]

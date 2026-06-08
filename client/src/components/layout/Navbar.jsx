@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import {
   Bell, Plus, ChevronDown,
@@ -43,7 +43,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-4">
 
         {/* Logo */}
-        <Link to="/" className="shrink-0" aria-label="SIKA Ghana — Home">
+        <Link to="/" className="shrink-0" aria-label="HOOVA Ghana — Home">
           <Logo markColor="white" textColor="white" size={26} />
         </Link>
 

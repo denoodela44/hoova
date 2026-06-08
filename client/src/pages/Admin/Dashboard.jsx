@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+﻿import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Users, Package, Search, TrendingUp,
@@ -41,7 +41,7 @@ export default function Dashboard() {
         >
           Platform Overview
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">Live snapshot of everything happening on SIKA.</p>
+        <p className="text-sm text-gray-500 mt-0.5">Live snapshot of everything happening on HOOVA.</p>
       </div>
 
       {/* KPI row */}

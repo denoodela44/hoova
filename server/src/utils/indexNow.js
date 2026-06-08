@@ -1,8 +1,8 @@
-const https = require('https')
+﻿const https = require('https')
 
-const BASE_URL  = process.env.SITE_URL      || 'https://sika.com.gh'
+const BASE_URL  = process.env.SITE_URL      || 'https://hoova.com.gh'
 const API_KEY   = process.env.INDEXNOW_KEY  || ''
-const HOST      = new URL(BASE_URL).hostname  // 'sika.com.gh'
+const HOST      = new URL(BASE_URL).hostname  // 'hoova.com.gh'
 
 // IndexNow endpoint — submitting here notifies Bing, Yandex, and via partnership, Google.
 const INDEXNOW_HOST = 'api.indexnow.org'

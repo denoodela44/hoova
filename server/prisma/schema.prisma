@@ -1,4 +1,4 @@
-generator client {
+﻿generator client {
   provider = "prisma-client-js"
 }
 
@@ -13,7 +13,7 @@ model User {
   phone             String?  @unique
   password_hash     String?
   name              String
-  store_slug        String?  @unique  // e.g. "kwame-asante-motors" → sika.com.gh/store/kwame-asante-motors
+  store_slug        String?  @unique  // e.g. "kwame-asante-motors" → hoova.com.gh/store/kwame-asante-motors
   store_name        String?           // business display name, separate from personal name
   cover_banner      String?           // store cover image URL
   avatar            String?

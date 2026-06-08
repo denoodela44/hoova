@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -158,7 +158,7 @@ export default function MarketIntelligence() {
                 </h1>
               </div>
               <p className="text-sm text-gray-500">
-                Real buyer demand data from SIKA · Updated {new Date(data.updated_at).toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' })}
+                Real buyer demand data from HOOVA · Updated {new Date(data.updated_at).toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             <button onClick={() => refetch()}
@@ -176,7 +176,7 @@ export default function MarketIntelligence() {
         {/* Platform KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: 'Searches Today',    value: ps.searches_today?.toLocaleString(),    icon: Search,   color: '#1d4ed8', bg: '#eff6ff',  sub: 'by buyers on SIKA' },
+            { label: 'Searches Today',    value: ps.searches_today?.toLocaleString(),    icon: Search,   color: '#1d4ed8', bg: '#eff6ff',  sub: 'by buyers on HOOVA' },
             { label: 'Active Listings',   value: ps.active_listings?.toLocaleString(),   icon: Package,  color: '#15803d', bg: '#dcfce7',  sub: 'across all categories' },
             { label: 'Avg Listing Price', value: `GHS ${ps.avg_price_ghs?.toLocaleString()}`, icon: BarChart2, color: '#B81365', bg: '#fdf2f5', sub: 'platform average' },
             { label: 'Opportunity Zones', value: opportunityCount,                        icon: Flame,    color: '#c2410c', bg: '#fff7ed',  sub: 'high demand, low supply' },

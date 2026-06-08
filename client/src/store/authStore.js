@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+﻿import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 const useAuthStore = create(
@@ -19,7 +19,7 @@ const useAuthStore = create(
 
       isLoggedIn: () => !!get().token,
     }),
-    { name: 'sika-auth' }
+    { name: 'hoova-auth' }
   )
 )
 

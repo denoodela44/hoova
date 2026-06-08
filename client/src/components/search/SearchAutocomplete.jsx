@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+﻿import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, TrendingUp, Tag, X, ArrowUpRight, Clock } from 'lucide-react'
 import { MOCK_LISTINGS, MOCK_CATEGORIES } from '../../mocks/data'
@@ -6,7 +6,7 @@ import { formatPrice } from '../../utils/format'
 import api from '../../services/api'
 
 const POPULAR = ['iPhone 15', 'Toyota Corolla', 'Laptop', '2 bedroom house', 'Generator', 'Samsung TV', 'Land for sale', 'PS5']
-const HISTORY_KEY = 'sika-search-history'
+const HISTORY_KEY = 'hoova-search-history'
 
 function logSearch(query, results_count, source) {
   api.post('/analytics/search', { query, results_count, source }).catch(() => {})

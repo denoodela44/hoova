@@ -1,4 +1,4 @@
-import SEO from '../../components/seo/SEO'
+﻿import SEO from '../../components/seo/SEO'
 
 const LAST_UPDATED = 'June 2025'
 
@@ -7,7 +7,7 @@ export default function PrivacyPolicy() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEO
         title="Privacy Policy"
-        description="SIKA Ghana Privacy Policy — how we collect, use and protect your personal data in accordance with Ghana's Data Protection Act."
+        description="HOOVA Ghana Privacy Policy — how we collect, use and protect your personal data in accordance with Ghana's Data Protection Act."
         url="/privacy"
         noindex={false}
       />
@@ -20,9 +20,9 @@ export default function PrivacyPolicy() {
       <div className="prose prose-sm max-w-none text-gray-600 space-y-6">
 
         <Section title="1. Who We Are">
-          SIKA Ghana ("SIKA", "we", "us") operates the online classifieds marketplace at sika.com.gh.
+          HOOVA Ghana ("HOOVA", "we", "us") operates the online classifieds marketplace at hoova.com.gh.
           We are registered in Ghana and comply with the Data Protection Act, 2012 (Act 843).
-          Questions about this policy: <a href="mailto:privacy@sika.com.gh" className="text-[#B81365]">privacy@sika.com.gh</a>.
+          Questions about this policy: <a href="mailto:privacy@hoova.com.gh" className="text-[#B81365]">privacy@hoova.com.gh</a>.
         </Section>
 
         <Section title="2. Data We Collect">
@@ -64,7 +64,7 @@ export default function PrivacyPolicy() {
             <li>Request deletion of your account and associated data.</li>
             <li>Withdraw consent for marketing communications at any time.</li>
           </ul>
-          To exercise these rights email <a href="mailto:privacy@sika.com.gh" className="text-[#B81365]">privacy@sika.com.gh</a>.
+          To exercise these rights email <a href="mailto:privacy@hoova.com.gh" className="text-[#B81365]">privacy@hoova.com.gh</a>.
         </Section>
 
         <Section title="6. Cookies">
@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="8. Children">
-          SIKA is intended for users aged 18 and above. We do not knowingly collect data from minors.
+          HOOVA is intended for users aged 18 and above. We do not knowingly collect data from minors.
         </Section>
 
         <Section title="9. Changes to This Policy">
@@ -86,8 +86,8 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="10. Contact">
-          SIKA Ghana · Accra, Greater Accra, Ghana ·{' '}
-          <a href="mailto:privacy@sika.com.gh" className="text-[#B81365]">privacy@sika.com.gh</a>
+          HOOVA Ghana · Accra, Greater Accra, Ghana ·{' '}
+          <a href="mailto:privacy@hoova.com.gh" className="text-[#B81365]">privacy@hoova.com.gh</a>
         </Section>
       </div>
     </div>

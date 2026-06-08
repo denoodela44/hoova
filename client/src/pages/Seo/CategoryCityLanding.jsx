@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
+﻿import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { MapPin, ArrowRight, ShieldCheck, Star } from 'lucide-react'
@@ -37,7 +37,7 @@ export default function CategoryCityLanding() {
   const catObj = MOCK_CATEGORIES.find((c) => c.slug === category)
 
   const title = `${catInfo.label} for Sale in ${cityInfo.city}, Ghana`
-  const description = `Find the best deals on ${catInfo.label.toLowerCase()} in ${cityInfo.city}, Ghana. Browse new and used ${catInfo.keywords} from verified local sellers. Free to browse — post your ad today on SIKA Ghana.`
+  const description = `Find the best deals on ${catInfo.label.toLowerCase()} in ${cityInfo.city}, Ghana. Browse new and used ${catInfo.keywords} from verified local sellers. Free to browse — post your ad today on HOOVA Ghana.`
 
   const { data, isLoading } = useQuery({
     queryKey: ['seo-landing', category, citySlug],
@@ -59,11 +59,11 @@ export default function CategoryCityLanding() {
     name: title,
     description,
     numberOfItems: total,
-    url: `https://sika.com.gh/buy/${category}/${citySlug}`,
+    url: `https://hoova.com.gh/buy/${category}/${citySlug}`,
     itemListElement: listings.slice(0, 10).map((l, i) => ({
       '@type': 'ListItem',
       position: i + 1,
-      url: `https://sika.com.gh/listing/${l.id}`,
+      url: `https://hoova.com.gh/listing/${l.id}`,
       name: l.title,
     })),
   }
@@ -72,19 +72,19 @@ export default function CategoryCityLanding() {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://sika.com.gh' },
-      { '@type': 'ListItem', position: 2, name: catInfo.label, item: `https://sika.com.gh/browse?category=${category}` },
-      { '@type': 'ListItem', position: 3, name: cityInfo.city, item: `https://sika.com.gh/buy/${category}/${citySlug}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hoova.com.gh' },
+      { '@type': 'ListItem', position: 2, name: catInfo.label, item: `https://hoova.com.gh/browse?category=${category}` },
+      { '@type': 'ListItem', position: 3, name: cityInfo.city, item: `https://hoova.com.gh/buy/${category}/${citySlug}` },
     ],
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <Helmet>
-        <title>{title} — {total.toLocaleString()} Ads | SIKA Ghana</title>
+        <title>{title} — {total.toLocaleString()} Ads | HOOVA Ghana</title>
         <meta name="description" content={description} />
-        <link rel="canonical" href={`https://sika.com.gh/buy/${category}/${citySlug}`} />
-        <meta property="og:title" content={`${title} | SIKA Ghana`} />
+        <link rel="canonical" href={`https://hoova.com.gh/buy/${category}/${citySlug}`} />
+        <meta property="og:title" content={`${title} | HOOVA Ghana`} />
         <meta property="og:description" content={description} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbJsonLd)}</script>
@@ -157,13 +157,13 @@ export default function CategoryCityLanding() {
           Buying {catInfo.label} in {cityInfo.city}, Ghana
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-          SIKA is Ghana's fastest-growing classifieds marketplace where you can find {catInfo.label.toLowerCase()} for sale
+          HOOVA is Ghana's fastest-growing classifieds marketplace where you can find {catInfo.label.toLowerCase()} for sale
           in {cityInfo.city} and across all {cityInfo.region ? cityInfo.region + ' and other ' : ''}regions of Ghana.
           Whether you're looking for brand new or used {catInfo.keywords}, you'll find the best
           prices from local sellers in {cityInfo.city}.
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mt-2">
-          All sellers on SIKA can be verified with their Ghana Card for extra trust. You can message sellers
+          All sellers on HOOVA can be verified with their Ghana Card for extra trust. You can message sellers
           directly in-app, compare prices, and get notified when new {catInfo.label.toLowerCase()} are listed
           in {cityInfo.city}. Posting an ad is completely free.
         </p>

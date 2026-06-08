@@ -1,4 +1,4 @@
-const router = require('express').Router()
+﻿const router = require('express').Router()
 const prisma = require('../utils/prisma')
 const { requireAuth } = require('../middleware/auth')
 
@@ -104,7 +104,7 @@ router.post('/upgrade', requireAuth, async (req, res, next) => {
     }
 
     const amount = PLANS[plan].price_ghs * 100 // Paystack expects pesewas
-    const reference = `sika-sub-${req.user.id}-${Date.now()}`
+    const reference = `hoova-sub-${req.user.id}-${Date.now()}`
 
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',

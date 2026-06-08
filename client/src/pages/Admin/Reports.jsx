@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Flag, CheckCircle, XCircle, AlertTriangle, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -29,7 +29,7 @@ const MOCK_REPORTS = Array.from({ length: 12 }, (_, i) => ({
   created_at: new Date(Date.now() - i * 86400000).toISOString(),
   reporter: { id: `u${i}`, name: `User ${i + 1}`, email: `user${i}@example.com`, avatar: null },
   listing: i % 2 === 0 ? { id: `l${i}`, title: ['iPhone 15 Pro', '2019 Toyota', 'HP Laptop', 'Sofa Set'][i % 4], status: 'active', images: [] } : null,
-  seller:  i % 2 !== 0 ? { id: `s${i}`, name: ['Kwame Motors', 'TechHub GH'][i % 2], avatar: null, email: `seller${i}@sika.gh` } : null,
+  seller:  i % 2 !== 0 ? { id: `s${i}`, name: ['Kwame Motors', 'TechHub GH'][i % 2], avatar: null, email: `seller${i}@hoova.gh` } : null,
 }))
 
 const STATUS_FILTERS = ['all', 'pending', 'reviewed', 'dismissed', 'actioned']

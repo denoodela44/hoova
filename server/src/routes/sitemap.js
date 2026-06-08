@@ -1,7 +1,7 @@
-const router = require('express').Router()
+﻿const router = require('express').Router()
 const prisma = require('../utils/prisma')
 
-const BASE_URL    = process.env.SITE_URL     || 'https://sika.com.gh'
+const BASE_URL    = process.env.SITE_URL     || 'https://hoova.com.gh'
 const INDEXNOW_KEY = process.env.INDEXNOW_KEY || ''
 
 const GHANA_REGIONS = [

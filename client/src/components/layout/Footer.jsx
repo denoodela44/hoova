@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import Logo from './Logo'
 
 const cats = ['Vehicles', 'Electronics', 'Real Estate', 'Fashion', 'Jobs', 'Services', 'Furniture', 'Agriculture']
 const links = [
-  { label: 'About SIKA', to: '/about' },
+  { label: 'About HOOVA', to: '/about' },
   { label: 'Safety Tips', to: '/safety' },
   { label: 'Help & FAQ', to: '/help' },
   { label: 'Contact Us', to: '/contact' },
@@ -16,7 +16,7 @@ export default function Footer() {
     <footer className="bg-white dark:bg-dark-surface border-t border-gray-100 dark:border-dark-border mt-16">
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-2 md:col-span-1">
-          <Link to="/" aria-label="SIKA Ghana — Home">
+          <Link to="/" aria-label="HOOVA Ghana — Home">
             <Logo size={24} />
           </Link>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -73,7 +73,7 @@ export default function Footer() {
 
       <div className="border-t border-gray-100 dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-          <span>© {new Date().getFullYear()} SIKA Ghana. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} HOOVA Ghana. All rights reserved.</span>
         </div>
       </div>
     </footer>

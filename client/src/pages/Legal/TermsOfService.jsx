@@ -1,4 +1,4 @@
-import SEO from '../../components/seo/SEO'
+﻿import SEO from '../../components/seo/SEO'
 
 const LAST_UPDATED = 'June 2025'
 
@@ -7,7 +7,7 @@ export default function TermsOfService() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEO
         title="Terms of Service"
-        description="SIKA Ghana Terms of Service — rules for buyers and sellers on Ghana's #1 classifieds marketplace."
+        description="HOOVA Ghana Terms of Service — rules for buyers and sellers on Ghana's #1 classifieds marketplace."
         url="/terms"
         noindex={false}
       />
@@ -20,7 +20,7 @@ export default function TermsOfService() {
       <div className="space-y-6">
 
         <Section title="1. Acceptance">
-          By accessing or using sika.com.gh you agree to these Terms. If you do not agree, do not use the platform.
+          By accessing or using hoova.com.gh you agree to these Terms. If you do not agree, do not use the platform.
         </Section>
 
         <Section title="2. Eligibility">
@@ -30,7 +30,7 @@ export default function TermsOfService() {
 
         <Section title="3. Your Account">
           You are responsible for all activity under your account. Keep your password secure. Notify us immediately at{' '}
-          <a href="mailto:hello@sika.com.gh" className="text-[#B81365]">hello@sika.com.gh</a> if you suspect unauthorised access.
+          <a href="mailto:hello@hoova.com.gh" className="text-[#B81365]">hello@hoova.com.gh</a> if you suspect unauthorised access.
         </Section>
 
         <Section title="4. Listing Rules">
@@ -47,7 +47,7 @@ export default function TermsOfService() {
         </Section>
 
         <Section title="5. Transactions">
-          SIKA Ghana is a marketplace platform. We do not participate in, guarantee, or take responsibility for
+          HOOVA Ghana is a marketplace platform. We do not participate in, guarantee, or take responsibility for
           transactions between buyers and sellers. All disputes are between the parties involved.
           <strong> Never send money before inspecting an item.</strong>
         </Section>
@@ -59,7 +59,7 @@ export default function TermsOfService() {
         </Section>
 
         <Section title="7. Content Ownership">
-          You retain ownership of photos and descriptions you post. You grant SIKA Ghana a worldwide,
+          You retain ownership of photos and descriptions you post. You grant HOOVA Ghana a worldwide,
           royalty-free licence to display and promote your listings on the platform and in search engine results.
         </Section>
 
@@ -69,7 +69,7 @@ export default function TermsOfService() {
         </Section>
 
         <Section title="9. Limitation of Liability">
-          To the fullest extent permitted by Ghanaian law, SIKA Ghana is not liable for any indirect, incidental,
+          To the fullest extent permitted by Ghanaian law, HOOVA Ghana is not liable for any indirect, incidental,
           or consequential damages arising from your use of the platform.
         </Section>
 
@@ -79,8 +79,8 @@ export default function TermsOfService() {
         </Section>
 
         <Section title="11. Contact">
-          SIKA Ghana · Accra, Greater Accra, Ghana ·{' '}
-          <a href="mailto:hello@sika.com.gh" className="text-[#B81365]">hello@sika.com.gh</a>
+          HOOVA Ghana · Accra, Greater Accra, Ghana ·{' '}
+          <a href="mailto:hello@hoova.com.gh" className="text-[#B81365]">hello@hoova.com.gh</a>
         </Section>
       </div>
     </div>
