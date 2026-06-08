@@ -55,7 +55,7 @@ export default function SEO({
 
       {/* Twitter Card */}
       <meta name="twitter:card"        content="summary_large_image" />
-      <meta name="twitter:site"        content="@SIKAGhana" />
+      <meta name="twitter:site"        content="@HoovaGhana" />
       <meta name="twitter:title"       content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image"       content={image} />
@@ -178,7 +178,7 @@ export function ListingSEO({ listing }) {
       <meta property="product:condition"     content={listing.condition === 'new' ? 'new' : 'used'} />
 
       <meta name="twitter:card"        content="summary_large_image" />
-      <meta name="twitter:site"        content="@SIKAGhana" />
+      <meta name="twitter:site"        content="@HoovaGhana" />
       <meta name="twitter:title"       content={`${title} | HOOVA Ghana`} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image"       content={image} />
@@ -264,7 +264,7 @@ export function BrowseSEO({ category, region, q, total = 0 }) {
       <meta property="og:site_name"   content={SITE_NAME} />
 
       <meta name="twitter:card"        content="summary_large_image" />
-      <meta name="twitter:site"        content="@SIKAGhana" />
+      <meta name="twitter:site"        content="@HoovaGhana" />
       <meta name="twitter:title"       content={title} />
       <meta name="twitter:description" content={description} />
 

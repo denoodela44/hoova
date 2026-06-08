@@ -5,7 +5,7 @@ export default function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <SikaConfused />
+      <HOOVAConfused />
       <h3
         className="text-lg font-black text-gray-900 mt-6 mb-1"
         style={{ fontFamily: "'Poppins', sans-serif" }}

@@ -7,7 +7,7 @@ export default function NotFound() {
       className="min-h-[80vh] flex flex-col items-center justify-center px-4 text-center"
       style={{ background: '#fff' }}
     >
-      <SikaLost />
+      <HOOVALost />
 
       <p
         className="text-6xl font-black mt-6 mb-1"
