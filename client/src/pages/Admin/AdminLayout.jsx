@@ -37,17 +37,8 @@ export default function AdminLayout() {
     refetchInterval: 30000,
   })
 
-  const { data: reportCounts = {} } = useQuery({
-    queryKey: ['admin', 'reports', 'counts'],
-    queryFn: async () => {
-      try { return await api.get('/reports?limit=1').then((r) => r.data.data?.stats || {}) }
-      catch { return {} }
-    },
-    refetchInterval: 60000,
-  })
-
   const moderationBadge = (modCounts.pending || 0) + (modCounts.flagged || 0)
-  const reportsBadge = reportCounts.pending || 0
+  const reportsBadge = 0
 
   return (
     <div className="flex min-h-screen" style={{ background: '#f5f4f1' }}>

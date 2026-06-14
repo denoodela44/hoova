@@ -24,17 +24,18 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// On 401: admin sessions never redirect to user login
+// On 401: only clear admin token for /admin/* endpoints; user routes redirect to login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      if (isAdminSession() || onAdminPage()) {
+      if (err.config?.url?.startsWith('/admin')) {
         localStorage.removeItem('hoova-admin-token')
-      } else {
+      } else if (!isAdminSession()) {
         localStorage.removeItem('hoova-auth')
         window.location.href = '/login'
       }
+      // 401 from non-admin endpoint during admin session → ignore, don't sign out
     }
     return Promise.reject(err)
   }
