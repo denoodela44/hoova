@@ -136,6 +136,18 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// POST /api/listings/impressions — batch impression tracking (fire-and-forget from frontend)
+router.post('/impressions', async (req, res) => {
+  const { ids } = req.body
+  if (!Array.isArray(ids) || ids.length === 0) return res.json({ success: true })
+  const validIds = ids.filter((id) => typeof id === 'string').slice(0, 50)
+  prisma.listing.updateMany({
+    where: { id: { in: validIds } },
+    data: { impressions_count: { increment: 1 } },
+  }).catch(() => {})
+  res.json({ success: true })
+})
+
 // POST /api/listings
 router.post('/', requireAuth, [
   body('title').trim().isLength({ min: 5, max: 100 }),

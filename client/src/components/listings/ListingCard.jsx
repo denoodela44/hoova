@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, MapPin, Star, ShieldCheck, Zap, Eye, ChevronLeft, ChevronRight, Gavel } from 'lucide-react'
 import { formatPrice, timeAgo } from '../../utils/format'
 import AuctionTimer from './AuctionTimer'
 import api from '../../services/api'
 import useAuthStore from '../../store/authStore'
+import { trackImpression } from '../../services/impressionTracker'
 
 function memberDuration(dateStr) {
   if (!dateStr) return null
@@ -62,8 +63,21 @@ export default function ListingCard({ listing, onSaveToggle }) {
   const isAuction  = listing.listing_type === 'auction'
   const auctionEnded = isAuction && new Date(listing.auction_end_at) <= new Date()
 
+  const cardRef = useRef(null)
+  useEffect(() => {
+    const el = cardRef.current
+    if (!el || !listing.id) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { trackImpression(listing.id); observer.disconnect() } },
+      { threshold: 0.5 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [listing.id])
+
   return (
     <Link
+      ref={cardRef}
       to={`/listing/${listing.id}`}
       onClick={handleLinkClick}
       className="group block overflow-hidden transition-all duration-200 hover:-translate-y-0.5"

@@ -107,6 +107,7 @@ model Listing {
   score            Float     @default(0)
   status           String    @default("pending") // pending | soft_live | active | sold | expired | rejected
   views_count      Int       @default(0)
+  impressions_count Int      @default(0)
   boost_tier       String?                       // featured | spotlight | top
   boost_ends_at    DateTime?
   search_vector    String?
