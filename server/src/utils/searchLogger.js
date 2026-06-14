@@ -1,5 +1,11 @@
 const prisma = require('./prisma')
 
+// In-memory dedup window: normalised query → timestamp of last log
+// Prevents the same term being counted multiple times from concurrent requests
+// (refetchOnWindowFocus, double-submit, etc.). Resets on server restart — fine.
+const recentSearchCache = new Map()
+const DEDUP_MS = 2 * 60 * 1000 // 2 minutes
+
 // ── Category auto-detection ────────────────────────────────────
 const CATEGORY_MAP = {
   vehicles:     ['car', 'toyota', 'honda', 'nissan', 'hyundai', 'kia', 'ford', 'mercedes', 'bmw', 'lexus', 'truck', 'suv', 'pickup', 'bus', 'motorbike', 'motorcycle', 'bike', 'tyre', 'engine', 'vehicle', 'corolla', 'highlander', 'prado', 'rav4', 'fortuner'],
@@ -52,6 +58,11 @@ async function logSearch(rawQuery, resultsCount, source = 'browse', userId = nul
   const normalised = normaliseQuery(q)
   const detectedCategory = categorySlug || detectCategory(normalised)
   const hasResults = resultsCount > 0
+
+  // Deduplication: atomic in-memory check (no await between get+set, so no race condition)
+  const lastLogged = recentSearchCache.get(normalised)
+  if (lastLogged && Date.now() - lastLogged < DEDUP_MS) return
+  recentSearchCache.set(normalised, Date.now())
 
   // 1. Raw log entry (every search, keeps full history)
   prisma.searchLog.create({

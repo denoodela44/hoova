@@ -100,7 +100,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `, ...values)
 
-    if (hasQuery && req.query.source !== 'autocomplete') {
+    // Only log on the first page and never for autocomplete keystrokes
+    if (hasQuery && req.query.source !== 'autocomplete' && Number(req.query.page || 1) <= 1) {
       logSearch(q.trim(), total, req.query.source || 'browse', req.userId || null, category || null)
     }
 

@@ -25,6 +25,8 @@ export default function Browse() {
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ['listings', 'browse', paramsKey],
     initialPageParam: 1,
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async ({ pageParam }) => {
       const p = new URLSearchParams(params)
       p.set('page', pageParam)
