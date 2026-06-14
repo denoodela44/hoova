@@ -15,8 +15,11 @@ router.post('/login', (req, res) => {
   if (adminAccessKey && accessKey !== adminAccessKey) {
     return res.status(404).json({ success: false, message: 'Not found' })
   }
-  if (!adminEmail || !adminPassword) {
-    return res.status(500).json({ success: false, message: 'Server misconfiguration' })
+  if (!adminEmail) {
+    return res.status(500).json({ success: false, message: 'ADMIN_EMAIL missing in Railway' })
+  }
+  if (!adminPassword) {
+    return res.status(500).json({ success: false, message: 'ADMIN_PASSWORD missing in Railway' })
   }
   if (email !== adminEmail || password !== adminPassword) {
     return res.status(401).json({ success: false, message: 'Invalid admin credentials' })
