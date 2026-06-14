@@ -4,62 +4,98 @@ const prisma = new PrismaClient()
 const CATEGORIES = [
   { name: 'Vehicles', slug: 'vehicles', children: [
     { name: 'Cars', slug: 'cars' },
-    { name: 'Motorcycles', slug: 'motorcycles' },
-    { name: 'Trucks & SUVs', slug: 'trucks-suvs' },
-    { name: 'Buses & Minivans', slug: 'buses-minivans' },
-    { name: 'Auto Parts', slug: 'auto-parts' },
+    { name: 'Motorcycles & Tricycles', slug: 'motorcycles-tricycles' },
+    { name: 'Trucks, Buses & Pickups', slug: 'trucks-buses-pickups' },
+    { name: 'Auto Parts & Accessories', slug: 'auto-parts' },
+  ]},
+  { name: 'Phones & Tablets', slug: 'phones-tablets', children: [
+    { name: 'Mobile Phones', slug: 'mobile-phones' },
+    { name: 'Tablets', slug: 'tablets' },
+    { name: 'Phone Accessories', slug: 'phone-accessories' },
+    { name: 'Airtime & Data', slug: 'airtime-data' },
   ]},
   { name: 'Electronics', slug: 'electronics', children: [
-    { name: 'Phones & Tablets', slug: 'phones-tablets' },
-    { name: 'Laptops & PCs', slug: 'laptops-pcs' },
+    { name: 'Computers & Laptops', slug: 'computers-laptops' },
     { name: 'TVs & Audio', slug: 'tvs-audio' },
-    { name: 'Cameras', slug: 'cameras' },
-    { name: 'Accessories', slug: 'electronics-accessories' },
+    { name: 'Cameras & Drones', slug: 'cameras-drones' },
+    { name: 'Gaming', slug: 'gaming' },
+    { name: 'Gadgets & Accessories', slug: 'gadgets-accessories' },
+  ]},
+  { name: 'Home & Appliances', slug: 'home-appliances', children: [
+    { name: 'Furniture', slug: 'furniture' },
+    { name: 'Kitchen Appliances', slug: 'kitchen-appliances' },
+    { name: 'Generators, Solar & Inverters', slug: 'generators-solar' },
+    { name: 'Air Conditioners & Fans', slug: 'ac-fans' },
+    { name: 'Home Decor', slug: 'home-decor' },
   ]},
   { name: 'Real Estate', slug: 'real-estate', children: [
     { name: 'Houses for Sale', slug: 'houses-sale' },
     { name: 'Houses for Rent', slug: 'houses-rent' },
     { name: 'Land & Plots', slug: 'land-plots' },
-    { name: 'Commercial Property', slug: 'commercial-property' },
+    { name: 'Commercial & Office Space', slug: 'commercial-property' },
     { name: 'Short Stay', slug: 'short-stay' },
   ]},
   { name: 'Fashion', slug: 'fashion', children: [
     { name: "Women's Clothing", slug: 'womens-clothing' },
     { name: "Men's Clothing", slug: 'mens-clothing' },
-    { name: 'Shoes', slug: 'shoes' },
+    { name: 'Shoes & Footwear', slug: 'shoes' },
     { name: 'Bags & Accessories', slug: 'bags-accessories' },
+    { name: 'Fabrics, Kente & Beads', slug: 'fabrics-kente' },
   ]},
-  { name: 'Jobs', slug: 'jobs', children: [
-    { name: 'Accounting & Finance', slug: 'accounting-finance' },
-    { name: 'IT & Software', slug: 'it-software' },
-    { name: 'Sales & Marketing', slug: 'sales-marketing' },
-    { name: 'Healthcare', slug: 'healthcare' },
-    { name: 'Education', slug: 'education' },
+  { name: 'Health & Beauty', slug: 'health-beauty', children: [
+    { name: 'Skincare & Cosmetics', slug: 'skincare-cosmetics' },
+    { name: 'Hair & Wigs', slug: 'hair-wigs' },
+    { name: 'Health & Medical', slug: 'health-medical' },
+    { name: 'Fitness Equipment', slug: 'fitness-equipment' },
+  ]},
+  { name: 'Babies & Kids', slug: 'babies-kids', children: [
+    { name: 'Clothing & Shoes', slug: 'kids-clothing' },
+    { name: 'Toys & Games', slug: 'toys-games' },
+    { name: 'Baby Gear & Strollers', slug: 'baby-gear' },
+    { name: 'Baby Care', slug: 'baby-care' },
+  ]},
+  { name: 'Building & Construction', slug: 'building-construction', children: [
+    { name: 'Building Materials', slug: 'building-materials' },
+    { name: 'Tools & Equipment', slug: 'tools-equipment' },
+    { name: 'Electrical & Plumbing', slug: 'electrical-plumbing' },
+    { name: 'Roofing & Finishing', slug: 'roofing-finishing' },
+  ]},
+  { name: 'Agriculture & Farming', slug: 'agriculture', children: [
+    { name: 'Farm Produce', slug: 'farm-produce' },
+    { name: 'Livestock & Poultry', slug: 'livestock-poultry' },
+    { name: 'Farm Equipment', slug: 'farm-equipment' },
+    { name: 'Seeds & Fertilizers', slug: 'seeds-fertilizers' },
   ]},
   { name: 'Services', slug: 'services', children: [
-    { name: 'Home Services', slug: 'home-services' },
-    { name: 'Professional Services', slug: 'professional-services' },
+    { name: 'Home Repair & Maintenance', slug: 'home-repair' },
+    { name: 'Cleaning & Fumigation', slug: 'cleaning' },
     { name: 'Beauty & Wellness', slug: 'beauty-wellness' },
     { name: 'Events & Photography', slug: 'events-photography' },
-    { name: 'Tutoring & Lessons', slug: 'tutoring-lessons' },
+    { name: 'Transport & Delivery', slug: 'transport-delivery' },
+    { name: 'Tutoring & Lessons', slug: 'tutoring' },
+    { name: 'Business Services', slug: 'business-services' },
   ]},
-  { name: 'Furniture', slug: 'furniture', children: [
-    { name: 'Living Room', slug: 'living-room' },
-    { name: 'Bedroom', slug: 'bedroom' },
-    { name: 'Office Furniture', slug: 'office-furniture' },
-    { name: 'Kitchen & Dining', slug: 'kitchen-dining' },
+  { name: 'Jobs', slug: 'jobs', children: [
+    { name: 'Full-Time Employment', slug: 'full-time' },
+    { name: 'Part-Time & Contract', slug: 'part-time' },
+    { name: 'Freelance & Remote', slug: 'freelance' },
+    { name: 'Internships & Apprenticeships', slug: 'internships' },
   ]},
-  { name: 'Agriculture', slug: 'agriculture', children: [
-    { name: 'Farm Produce', slug: 'farm-produce' },
-    { name: 'Farm Equipment', slug: 'farm-equipment' },
-    { name: 'Livestock', slug: 'livestock' },
+  { name: 'Sports & Leisure', slug: 'sports', children: [
+    { name: 'Sports Equipment', slug: 'sports-equipment' },
+    { name: 'Musical Instruments', slug: 'musical-instruments' },
+    { name: 'Hobbies & Arts', slug: 'hobbies-arts' },
   ]},
-  { name: 'Sports', slug: 'sports' },
-  { name: 'Books & Education', slug: 'books' },
-  { name: 'Babies & Kids', slug: 'babies' },
-  { name: 'Health & Beauty', slug: 'health' },
-  { name: 'Pets', slug: 'pets' },
-  { name: 'Food & Drinks', slug: 'food' },
+  { name: 'Animals & Pets', slug: 'pets', children: [
+    { name: 'Dogs & Cats', slug: 'dogs-cats' },
+    { name: 'Birds & Exotic', slug: 'birds-exotic' },
+    { name: 'Pet Accessories & Food', slug: 'pet-accessories' },
+  ]},
+  { name: 'Food & Drinks', slug: 'food', children: [
+    { name: 'Packaged Food', slug: 'packaged-food' },
+    { name: 'Fresh & Local Produce', slug: 'fresh-produce' },
+    { name: 'Drinks & Beverages', slug: 'drinks' },
+  ]},
   { name: 'Other', slug: 'other' },
 ]
 
@@ -102,11 +138,16 @@ async function main() {
   await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS listings_title_trgm ON listings USING gin (title gin_trgm_ops)')
   await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS listings_desc_trgm ON listings USING gin (description gin_trgm_ops)')
 
+  // Remove old parent slugs that have been restructured or renamed
+  await prisma.category.deleteMany({
+    where: { slug: { in: ['books', 'babies', 'health', 'laptops-pcs', 'cameras', 'electronics-accessories', 'motorcycles', 'trucks-suvs', 'buses-minivans', 'accounting-finance', 'it-software', 'sales-marketing', 'healthcare', 'education', 'home-services', 'professional-services', 'tutoring-lessons', 'living-room', 'bedroom', 'office-furniture', 'kitchen-dining', 'livestock'] } }
+  )
+
   // Categories
   for (const cat of CATEGORIES) {
     const parent = await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: { name: cat.name, icon_name: null },
+      update: { name: cat.name, icon_name: null, parent_id: null },
       create: { name: cat.name, slug: cat.slug },
     })
 

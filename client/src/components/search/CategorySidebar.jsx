@@ -8,14 +8,21 @@ import { getCategoryStyle } from '../../utils/categoryStyles'
 
 // Subcategories shown on hover/expand
 const SUBCATEGORIES = {
-  vehicles:     ['Cars', 'Motorcycles', 'Trucks & SUVs', 'Buses & Minivans', 'Auto Parts'],
-  electronics:  ['Phones & Tablets', 'Laptops & PCs', 'TVs & Audio', 'Cameras', 'Accessories'],
-  'real-estate':['Houses for Sale', 'Houses for Rent', 'Land & Plots', 'Commercial', 'Short Stay'],
-  fashion:      ["Women's Clothing", "Men's Clothing", 'Shoes', 'Bags & Accessories'],
-  jobs:         ['Accounting', 'IT & Software', 'Sales', 'Healthcare', 'Education'],
-  services:     ['Home Services', 'Professional', 'Beauty & Wellness', 'Events', 'Tutoring'],
-  furniture:    ['Living Room', 'Bedroom', 'Office', 'Kitchen & Dining'],
-  agriculture:  ['Farm Produce', 'Equipment', 'Livestock'],
+  vehicles:              ['Cars', 'Motorcycles & Tricycles', 'Trucks, Buses & Pickups', 'Auto Parts & Accessories'],
+  'phones-tablets':      ['Mobile Phones', 'Tablets', 'Phone Accessories', 'Airtime & Data'],
+  electronics:           ['Computers & Laptops', 'TVs & Audio', 'Cameras & Drones', 'Gaming', 'Gadgets & Accessories'],
+  'home-appliances':     ['Furniture', 'Kitchen Appliances', 'Generators, Solar & Inverters', 'Air Conditioners & Fans', 'Home Decor'],
+  'real-estate':         ['Houses for Sale', 'Houses for Rent', 'Land & Plots', 'Commercial & Office Space', 'Short Stay'],
+  fashion:               ["Women's Clothing", "Men's Clothing", 'Shoes & Footwear', 'Bags & Accessories', 'Fabrics, Kente & Beads'],
+  'health-beauty':       ['Skincare & Cosmetics', 'Hair & Wigs', 'Health & Medical', 'Fitness Equipment'],
+  'babies-kids':         ['Clothing & Shoes', 'Toys & Games', 'Baby Gear & Strollers', 'Baby Care'],
+  'building-construction': ['Building Materials', 'Tools & Equipment', 'Electrical & Plumbing', 'Roofing & Finishing'],
+  agriculture:           ['Farm Produce', 'Livestock & Poultry', 'Farm Equipment', 'Seeds & Fertilizers'],
+  services:              ['Home Repair & Maintenance', 'Cleaning & Fumigation', 'Events & Photography', 'Transport & Delivery', 'Tutoring & Lessons', 'Business Services'],
+  jobs:                  ['Full-Time Employment', 'Part-Time & Contract', 'Freelance & Remote', 'Internships & Apprenticeships'],
+  sports:                ['Sports Equipment', 'Musical Instruments', 'Hobbies & Arts'],
+  pets:                  ['Dogs & Cats', 'Birds & Exotic', 'Pet Accessories & Food'],
+  food:                  ['Packaged Food', 'Fresh & Local Produce', 'Drinks & Beverages'],
 }
 
 export default function CategorySidebar() {
