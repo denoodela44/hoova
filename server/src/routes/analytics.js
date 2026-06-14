@@ -133,6 +133,8 @@ router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
       topTerms,
       zeroResultsCount,
       verifiedSellers,
+      recentUsers,
+      recentListings,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { created_at: { gte: today } } }),
@@ -150,6 +152,23 @@ router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
       prisma.searchTrend.count({ where: { zero_results_count: { gt: 0 } } }),
 
       prisma.user.count({ where: { id_verified: true } }),
+
+      prisma.user.findMany({
+        orderBy: { created_at: 'desc' },
+        take: 8,
+        select: { id: true, name: true, email: true, avatar: true, subscription_tier: true, id_verified: true, created_at: true },
+      }),
+
+      prisma.listing.findMany({
+        orderBy: { created_at: 'desc' },
+        take: 8,
+        select: {
+          id: true, title: true, price: true, currency: true, status: true, created_at: true,
+          images: { take: 1, select: { url: true }, orderBy: { order: 'asc' } },
+          seller: { select: { id: true, name: true, avatar: true } },
+          category: { select: { name: true } },
+        },
+      }),
     ])
 
     // New users per day for the last 14 days
@@ -174,6 +193,8 @@ router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
         users: { total: totalUsers, today: newUsersToday, week: newUsersWeek, verified: verifiedSellers, trend: newUsersTrend },
         listings: { total: totalListings, active: activeListings, today: newListingsToday, week: newListingsWeek, trend: newListingsTrend },
         searches: { month: totalSearches, today: searchesToday, top: topTerms, zero_results_gaps: zeroResultsCount },
+        recent_users: recentUsers,
+        recent_listings: recentListings,
       },
     })
   } catch (err) { next(err) }
