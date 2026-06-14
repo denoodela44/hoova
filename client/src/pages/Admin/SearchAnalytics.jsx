@@ -168,6 +168,8 @@ export default function SearchAnalytics() {
   const [titleInput, setTitleInput] = useState('')
   const [expanded, setExpanded] = useState(null)
   const [clearing, setClearing] = useState(false)
+  const [recategorizing, setRecategorizing] = useState(false)
+  const [recatResult, setRecatResult] = useState(null)
   const queryClient = useQueryClient()
 
   const handleClearAll = async () => {
@@ -178,6 +180,20 @@ export default function SearchAnalytics() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'search-live'] })
     } finally {
       setClearing(false)
+    }
+  }
+
+  const handleRecategorize = async () => {
+    setRecategorizing(true)
+    setRecatResult(null)
+    try {
+      const res = await api.post('/analytics/searches/recategorize')
+      setRecatResult(res.data)
+      queryClient.invalidateQueries({ queryKey: ['admin', 'search-live'] })
+    } catch (err) {
+      setRecatResult({ error: err.response?.data?.error || 'Failed' })
+    } finally {
+      setRecategorizing(false)
     }
   }
 
@@ -352,6 +368,14 @@ export default function SearchAnalytics() {
                   ↓ Export CSV
                 </button>
                 <button
+                  onClick={handleRecategorize}
+                  disabled={recategorizing || !terms.length}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
+                  style={{ background: '#f3e8ff', color: '#7e22ce' }}>
+                  <Sparkles className="w-3 h-3" />
+                  {recategorizing ? 'Categorizing…' : 'AI Categorize'}
+                </button>
+                <button
                   onClick={handleClearAll}
                   disabled={clearing || !terms.length}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
@@ -360,6 +384,17 @@ export default function SearchAnalytics() {
                   {clearing ? 'Clearing…' : 'Clear All'}
                 </button>
               </div>
+              {recatResult && (
+                <div className="px-4 pb-2">
+                  {recatResult.error ? (
+                    <p className="text-[10px] text-red-500 font-medium">{recatResult.error}</p>
+                  ) : (
+                    <p className="text-[10px] font-medium" style={{ color: '#7e22ce' }}>
+                      ✓ {recatResult.categorized} terms categorized · {recatResult.skipped} skipped · {recatResult.total} total
+                    </p>
+                  )}
+                </div>
+              )}
 
               {!liveData ? (
                 <div className="flex items-center justify-center h-32">

@@ -118,6 +118,102 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// POST /api/analytics/searches/recategorize — AI batch categorization (admin)
+router.post('/searches/recategorize', requireAdminToken, async (req, res, next) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(400).json({ success: false, error: 'ANTHROPIC_API_KEY not set in environment' })
+    }
+
+    const Anthropic = require('@anthropic-ai/sdk')
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const VALID_SLUGS = [
+      'vehicles', 'phones-tablets', 'electronics', 'home-appliances',
+      'real-estate', 'fashion', 'health-beauty', 'babies-kids',
+      'building-construction', 'agriculture', 'services', 'jobs',
+      'sports', 'pets', 'food', 'other',
+    ]
+
+    // Fetch uncategorized terms, highest volume first
+    const uncategorized = await prisma.searchTrend.findMany({
+      where: { category_slug: null },
+      select: { query: true, count: true },
+      orderBy: { count: 'desc' },
+      take: 500,
+    })
+
+    if (uncategorized.length === 0) {
+      return res.json({ success: true, categorized: 0, skipped: 0, total: 0 })
+    }
+
+    const BATCH_SIZE = 80
+    let categorized = 0
+    let skipped = 0
+
+    for (let i = 0; i < uncategorized.length; i += BATCH_SIZE) {
+      const batch = uncategorized.slice(i, i + BATCH_SIZE)
+      const terms = batch.map((t) => t.query)
+
+      try {
+        const message = await client.messages.create({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: `You are classifying search terms from a Ghanaian online marketplace (like Jiji.com.gh).
+
+Classify each term into exactly one category slug from this list:
+vehicles — cars, trucks, motorcycles, tricycles, tuk-tuks, auto parts
+phones-tablets — mobile phones, tablets, phone accessories, airtime, data bundles, SIM
+electronics — laptops, computers, TVs, cameras, gaming, drones, gadgets, speakers
+home-appliances — furniture, generators, solar/inverter, fridges, ACs, washing machines, fans, home decor
+real-estate — houses, apartments, land, plots, rent, short stay, commercial space, office
+fashion — clothing, shoes, bags, kente, fabrics, wax print, beads, jewellery
+health-beauty — skincare, cosmetics, hair, wigs, weaves, medical equipment, pharmacy, gym equipment
+babies-kids — baby clothing, toys, strollers, prams, diapers, nursery items, baby food
+building-construction — cement, sand, roofing, tiles, iron rods, tools, plumbing, electrical supplies, paint
+agriculture — farm produce, livestock, poultry, fish, tractors, fertilizers, seeds, cocoa, cassava
+services — repairs, cleaning, fumigation, photography, tutoring, delivery, catering, events, DJ
+jobs — employment, vacancies, hiring, internships, freelance, CVs, part-time
+sports — sports equipment, musical instruments, hobbies, arts and crafts, bicycles
+pets — dogs, cats, birds, fish tanks, pet food, pet accessories
+food — packaged food, fresh produce, drinks, beverages, snacks, cooking ingredients
+other — anything that does not fit the above
+
+Search terms (one per line):
+${terms.map((t, i) => `${i + 1}. ${t}`).join('\n')}
+
+Reply with ONLY a valid JSON object. Keys are the exact search terms, values are category slugs.
+Example: {"toyota corolla": "vehicles", "iphone 15 pro": "phones-tablets"}`,
+          }],
+        })
+
+        const text = message.content[0]?.text || ''
+        const jsonMatch = text.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) { skipped += batch.length; continue }
+
+        let mapping
+        try { mapping = JSON.parse(jsonMatch[0]) } catch { skipped += batch.length; continue }
+
+        for (const [query, slug] of Object.entries(mapping)) {
+          if (!VALID_SLUGS.includes(slug)) continue
+          const result = await prisma.searchTrend.updateMany({
+            where: { query, category_slug: null },
+            data: { category_slug: slug },
+          })
+          categorized += result.count
+        }
+      } catch (batchErr) {
+        console.error('[recategorize] batch error:', batchErr.message)
+        skipped += batch.length
+      }
+    }
+
+    res.json({ success: true, categorized, skipped, total: uncategorized.length })
+  } catch (err) { next(err) }
+})
+
 // DELETE /api/analytics/searches — wipe all search logs and trends (admin)
 router.delete('/searches', requireAdminToken, async (req, res, next) => {
   try {
