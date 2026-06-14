@@ -4,34 +4,28 @@ const jwt = require('jsonwebtoken')
 const { requireAdminToken, ADMIN_JWT_SECRET } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
 
-// Temporary debug — lists ADMIN_* env var names (not values)
-router.get('/env-debug', (_req, res) => {
-  const adminKeys = Object.keys(process.env).filter(k => k.startsWith('ADMIN'))
-  res.json({ found: adminKeys, nodeEnv: process.env.NODE_ENV })
-})
-
 // POST /api/admin/login — standalone admin login
 router.post('/login', (req, res) => {
   const { email, password, accessKey } = req.body
+  const adminAccessKey = process.env.ADMIN_ACCESS_KEY
+  const adminEmail     = process.env.ADMIN_EMAIL
+  const adminPassword  = process.env.ADMIN_PASSWORD
 
-  const adminAccessKey = process.env.ADMIN_ACCESS_KEY || 'hoova-admin-fallback-key-2024'
-  const adminEmail    = process.env.ADMIN_EMAIL    || null
-  const adminPassword = process.env.ADMIN_PASSWORD || null
+  if (!adminAccessKey || !adminEmail || !adminPassword) {
+    return res.status(500).json({ success: false, message: 'Admin credentials not configured' })
+  }
 
-  // Wrong access key → 404
+  // Wrong access key → 404, not 401 (don't reveal admin exists)
   if (accessKey !== adminAccessKey) {
     return res.status(404).json({ success: false, message: 'Not found' })
   }
 
-  // If ADMIN_EMAIL + ADMIN_PASSWORD are configured, verify them too
-  if (adminEmail && adminPassword) {
-    if (email !== adminEmail || password !== adminPassword) {
-      return res.status(401).json({ success: false, message: 'Invalid admin credentials' })
-    }
+  if (email !== adminEmail || password !== adminPassword) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' })
   }
 
-  const token = jwt.sign({ role: 'admin', email: email || 'admin' }, ADMIN_JWT_SECRET, { expiresIn: '12h' })
-  res.json({ success: true, data: { token, email: email || 'admin' } })
+  const token = jwt.sign({ role: 'admin', email }, ADMIN_JWT_SECRET, { expiresIn: '12h' })
+  res.json({ success: true, data: { token, email } })
 })
 
 router.use(requireAdminToken)

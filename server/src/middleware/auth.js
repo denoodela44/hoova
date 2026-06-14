@@ -42,7 +42,7 @@ function requireAdmin(req, res, next) {
   next()
 }
 
-const ADMIN_JWT_SECRET = process.env.ADMIN_SECRET || 'hoova-admin-secret-fallback-2024'
+const ADMIN_JWT_SECRET = process.env.ADMIN_SECRET || 'f8Kx2#mQ9pL$vR4nWjYt6bZ@cE1hA3dU'
 
 function requireAdminToken(req, res, next) {
   const header = req.headers.authorization
