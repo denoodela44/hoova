@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken')
 const { requireAdminToken, ADMIN_JWT_SECRET } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
 
+// Temporary debug — lists ADMIN_* env var names (not values)
+router.get('/env-debug', (_req, res) => {
+  const adminKeys = Object.keys(process.env).filter(k => k.startsWith('ADMIN'))
+  res.json({ found: adminKeys, nodeEnv: process.env.NODE_ENV })
+})
+
 // POST /api/admin/login — standalone admin login, no user account needed
 router.post('/login', (req, res) => {
   const { email, password, accessKey } = req.body
