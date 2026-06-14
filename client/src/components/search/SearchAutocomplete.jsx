@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, TrendingUp, Tag, X, ArrowUpRight, Clock } from 'lucide-react'
+import { Search, TrendingUp, Tag, X, ArrowUpRight, Clock, MapPin, ChevronDown } from 'lucide-react'
 import { MOCK_LISTINGS, MOCK_CATEGORIES } from '../../mocks/data'
 import { formatPrice } from '../../utils/format'
 import api from '../../services/api'
@@ -8,6 +8,11 @@ import { getCategoryStyle } from '../../utils/categoryStyles'
 
 const POPULAR = ['iPhone 15', 'Toyota Corolla', 'Laptop', '2 bedroom house', 'Generator', 'Samsung TV', 'Land for sale', 'PS5']
 const HISTORY_KEY = 'hoova-search-history'
+
+const CITIES = [
+  'Accra', 'Kumasi', 'Takoradi', 'Tamale', 'Cape Coast',
+  'Tema', 'Sekondi', 'Koforidua', 'Ho', 'Bolgatanga', 'Wa', 'Sunyani',
+]
 
 function logSearch(query, results_count, source) {
   api.post('/analytics/search', { query, results_count, source }).catch(() => {})
@@ -31,21 +36,21 @@ function useDebounce(value, delay = 180) {
   return debounced
 }
 
-async function queryResults(q) {
+async function queryResults(q, city = '') {
   try {
-    const res = await api.get(`/listings?q=${encodeURIComponent(q)}&limit=5`)
+    const params = new URLSearchParams({ q, limit: 5 })
+    if (city) params.set('city', city)
+    const res = await api.get(`/search?${params}`)
     return res.data.data || []
   } catch {
-    return MOCK_LISTINGS.filter((l) =>
-      l.title.toLowerCase().includes(q.toLowerCase()) ||
-      l.description?.toLowerCase().includes(q.toLowerCase())
-    ).slice(0, 5)
+    return []
   }
 }
 
 export default function SearchAutocomplete({ large = false, placeholder = 'What are you looking for?', source = 'hero' }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [location, setLocation] = useState('')
   const [open, setOpen] = useState(false)
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -66,8 +71,8 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
   useEffect(() => {
     if (!debouncedQuery.trim()) { setResults([]); setLoading(false); return }
     setLoading(true)
-    queryResults(debouncedQuery).then((r) => { setResults(r); setLoading(false) })
-  }, [debouncedQuery])
+    queryResults(debouncedQuery, location).then((r) => { setResults(r); setLoading(false) })
+  }, [debouncedQuery, location])
 
   useEffect(() => { setActiveIndex(-1) }, [results, open])
 
@@ -82,6 +87,10 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
     ...(query.trim() ? [] : POPULAR.map((p) => ({ type: 'popular', data: p }))),
   ]
 
+  const buildUrl = useCallback((base) => {
+    return location ? `${base}&city=${encodeURIComponent(location)}` : base
+  }, [location])
+
   const navigate_to = useCallback((item) => {
     if (item.type === 'listing') {
       logSearch(item.data.title, 1, source)
@@ -92,26 +101,29 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
     } else if (item.type === 'category') {
       logSearch(item.data.name, item.data.listing_count, source)
       setOpen(false); setQuery('')
-      navigate(`/browse?category=${item.data.slug}`)
+      navigate(buildUrl(`/browse?category=${item.data.slug}`))
     } else {
       const term = item.data
       logSearch(term, results.length, source)
       saveHistory(term)
       setHistory(getHistory())
       setOpen(false); setQuery(term)
-      navigate(`/browse?q=${encodeURIComponent(term)}`)
+      navigate(buildUrl(`/browse?q=${encodeURIComponent(term)}`))
     }
-  }, [navigate, results.length, source])
+  }, [navigate, results.length, source, buildUrl])
 
   const handleSubmit = (e) => {
     e?.preventDefault()
     if (activeIndex >= 0 && allItems[activeIndex]) { navigate_to(allItems[activeIndex]); return }
-    if (!query.trim()) return
+    if (!query.trim()) {
+      if (location) { navigate(`/browse?city=${encodeURIComponent(location)}`); setOpen(false) }
+      return
+    }
     logSearch(query.trim(), results.length, source)
     saveHistory(query.trim())
     setHistory(getHistory())
     setOpen(false)
-    navigate(`/browse?q=${encodeURIComponent(query.trim())}`)
+    navigate(buildUrl(`/browse?q=${encodeURIComponent(query.trim())}`))
   }
 
   const handleKeyDown = (e) => {
@@ -136,16 +148,17 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
       <div ref={containerRef} className="relative w-full">
         <form onSubmit={handleSubmit}>
           <div
-            className="flex items-center bg-white overflow-hidden"
+            className="flex items-center bg-white"
             style={{
-              borderRadius: 18,
-              boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
-              height: 60,
+              borderRadius: 14,
+              boxShadow: '0 4px 32px rgba(0,0,0,0.14), 0 1px 6px rgba(0,0,0,0.08)',
+              height: 56,
+              overflow: 'hidden',
             }}
           >
-            {/* Search icon — rose, bold, left-padded */}
-            <div className="flex items-center justify-center pl-5 pr-2 shrink-0">
-              <Search className="w-[22px] h-[22px]" style={{ color: '#B81365' }} strokeWidth={2.5} />
+            {/* Search icon */}
+            <div className="flex items-center pl-4 pr-2 shrink-0">
+              <Search className="w-5 h-5" style={{ color: '#B81365' }} strokeWidth={2.5} />
             </div>
 
             {/* Input */}
@@ -156,36 +169,57 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
               onFocus={() => setOpen(true)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className="flex-1 h-full text-[15px] text-gray-800 bg-transparent outline-none focus:ring-0 placeholder-gray-400 min-w-0 pr-2"
+              className="flex-1 h-full text-[15px] text-gray-800 bg-transparent outline-none placeholder-gray-400 min-w-0"
               autoComplete="off"
               spellCheck={false}
             />
 
-            {/* Clear button */}
+            {/* Clear */}
             {query && (
               <button
                 type="button"
                 onClick={() => { setQuery(''); setResults([]); inputRef.current?.focus() }}
-                className="text-gray-300 hover:text-gray-500 transition-colors shrink-0 pr-3"
+                className="text-gray-300 hover:text-gray-500 transition-colors px-2 shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
 
-            {/* Separator */}
-            <div className="w-px h-8 shrink-0" style={{ background: '#e5e7eb' }} />
+            {/* Divider */}
+            <div className="w-px h-7 shrink-0 bg-gray-200 mx-1" />
 
-            {/* Search CTA button — flush right, full height */}
+            {/* Location picker */}
+            <div className="relative flex items-center gap-1.5 px-3 shrink-0">
+              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: '#B81365' }} />
+              <select
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                style={{
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  appearance: 'none',
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#374151',
+                  cursor: 'pointer',
+                  paddingRight: '1.25rem',
+                  maxWidth: 108,
+                }}
+              >
+                <option value="">Anywhere</option>
+                {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <ChevronDown className="w-3 h-3 text-gray-400 absolute right-3 pointer-events-none" />
+            </div>
+
+            {/* Search button */}
             <button
               type="submit"
-              className="flex items-center gap-2 text-white font-bold text-[15px] px-7 h-full shrink-0 transition-all active:opacity-90"
-              style={{
-                background: 'linear-gradient(135deg, #c4156e 0%, #B81365 100%)',
-                borderRadius: '0 18px 18px 0',
-                letterSpacing: '-0.01em',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #a01058 0%, #9e1057 100%)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #c4156e 0%, #B81365 100%)'}
+              className="h-full px-7 text-white font-bold text-[15px] shrink-0 transition-opacity active:opacity-90 hover:opacity-90"
+              style={{ background: '#B81365' }}
             >
               Search
             </button>
