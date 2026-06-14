@@ -94,6 +94,9 @@ export default function Navbar() {
                     className="w-8 h-8 rounded-full object-cover"
                     style={{ border: '2px solid rgba(255,255,255,0.25)' }}
                   />
+                  <span className="hidden sm:block text-sm font-semibold text-white leading-none">
+                    {user?.name?.split(' ')[0] || 'Me'}
+                  </span>
                   <ChevronDown
                     className="w-3.5 h-3.5 text-white/60 transition-transform duration-150"
                     style={{ transform: profileOpen ? 'rotate(180deg)' : 'rotate(0)' }}

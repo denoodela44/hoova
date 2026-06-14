@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, Plus, TrendingDown, Zap } from 'lucide-react'
+import { ArrowRight, Plus, TrendingDown, Zap, Heart, LayoutDashboard, MessageSquare } from 'lucide-react'
 import api from '../services/api'
+import useAuthStore from '../store/authStore'
 import ListingCard from '../components/listings/ListingCard'
 import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
 import CategoryNav from '../components/search/CategoryNav'
@@ -52,6 +53,9 @@ const LISTING_TABS = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('')
+  const { user, isLoggedIn } = useAuthStore()
+  const firstName = user?.name?.split(' ')[0] || 'there'
+  const loggedIn = isLoggedIn()
 
   const { data: featured, isLoading: featuredLoading } = useQuery({
     queryKey: ['listings', 'featured'],
@@ -93,34 +97,95 @@ export default function Home() {
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section style={{ background: '#B81365' }}>
-        <div className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <h1
-            className="text-white mb-4"
-            style={{ fontFamily: "'Poppins', sans-serif", fontSize: '3rem', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em' }}
-          >
-            Buy &amp; Sell<br />
-            <span style={{ color: '#fff', opacity: 0.85 }}>Anything in Ghana</span>
-          </h1>
-          <p className="text-pink-100 mb-8 max-w-sm mx-auto" style={{ fontSize: 16, lineHeight: 1.6 }}>
-            No cap — Ghana's best deals are right here. Cars, phones, houses, fashion. Verified sellers only, fr fr.
-          </p>
-          <div className="max-w-lg mx-auto">
-            <SearchAutocomplete large placeholder="Search for cars, phones, houses…" />
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              <span className="text-pink-200 text-xs font-medium shrink-0">Popular right now:</span>
-              {trendingTerms.map((term) => (
-                <Link
-                  key={term}
-                  to={`/browse?q=${encodeURIComponent(term)}`}
-                  className="text-xs font-medium px-3 py-1 rounded-full transition-all duration-150 hover:bg-white hover:text-[#B81365]"
-                  style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
-                >
-                  {term}
-                </Link>
-              ))}
+        {loggedIn ? (
+          <div className="max-w-2xl mx-auto px-6 py-10 sm:py-14">
+            {/* Personalized greeting */}
+            <div className="flex items-center gap-3 mb-6">
+              <img
+                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&size=56&background=F8C0C8&color=B81365&bold=true`}
+                alt={user?.name}
+                className="w-12 h-12 rounded-full object-cover shrink-0"
+                style={{ border: '2px solid rgba(255,255,255,0.3)' }}
+              />
+              <div>
+                <p className="text-pink-200 text-sm font-medium">Welcome back 👋</p>
+                <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  Hey, {firstName}!
+                </h1>
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="max-w-lg mb-5">
+              <SearchAutocomplete large placeholder="What are you looking for today?" />
+            </div>
+
+            {/* Quick actions */}
+            <div className="flex flex-wrap gap-2">
+              <Link
+                to="/post"
+                className="inline-flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl transition-all hover:opacity-90 active:scale-95"
+                style={{ background: '#fff', color: '#B81365' }}
+              >
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
+                Post an Ad
+              </Link>
+              <Link
+                to="/saved"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-90"
+                style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
+              >
+                <Heart className="w-4 h-4" />
+                Saved
+              </Link>
+              <Link
+                to="/messages"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-90"
+                style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
+              >
+                <MessageSquare className="w-4 h-4" />
+                Messages
+              </Link>
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-90"
+                style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="max-w-2xl mx-auto px-6 py-20 text-center">
+            <h1
+              className="text-white mb-4"
+              style={{ fontFamily: "'Poppins', sans-serif", fontSize: '3rem', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em' }}
+            >
+              Buy &amp; Sell<br />
+              <span style={{ color: '#fff', opacity: 0.85 }}>Anything in Ghana</span>
+            </h1>
+            <p className="text-pink-100 mb-8 max-w-sm mx-auto" style={{ fontSize: 16, lineHeight: 1.6 }}>
+              No cap — Ghana's best deals are right here. Cars, phones, houses, fashion. Verified sellers only, fr fr.
+            </p>
+            <div className="max-w-lg mx-auto">
+              <SearchAutocomplete large placeholder="Search for cars, phones, houses…" />
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <span className="text-pink-200 text-xs font-medium shrink-0">Popular right now:</span>
+                {trendingTerms.map((term) => (
+                  <Link
+                    key={term}
+                    to={`/browse?q=${encodeURIComponent(term)}`}
+                    className="text-xs font-medium px-3 py-1 rounded-full transition-all duration-150 hover:bg-white hover:text-[#B81365]"
+                    style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
+                  >
+                    {term}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── CATEGORY NAV ─────────────────────────────────────────── */}
