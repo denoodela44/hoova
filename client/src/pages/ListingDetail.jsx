@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import api from '../services/api'
 import useAuthStore from '../store/authStore'
-import { formatPrice, timeAgo } from '../utils/format'
+import { formatPrice, formatNumber, timeAgo } from '../utils/format'
 import { MOCK_LISTINGS, MOCK_AUCTION_LISTINGS, filterMockListings } from '../mocks/data'
 import { ListingSEO } from '../components/seo/SEO'
 import AuctionPanel from '../components/listings/AuctionPanel'
@@ -266,14 +266,18 @@ export default function ListingDetail() {
                     {listing.bid_count > 0 ? 'Current bid' : 'Starting bid'}
                   </p>
                   <p className="text-3xl font-black" style={{ color: '#B81365', fontFamily: "'Poppins', sans-serif" }}>
-                    {formatPrice(listing.current_bid || listing.starting_bid || listing.price)}
+                    <span style={{ fontSize: '0.55em', verticalAlign: '0.3em', fontWeight: 'inherit', letterSpacing: '0.02em' }}>GH₵</span>
+                    {formatNumber(listing.current_bid || listing.starting_bid || listing.price)}
                   </p>
                   {listing.bid_count > 0 && (
                     <p className="text-xs text-gray-400 mt-0.5">{listing.bid_count} bid{listing.bid_count !== 1 ? 's' : ''}</p>
                   )}
                 </div>
               ) : (
-                <p className="text-3xl font-black text-gray-900">{formatPrice(listing.price)}</p>
+                <p className="text-3xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  <span style={{ fontSize: '0.55em', verticalAlign: '0.3em', fontWeight: 'inherit', letterSpacing: '0.02em' }}>GH₵</span>
+                  {formatNumber(listing.price)}
+                </p>
               )}
               {listing.condition && (
                 <span className="badge badge-new">
@@ -501,7 +505,10 @@ export default function ListingDetail() {
       {/* ── Sticky mobile CTA ─────────────────────────────── */}
       {!isSeller && !isAuction && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-lg flex gap-3 z-40">
-          <p className="font-black text-lg flex-1">{formatPrice(listing.price)}</p>
+          <p className="font-black text-lg flex-1" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <span style={{ fontSize: '0.6em', verticalAlign: '0.25em', fontWeight: 'inherit' }}>GH₵</span>
+            {formatNumber(listing.price)}
+          </p>
           {listing.negotiable && (
             <button
               onClick={() => setShowOffer(true)}

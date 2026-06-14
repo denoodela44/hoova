@@ -8,6 +8,14 @@ export function formatPrice(amount, currency = 'GHS') {
   }).format(amount)
 }
 
+export function formatNumber(amount) {
+  if (amount == null) return ''
+  return new Intl.NumberFormat('en-GH', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
 export function timeAgo(dateStr) {
   const now = Date.now()
   const then = new Date(dateStr).getTime()
