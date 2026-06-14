@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Search, TrendingUp, TrendingDown, AlertCircle, BarChart2,
   ArrowUpRight, Hash, Flame, Clock, Tag, Minus, Target,
   Lightbulb, DollarSign, MapPin, Zap, CheckCircle, Bell,
   BookOpen, Sparkles, ShoppingBag, ChevronDown, ChevronUp,
-  Database, XCircle,
+  Database, XCircle, Trash2,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -167,6 +167,19 @@ export default function SearchAnalytics() {
   const [sigShowFilters, setSigShowFilters] = useState(false)
   const [titleInput, setTitleInput] = useState('')
   const [expanded, setExpanded] = useState(null)
+  const [clearing, setClearing] = useState(false)
+  const queryClient = useQueryClient()
+
+  const handleClearAll = async () => {
+    if (!window.confirm('Clear ALL search logs and trends? This cannot be undone.')) return
+    setClearing(true)
+    try {
+      await api.delete('/analytics/searches')
+      queryClient.invalidateQueries({ queryKey: ['admin', 'search-live'] })
+    } finally {
+      setClearing(false)
+    }
+  }
 
   // Live stats from the DB — real searches users made on the platform
   const { data: liveData } = useQuery({
@@ -337,6 +350,14 @@ export default function SearchAnalytics() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all ml-auto"
                   style={{ background: '#dcfce7', color: '#15803d' }}>
                   ↓ Export CSV
+                </button>
+                <button
+                  onClick={handleClearAll}
+                  disabled={clearing || !terms.length}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
+                  style={{ background: '#fee2e2', color: '#dc2626' }}>
+                  <Trash2 className="w-3 h-3" />
+                  {clearing ? 'Clearing…' : 'Clear All'}
                 </button>
               </div>
 

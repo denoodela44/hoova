@@ -118,6 +118,15 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// DELETE /api/analytics/searches — wipe all search logs and trends (admin)
+router.delete('/searches', requireAdminToken, async (req, res, next) => {
+  try {
+    await prisma.searchLog.deleteMany({})
+    await prisma.searchTrend.deleteMany({})
+    res.json({ success: true })
+  } catch (err) { next(err) }
+})
+
 // GET /api/analytics/searches/export — full CSV download (admin)
 router.get('/searches/export', requireAdminToken, async (req, res, next) => {
   try {
