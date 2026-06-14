@@ -13,50 +13,6 @@ import {
 } from 'recharts'
 import api from '../../services/api'
 
-const MOCK_STATS = {
-  total: 52400, active: 48200, pending: 134, sold: 4066,
-  flagged: 23, avg_price: 4820, views_total: 1284000,
-  new_today: 48,
-}
-
-const MOCK_CATEGORY_BREAKDOWN = [
-  { name: 'Vehicles',     count: 14200, color: '#B81365' },
-  { name: 'Electronics',  count: 11800, color: '#7e22ce' },
-  { name: 'Property',     count: 9400,  color: '#1d4ed8' },
-  { name: 'Phones',       count: 5800,  color: '#c2410c' },
-  { name: 'Fashion',      count: 6200,  color: '#854d0e' },
-  { name: 'Furniture',    count: 2700,  color: '#15803d' },
-  { name: 'Agriculture',  count: 1900,  color: '#0e7490' },
-  { name: 'Other',        count: 3100,  color: '#6b7280' },
-]
-
-const MOCK_TREND = Array.from({ length: 14 }, (_, i) => ({
-  day: new Date(Date.now() - (13 - i) * 86400000).toLocaleDateString('en-GH', { month: 'short', day: 'numeric' }),
-  listings: Math.floor(Math.random() * 80) + 20,
-}))
-
-const MOCK_LISTINGS = Array.from({ length: 20 }, (_, i) => ({
-  id: `l${i}`,
-  title: ['2019 Toyota Corolla LE', 'iPhone 15 Pro Max 256GB', '2-Bed Apt East Legon', 'Samsung 55" QLED', 'Honda Generator'][i % 5],
-  price: [28000, 6500, 3200, 4800, 2100][i % 5],
-  currency: 'GHS',
-  status: ['active', 'active', 'pending', 'sold', 'active'][i % 5],
-  boost_tier: [null, 'featured', null, null, 'spotlight'][i % 5],
-  is_flagged: i % 9 === 0,
-  views_count: Math.floor(Math.random() * 800 + 50),
-  saves_count: Math.floor(Math.random() * 40),
-  inquiries_count: Math.floor(Math.random() * 15),
-  created_at: new Date(Date.now() - i * 86400000 * 2).toISOString(),
-  images: [],
-  category: { name: ['Vehicles', 'Phones', 'Property', 'Electronics', 'Appliances'][i % 5] },
-  seller: {
-    id: `u${i}`,
-    name: ['Kwame Motors', 'TechHub GH', 'HomePro', 'ElectroCity', 'PowerZone'][i % 5],
-    email: `seller${i}@example.com`,
-    subscription_tier: ['free', 'pro', 'business', 'free', 'pro'][i % 5],
-    id_verified: i % 2 === 0,
-  },
-}))
 
 const STATUS_META = {
   active:    { label: 'Active',    bg: '#dcfce7', color: '#15803d' },
@@ -92,28 +48,24 @@ export default function AdminListings() {
   const [category, setCategory] = useState('')
   const [showAnalytics, setShowAnalytics] = useState(true)
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'listings', page, status, search, sort, category],
-    queryFn: async () => {
-      try {
-        const params = new URLSearchParams({ page, limit: 20, sort })
-        if (status !== 'all') params.set('status', status === 'flagged' ? 'all' : status)
-        if (status === 'flagged') params.set('flagged', 'true')
-        if (search) params.set('q', search)
-        if (category) params.set('category', category)
-        return await api.get(`/admin/listings?${params}`).then((r) => r.data.data)
-      } catch {
-        return { listings: MOCK_LISTINGS, total: 52400, page: 1, totalPages: 2620, stats: MOCK_STATS, category_breakdown: MOCK_CATEGORY_BREAKDOWN, trend: MOCK_TREND }
-      }
+    queryFn: () => {
+      const params = new URLSearchParams({ page, limit: 20, sort })
+      if (status !== 'all') params.set('status', status === 'flagged' ? 'all' : status)
+      if (status === 'flagged') params.set('flagged', 'true')
+      if (search) params.set('q', search)
+      if (category) params.set('category', category)
+      return api.get(`/admin/listings?${params}`).then((r) => r.data.data)
     },
     keepPreviousData: true,
   })
 
-  const listings          = data?.listings           || MOCK_LISTINGS
-  const stats             = data?.stats              || MOCK_STATS
+  const listings          = data?.listings           || []
+  const stats             = data?.stats              || {}
   const totalPages        = data?.totalPages         || 1
-  const categoryBreakdown = data?.category_breakdown || MOCK_CATEGORY_BREAKDOWN
-  const trend             = data?.trend              || MOCK_TREND
+  const categoryBreakdown = data?.category_breakdown || []
+  const trend             = data?.trend              || []
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: ({ id, status }) => api.patch(`/admin/listings/${id}`, { status }),
@@ -126,6 +78,12 @@ export default function AdminListings() {
   })
 
   const handleSearch = (e) => { e.preventDefault(); setSearch(q); setPage(1) }
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
 
   return (
     <div className="space-y-5 max-w-7xl">
@@ -258,7 +216,7 @@ export default function AdminListings() {
               className="px-3 py-2.5 rounded-xl text-xs font-semibold border focus:outline-none"
               style={{ border: '1px solid #e5e7eb', color: '#374151' }}>
               <option value="">All Categories</option>
-              {MOCK_CATEGORY_BREAKDOWN.map((c) => (
+              {categoryBreakdown.map((c) => (
                 <option key={c.name} value={c.name.toLowerCase()}>{c.name}</option>
               ))}
             </select>

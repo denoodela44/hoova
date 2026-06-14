@@ -21,17 +21,6 @@ const STATUS_META = {
   actioned:  { label: 'Actioned',  bg: '#dcfce7', color: '#15803d' },
 }
 
-const MOCK_REPORTS = Array.from({ length: 12 }, (_, i) => ({
-  id: `r${i}`,
-  reason: Object.keys(REASON_META)[i % 7],
-  description: ['Price seems too good to be true', 'Seller asked me to pay via crypto first', null, 'This item is clearly a replica'][i % 4],
-  status: ['pending', 'pending', 'reviewed', 'dismissed', 'actioned'][i % 5],
-  created_at: new Date(Date.now() - i * 86400000).toISOString(),
-  reporter: { id: `u${i}`, name: `User ${i + 1}`, email: `user${i}@example.com`, avatar: null },
-  listing: i % 2 === 0 ? { id: `l${i}`, title: ['iPhone 15 Pro', '2019 Toyota', 'HP Laptop', 'Sofa Set'][i % 4], status: 'active', images: [] } : null,
-  seller:  i % 2 !== 0 ? { id: `s${i}`, name: ['Kwame Motors', 'TechHub GH'][i % 2], avatar: null, email: `seller${i}@hoova.gh` } : null,
-}))
-
 const STATUS_FILTERS = ['all', 'pending', 'reviewed', 'dismissed', 'actioned']
 
 export default function AdminReports() {
@@ -40,27 +29,29 @@ export default function AdminReports() {
   const [status, setStatus] = useState('all')
   const [actionModal, setActionModal] = useState(null)
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'reports', page, status],
-    queryFn: async () => {
-      try {
-        const params = new URLSearchParams({ page, limit: 20 })
-        if (status !== 'all') params.set('status', status)
-        return await api.get(`/reports?${params}`).then((r) => r.data.data)
-      } catch {
-        return { reports: MOCK_REPORTS, total: 12, page: 1, totalPages: 1, stats: { pending: 7, reviewed: 2, dismissed: 2, actioned: 1 } }
-      }
+    queryFn: () => {
+      const params = new URLSearchParams({ page, limit: 20 })
+      if (status !== 'all') params.set('status', status)
+      return api.get(`/reports?${params}`).then((r) => r.data.data)
     },
   })
 
-  const reports    = data?.reports   || MOCK_REPORTS
-  const stats      = data?.stats     || { pending: 7, reviewed: 2, dismissed: 2, actioned: 1 }
+  const reports    = data?.reports    || []
+  const stats      = data?.stats      || {}
   const totalPages = data?.totalPages || 1
 
   const { mutate: updateReport } = useMutation({
     mutationFn: ({ id, ...patch }) => api.patch(`/reports/${id}`, patch),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'reports'] }); setActionModal(null) },
   })
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
 
   return (
     <div className="space-y-5 max-w-5xl">

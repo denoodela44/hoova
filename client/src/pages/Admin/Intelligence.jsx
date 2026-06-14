@@ -7,68 +7,26 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import api from '../../services/api'
 
-const MOCK = {
-  top_sellers: Array.from({ length: 10 }, (_, i) => ({
-    id: `u${i}`,
-    name: ['Kwame Motors', 'TechHub GH', 'HomePro Realty', 'ElectroCity', 'PowerZone GH', 'FashionVault', 'AutoParts GH', 'GadgetKing', 'FurniturePro', 'FreshFarm'][i],
-    store_slug: `store-${i}`,
-    subscription_tier: ['pro', 'business', 'pro', 'free', 'business', 'pro', 'free', 'pro', 'business', 'free'][i],
-    rating_avg: parseFloat((3.8 + Math.random() * 1.2).toFixed(1)),
-    review_count: Math.floor(Math.random() * 80 + 5),
-    listing_count: Math.floor(Math.random() * 120 + 10),
-    active_listings: Math.floor(Math.random() * 80 + 5),
-    total_views: Math.floor(Math.random() * 50000 + 2000),
-    id_verified: i % 2 === 0,
-    joined: new Date(Date.now() - i * 30 * 86400000).toISOString(),
-  })),
-  tier_breakdown: [
-    { tier: 'free', count: 4534 },
-    { tier: 'pro', count: 251 },
-    { tier: 'business', count: 36 },
-  ],
-  category_performance: [
-    { name: 'Vehicles',     listing_count: 14200 },
-    { name: 'Electronics',  listing_count: 11800 },
-    { name: 'Property',     listing_count: 9400 },
-    { name: 'Fashion',      listing_count: 6200 },
-    { name: 'Phones',       listing_count: 5800 },
-    { name: 'Appliances',   listing_count: 3100 },
-    { name: 'Furniture',    listing_count: 2700 },
-    { name: 'Agriculture',  listing_count: 1900 },
-  ],
-  recent_subscriptions: Array.from({ length: 5 }, (_, i) => ({
-    id: `s${i}`,
-    plan: ['pro', 'business', 'pro', 'pro', 'business'][i],
-    created_at: new Date(Date.now() - i * 86400000 * 3).toISOString(),
-    user: { id: `u${i}`, name: ['Kwame Motors', 'TechHub GH', 'HomePro', 'ElectroCity', 'PowerZone'][i], email: `seller${i}@example.com`, avatar: null },
-  })),
-  upsell_targets: Array.from({ length: 8 }, (_, i) => ({
-    id: `u${i + 10}`,
-    name: ['TrendyFashion', 'QuickSell GH', 'CarDeals', 'MobileMart', 'HomeDecor', 'FoodMart', 'SportZone', 'BeautyHub'][i],
-    email: `free${i}@example.com`,
-    avatar: null,
-    listing_count: [48, 44, 39, 35, 31, 28, 25, 21][i],
-    created_at: new Date(Date.now() - (i + 3) * 30 * 86400000).toISOString(),
-  })),
-}
 
 const TIER_COLORS = { free: '#9ca3af', pro: '#B81365', business: '#c2410c', admin: '#1d4ed8' }
 const CATEGORY_COLORS = ['#B81365', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16']
 
 export default function Intelligence() {
-  const { data = MOCK } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'intelligence'],
-    queryFn: async () => {
-      try {
-        return await api.get('/admin/intelligence').then((r) => r.data.data)
-      } catch { return MOCK }
-    },
+    queryFn: () => api.get('/admin/intelligence').then((r) => r.data.data),
     refetchInterval: 120000,
   })
 
-  const totalUsers = data.tier_breakdown.reduce((s, t) => s + t.count, 0)
-  const proRevenue = (data.tier_breakdown.find((t) => t.tier === 'pro')?.count || 0) * 50
-  const bizRevenue = (data.tier_breakdown.find((t) => t.tier === 'business')?.count || 0) * 150
+  if (isLoading || !data) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
+
+  const totalUsers = (data.tier_breakdown || []).reduce((s, t) => s + t.count, 0)
+  const proRevenue = (data.tier_breakdown?.find((t) => t.tier === 'pro')?.count || 0) * 50
+  const bizRevenue = (data.tier_breakdown?.find((t) => t.tier === 'business')?.count || 0) * 150
 
   return (
     <div className="space-y-6 max-w-6xl">

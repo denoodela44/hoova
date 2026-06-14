@@ -3,39 +3,21 @@ import { DollarSign, TrendingUp, Zap, Crown, ArrowUpRight } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import api from '../../services/api'
 
-const MOCK = {
-  mrr: 23450,
-  arr: 281400,
-  boost_revenue_total: 8900,
-  boost_revenue_month: 1240,
-  tier_breakdown: [
-    { tier: 'free',     count: 4534, revenue: 0 },
-    { tier: 'pro',      count: 251,  revenue: 12550 },
-    { tier: 'business', count: 60,   revenue: 9000 },
-  ],
-  recent_subscriptions: Array.from({ length: 8 }, (_, i) => ({
-    id: `s${i}`,
-    plan: ['pro', 'business', 'pro'][i % 3],
-    starts_at: new Date(Date.now() - i * 86400000 * 2).toISOString(),
-    user: { name: ['Kwame Motors', 'TechHub GH', 'HomePro', 'ElectroCity'][i % 4], email: `seller${i}@hoova.gh`, avatar: null },
-  })),
-  monthly_trend: [
-    { month: 'Jan 25', amount: 14200 }, { month: 'Feb 25', amount: 16800 },
-    { month: 'Mar 25', amount: 18500 }, { month: 'Apr 25', amount: 20100 },
-    { month: 'May 25', amount: 21900 }, { month: 'Jun 25', amount: 23450 },
-  ],
-}
 
 const TIER_COLORS = { free: '#9ca3af', pro: '#B81365', business: '#c2410c' }
 
 export default function Revenue() {
-  const { data = MOCK } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'revenue'],
-    queryFn: async () => {
-      try { return await api.get('/admin/revenue').then((r) => r.data.data) } catch { return MOCK }
-    },
+    queryFn: () => api.get('/admin/revenue').then((r) => r.data.data),
     refetchInterval: 120000,
   })
+
+  if (isLoading || !data) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
 
   const totalRevenue = (data.mrr || 0) + (data.boost_revenue_month || 0)
 

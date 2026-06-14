@@ -10,26 +10,6 @@ const TIER_META = {
   top:       { label: 'Top',       bg: '#fefce8', color: '#854d0e', price: 100 },
 }
 
-const MOCK_STATS = { active_now: 34, by_tier: [
-  { tier: 'featured',  count: 18, revenue: 540  },
-  { tier: 'spotlight', count: 11, revenue: 660  },
-  { tier: 'top',       count: 5,  revenue: 500  },
-]}
-
-const MOCK_BOOSTS = Array.from({ length: 15 }, (_, i) => ({
-  id: `b${i}`,
-  tier: ['featured', 'spotlight', 'top'][i % 3],
-  paid: i % 4 !== 3,
-  amount: [30, 60, 100][i % 3],
-  starts_at: new Date(Date.now() - i * 86400000).toISOString(),
-  ends_at:   new Date(Date.now() + (7 - i) * 86400000).toISOString(),
-  created_at: new Date(Date.now() - i * 86400000).toISOString(),
-  listing: {
-    id: `l${i}`, title: ['2019 Toyota Corolla', 'iPhone 15 Pro', '2-Bed Apartment'][i % 3],
-    status: 'active', images: [],
-    seller: { id: `u${i}`, name: ['Kwame Motors', 'TechHub GH', 'HomePro'][i % 3], email: `seller${i}@hoova.gh` },
-  },
-}))
 
 export default function AdminBoosts() {
   const qc = useQueryClient()
@@ -37,22 +17,18 @@ export default function AdminBoosts() {
   const [paid, setPaid]   = useState('all')
   const [tier, setTier]   = useState('all')
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'boosts', page, paid, tier],
-    queryFn: async () => {
-      try {
-        const params = new URLSearchParams({ page, limit: 20 })
-        if (paid !== 'all') params.set('paid', paid)
-        if (tier !== 'all') params.set('tier', tier)
-        return await api.get(`/admin/boosts?${params}`).then((r) => r.data.data)
-      } catch {
-        return { boosts: MOCK_BOOSTS, total: 15, page: 1, totalPages: 1, stats: MOCK_STATS }
-      }
+    queryFn: () => {
+      const params = new URLSearchParams({ page, limit: 20 })
+      if (paid !== 'all') params.set('paid', paid)
+      if (tier !== 'all') params.set('tier', tier)
+      return api.get(`/admin/boosts?${params}`).then((r) => r.data.data)
     },
   })
 
-  const boosts     = data?.boosts     || MOCK_BOOSTS
-  const stats      = data?.stats      || MOCK_STATS
+  const boosts     = data?.boosts     || []
+  const stats      = data?.stats      || { active_now: 0, by_tier: [] }
   const totalPages = data?.totalPages || 1
 
   const { mutate: approvePaid } = useMutation({
@@ -61,6 +37,12 @@ export default function AdminBoosts() {
   })
 
   const totalRevenue = stats.by_tier?.reduce((s, t) => s + t.revenue, 0) || 0
+
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
 
   return (
     <div className="space-y-5 max-w-5xl">
