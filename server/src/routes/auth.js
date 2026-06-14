@@ -99,10 +99,14 @@ router.post('/login', [
 
     const { token, refreshToken } = signTokens(user.id)
 
+    // Promote to admin if email matches ADMIN_EMAIL env var
+    const isAdmin = process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL
+    const subscription_tier = isAdmin ? 'admin' : user.subscription_tier
+
     res.json({
       success: true,
       data: {
-        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, subscription_tier: user.subscription_tier, id_verified: user.id_verified },
+        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, avatar: user.avatar, subscription_tier, id_verified: user.id_verified },
         token,
         refreshToken,
       },
