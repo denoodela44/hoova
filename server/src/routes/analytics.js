@@ -56,7 +56,7 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
       prisma.searchTrend.findMany({
         where,
         orderBy: { count: 'desc' },
-        take: 30,
+        take: 200,
         select: { query: true, display_query: true, count: true, zero_results_count: true, category_slug: true, last_searched_at: true },
       }),
 
@@ -64,7 +64,7 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
       prisma.searchTrend.findMany({
         where: { ...where, zero_results_count: { gt: 0 } },
         orderBy: { zero_results_count: 'desc' },
-        take: 15,
+        take: 50,
         select: { display_query: true, zero_results_count: true, category_slug: true },
       }),
 

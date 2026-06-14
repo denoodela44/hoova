@@ -100,7 +100,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
       LIMIT $${values.length - 1} OFFSET $${values.length}
     `, ...values)
 
-    if (hasQuery) {
+    if (hasQuery && req.query.source !== 'autocomplete') {
       logSearch(q.trim(), total, req.query.source || 'browse', req.userId || null, category || null)
     }
 

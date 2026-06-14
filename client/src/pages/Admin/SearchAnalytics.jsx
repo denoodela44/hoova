@@ -6,6 +6,7 @@ import {
   ArrowUpRight, Hash, Flame, Clock, Tag, Minus, Target,
   Lightbulb, DollarSign, MapPin, Zap, CheckCircle, Bell,
   BookOpen, Sparkles, ShoppingBag, ChevronDown, ChevronUp,
+  Database, XCircle,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -100,6 +101,7 @@ const REAL_DATA = {
 }
 
 const TABS = [
+  { id: 'live',      label: 'Live Searches',   icon: Database   },
   { id: 'overview',  label: 'Overview',        icon: BarChart2  },
   { id: 'keywords',  label: 'Keyword Intel',   icon: Search     },
   { id: 'demand',    label: 'Demand Gaps',     icon: Target     },
@@ -149,7 +151,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function SearchAnalytics() {
   const [days, setDays]   = useState(30)
-  const [tab, setTab]     = useState('overview')
+  const [tab, setTab]     = useState('live')
+  const [liveSearch, setLiveSearch] = useState('')
+  const [liveCat, setLiveCat]       = useState('all')
   const [catFilter, setCatFilter] = useState('all')
   const [sigCatFilter, setSigCatFilter] = useState('all')
   const [sigSort, setSigSort] = useState('opp')
@@ -221,6 +225,153 @@ export default function SearchAnalytics() {
           </button>
         ))}
       </div>
+
+      {/* ── LIVE SEARCHES ─────────────────────────────────────────────────────── */}
+      {tab === 'live' && (() => {
+        const terms = liveData?.top_terms || []
+        const liveCats = ['all', ...new Set(terms.map((t) => t.category_slug).filter(Boolean))]
+        const filtered = terms
+          .filter((t) => liveCat === 'all' || t.category_slug === liveCat)
+          .filter((t) => !liveSearch || t.query.toLowerCase().includes(liveSearch.toLowerCase()))
+        const maxLiveCount = Math.max(...terms.map((t) => t.count), 1)
+
+        return (
+          <div className="space-y-5">
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-2xl p-4 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#15803d' }} />
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Total Searches</p>
+                </div>
+                <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {liveData ? (liveData.total || 0).toLocaleString() : '—'}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">last {days} days on Hoova</p>
+              </div>
+              <div className="rounded-2xl p-4 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Unique Terms</p>
+                <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {liveData ? (liveData.unique_terms || 0).toLocaleString() : '—'}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">distinct buyer queries</p>
+              </div>
+              <div className="rounded-2xl p-4 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Zero-Result Searches</p>
+                <p className="text-2xl font-black text-red-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {liveData ? (liveData.zero_results?.length || 0) : '—'}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">unmet demand gaps</p>
+              </div>
+              <div className="rounded-2xl p-4 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Categories Active</p>
+                <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {liveData ? (liveCats.length - 1) : '—'}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">categories searched</p>
+              </div>
+            </div>
+
+            {/* Category breakdown */}
+            {liveData?.category_breakdown?.length > 0 && (
+              <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
+                <p className="text-sm font-bold text-gray-800 mb-3">Searches by Category</p>
+                <div className="flex flex-wrap gap-2">
+                  {liveData.category_breakdown.map((c) => (
+                    <button key={c.category_slug}
+                      onClick={() => setLiveCat(liveCat === c.category_slug ? 'all' : c.category_slug)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                      style={liveCat === c.category_slug
+                        ? { background: '#B81365', color: 'white' }
+                        : { background: '#ECEAE6', color: '#374151' }}>
+                      <span className="capitalize">{c.category_slug}</span>
+                      <span className="font-black">{c.count.toLocaleString()}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Search terms table */}
+            <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
+              <div className="p-4 flex items-center gap-3" style={{ borderBottom: '1px solid #f0eeeb' }}>
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input value={liveSearch} onChange={(e) => setLiveSearch(e.target.value)}
+                    placeholder="Filter search terms…"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl text-xs border focus:outline-none"
+                    style={{ border: '1px solid #e5e7eb' }} />
+                </div>
+                <div className="flex gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
+                  {liveCats.slice(0, 6).map((c) => (
+                    <button key={c} onClick={() => setLiveCat(c)}
+                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold capitalize transition-all"
+                      style={liveCat === c ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] font-bold text-gray-400">{filtered.length} terms</span>
+              </div>
+
+              {!liveData ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="px-4 py-12 text-center">
+                  <Database className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-gray-400">No searches logged yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Searches will appear here as users search on the platform</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr style={{ background: '#fafaf9', borderBottom: '1px solid #f0eeeb' }}>
+                        {['#', 'Search Term', 'Category', 'Searches', 'Volume Bar', 'Zero Results', 'Last Searched'].map((h) => (
+                          <th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((t, i) => (
+                        <tr key={t.query} style={{ borderBottom: i < filtered.length - 1 ? '1px solid #f0eeeb' : 'none' }} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-xs font-black text-gray-300">{i + 1}</td>
+                          <td className="px-4 py-3">
+                            <p className="text-xs font-semibold text-gray-900 capitalize">{t.query}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            {t.category_slug
+                              ? <span className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize" style={{ background: '#ECEAE6', color: '#374151' }}>{t.category_slug}</span>
+                              : <span className="text-[10px] text-gray-300">—</span>}
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="text-sm font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>{t.count.toLocaleString()}</p>
+                          </td>
+                          <td className="px-4 py-3 w-32">
+                            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#ECEAE6' }}>
+                              <div className="h-full rounded-full" style={{ width: `${(t.count / maxLiveCount) * 100}%`, background: '#B81365' }} />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            {t.zero_results_count > 0
+                              ? <span className="flex items-center gap-1 text-[10px] font-bold text-red-500"><XCircle className="w-3 h-3" />{t.zero_results_count}×</span>
+                              : <span className="flex items-center gap-1 text-[10px] font-bold text-green-600"><CheckCircle className="w-3 h-3" />Has results</span>}
+                          </td>
+                          <td className="px-4 py-3 text-[10px] text-gray-400">
+                            {new Date(t.last_searched_at).toLocaleDateString('en-GH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── OVERVIEW ──────────────────────────────────────────────────────────── */}
       {tab === 'overview' && (

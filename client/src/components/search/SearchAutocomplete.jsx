@@ -14,10 +14,6 @@ const CITIES = [
   'Tema', 'Sekondi', 'Koforidua', 'Ho', 'Bolgatanga', 'Wa', 'Sunyani',
 ]
 
-function logSearch(query, results_count, source) {
-  api.post('/analytics/search', { query, results_count, source }).catch(() => {})
-}
-
 function getHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') } catch { return [] }
 }
@@ -38,7 +34,7 @@ function useDebounce(value, delay = 180) {
 
 async function queryResults(q, city = '') {
   try {
-    const params = new URLSearchParams({ q, limit: 5 })
+    const params = new URLSearchParams({ q, limit: 5, source: 'autocomplete' })
     if (city) params.set('city', city)
     const res = await api.get(`/search?${params}`)
     return res.data.data || []
@@ -93,24 +89,21 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
 
   const navigate_to = useCallback((item) => {
     if (item.type === 'listing') {
-      logSearch(item.data.title, 1, source)
       saveHistory(item.data.title)
       setHistory(getHistory())
       setOpen(false); setQuery('')
       navigate(`/listing/${item.data.id}`)
     } else if (item.type === 'category') {
-      logSearch(item.data.name, item.data.listing_count, source)
       setOpen(false); setQuery('')
       navigate(buildUrl(`/browse?category=${item.data.slug}`))
     } else {
       const term = item.data
-      logSearch(term, results.length, source)
       saveHistory(term)
       setHistory(getHistory())
       setOpen(false); setQuery(term)
       navigate(buildUrl(`/browse?q=${encodeURIComponent(term)}`))
     }
-  }, [navigate, results.length, source, buildUrl])
+  }, [navigate, buildUrl])
 
   const handleSubmit = (e) => {
     e?.preventDefault()
@@ -119,7 +112,6 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
       if (location) { navigate(`/browse?city=${encodeURIComponent(location)}`); setOpen(false) }
       return
     }
-    logSearch(query.trim(), results.length, source)
     saveHistory(query.trim())
     setHistory(getHistory())
     setOpen(false)
