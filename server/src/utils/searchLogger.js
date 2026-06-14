@@ -62,7 +62,7 @@ async function logSearch(rawQuery, resultsCount, source = 'browse', userId = nul
       category_slug: detectedCategory,
       source,
     },
-  }).catch(() => {})
+  }).catch((e) => console.error('[searchLogger] searchLog.create failed:', e.message))
 
   // 2. Upsert into SearchTrend (the grouped/aggregated table)
   //    If the normalised query already exists → increment count.
@@ -80,10 +80,9 @@ async function logSearch(rawQuery, resultsCount, source = 'browse', userId = nul
     update: {
       count: { increment: 1 },
       zero_results_count: hasResults ? undefined : { increment: 1 },
-      // Update display_query only if count is low (keep the cleanest version)
       last_searched_at: new Date(),
     },
-  }).catch(() => {})
+  }).catch((e) => console.error('[searchLogger] searchTrend.upsert failed:', e.message))
 }
 
 module.exports = { logSearch, normaliseQuery, detectCategory }

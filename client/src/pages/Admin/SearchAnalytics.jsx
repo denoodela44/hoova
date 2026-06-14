@@ -164,13 +164,14 @@ export default function SearchAnalytics() {
   const [titleInput, setTitleInput] = useState('')
   const [expanded, setExpanded] = useState(null)
 
-  const { data = REAL_DATA } = useQuery({
-    queryKey: ['admin', 'search-analytics', days],
-    queryFn: async () => {
-      try { return await api.get(`/analytics/searches?days=${days}`).then((r) => r.data.data) }
-      catch { return REAL_DATA }
-    },
+  // Live stats from the DB — real searches users made on the platform
+  const { data: liveData } = useQuery({
+    queryKey: ['admin', 'search-live', days],
+    queryFn: () => api.get(`/analytics/searches?days=${days}`).then((r) => r.data.data),
   })
+
+  // Market intelligence from static dataset (Ghana market research)
+  const data = REAL_DATA
 
   const cats = ['all', ...new Set(data.top_terms?.map((t) => t.category) || [])]
   const filteredTerms = catFilter === 'all' ? data.top_terms : data.top_terms?.filter((t) => t.category === catFilter)
@@ -224,7 +225,51 @@ export default function SearchAnalytics() {
       {/* ── OVERVIEW ──────────────────────────────────────────────────────────── */}
       {tab === 'overview' && (
         <div className="space-y-5">
-          {/* KPI row */}
+
+          {/* Live searches from platform DB */}
+          <div className="rounded-2xl p-4 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#15803d' }} />
+                <p className="text-sm font-bold text-gray-800">Live Platform Search Data</p>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: '#dcfce7', color: '#15803d' }}>REAL-TIME</span>
+            </div>
+            {!liveData ? (
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+                Loading live data…
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-xl p-3" style={{ background: '#fafaf9', border: '1px solid #f0eeeb' }}>
+                  <p className="text-xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>{(liveData.total || 0).toLocaleString()}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Searches (last {days}d)</p>
+                </div>
+                <div className="rounded-xl p-3" style={{ background: '#fafaf9', border: '1px solid #f0eeeb' }}>
+                  <p className="text-xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>{(liveData.unique_terms || 0).toLocaleString()}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Unique queries</p>
+                </div>
+                <div className="sm:col-span-2 rounded-xl p-3" style={{ background: '#fafaf9', border: '1px solid #f0eeeb' }}>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide mb-2">Top searches on Hoova</p>
+                  {liveData.top_terms?.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {liveData.top_terms.slice(0, 5).map((t) => (
+                        <span key={t.query} className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize" style={{ background: '#fdf2f5', color: '#B81365' }}>
+                          {t.query} ×{t.count}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No searches logged yet in this period.</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* KPI row — Ghana market intelligence (static research data) */}
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Ghana Market Intelligence (Research Data)</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { label: 'Total Searches',      value: data.total?.toLocaleString(),      icon: Search,       color: '#B81365', bg: '#fdf2f5', sub: `${todayDelta > 0 ? '+' : ''}${todayDelta}% vs yesterday`, subColor: todayDelta >= 0 ? '#15803d' : '#dc2626' },
