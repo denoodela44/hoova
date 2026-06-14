@@ -19,7 +19,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
   try {
     const {
       category, boost_tier, sort = 'newest',
-      min_price, max_price, condition, region, limit = 24, page = 1,
+      min_price, max_price, condition, region, city, limit = 24, page = 1,
       exclude, mine, verified_seller,
     } = req.query
 
@@ -32,7 +32,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
 
     if (boost_tier) where.boost_tier = boost_tier
     if (condition && condition !== 'any') where.condition = condition
-    if (region) where.region = region
+    if (city) where.city = city
+    else if (region) where.region = region
     if (min_price) where.price = { ...(where.price || {}), gte: Number(min_price) }
     if (max_price) where.price = { ...(where.price || {}), lte: Number(max_price) }
     if (exclude) where.id = { not: exclude }

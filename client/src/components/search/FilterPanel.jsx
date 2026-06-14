@@ -9,6 +9,11 @@ const SORT_OPTIONS = [
   { value: 'popular', label: 'Most Viewed' },
 ]
 
+const CITIES = [
+  'Accra', 'Kumasi', 'Takoradi', 'Tamale', 'Cape Coast',
+  'Tema', 'Sekondi', 'Koforidua', 'Ho', 'Bolgatanga', 'Wa', 'Sunyani',
+]
+
 const GHANA_REGIONS = [
   'Greater Accra', 'Ashanti', 'Western', 'Eastern', 'Central',
   'Volta', 'Northern', 'Upper East', 'Upper West', 'Brong-Ahafo',
@@ -28,6 +33,16 @@ export default function FilterPanel({ onClose }) {
     setParams(next)
   }
 
+  const setLocation = (updates) => {
+    const next = new URLSearchParams(params)
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v) next.set(k, v)
+      else next.delete(k)
+    })
+    next.delete('page')
+    setParams(next)
+  }
+
   const clearAll = () => {
     const q = params.get('q')
     const cat = params.get('category')
@@ -38,8 +53,8 @@ export default function FilterPanel({ onClose }) {
   }
 
   const hasFilters = params.has('min_price') || params.has('max_price') ||
-    params.has('condition') || params.has('region') || params.has('sort') ||
-    params.has('verified_seller')
+    params.has('condition') || params.has('region') || params.has('city') ||
+    params.has('sort') || params.has('verified_seller')
 
   return (
     <div className="card p-4 space-y-5 text-sm">
@@ -119,15 +134,45 @@ export default function FilterPanel({ onClose }) {
         </div>
       </div>
 
-      {/* Region */}
+      {/* Location */}
       <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Region</label>
+        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Location</label>
+
+        {/* City chips */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {/* All chip */}
+          <button
+            onClick={() => setLocation({ city: '', region: '' })}
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+              !params.get('city') && !params.get('region')
+                ? 'border-[#B81365] bg-[#fdf2f5] text-[#B81365]'
+                : 'border-gray-200 text-gray-500 hover:border-gray-300'
+            }`}
+          >
+            All
+          </button>
+          {CITIES.map((c) => (
+            <button
+              key={c}
+              onClick={() => setLocation({ city: c, region: '' })}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+                params.get('city') === c
+                  ? 'border-[#B81365] bg-[#fdf2f5] text-[#B81365]'
+                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+
+        {/* Region dropdown — for broader regional filter */}
         <select
           value={get('region')}
-          onChange={(e) => set('region', e.target.value)}
-          className="input"
+          onChange={(e) => setLocation({ region: e.target.value, city: '' })}
+          className="input text-xs"
         >
-          <option value="">All Regions</option>
+          <option value="">Or filter by region…</option>
           {GHANA_REGIONS.map((r) => (
             <option key={r} value={r}>{r}</option>
           ))}

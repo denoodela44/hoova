@@ -37,6 +37,7 @@ export default function Browse() {
           q:         params.get('q')         || '',
           category:  params.get('category')  || '',
           region:    params.get('region')    || '',
+          city:      params.get('city')      || '',
           min_price: params.get('min_price') || '',
           max_price: params.get('max_price') || '',
           condition: params.get('condition') || '',
