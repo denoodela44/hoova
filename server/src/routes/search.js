@@ -17,12 +17,22 @@ router.get('/', optionalAuth, async (req, res, next) => {
     const conditions = ["l.status = 'active'"]
     const values = []
 
-    // ── Search filter: ILIKE for reliable matching, ts_rank used only for ordering ──
+    // ── Search filter: each word must appear in title OR description (AND logic) ──
+    let phraseIdx = null
+    const wordIndices = []
     if (hasQuery) {
-      values.push(q.trim())           // $N = raw query (ts_rank)
-      values.push(`%${q.trim()}%`)    // $N+1 = ILIKE pattern
-      const ilikeQi = values.length
-      conditions.push(`(l.title ILIKE $${ilikeQi} OR l.description ILIKE $${ilikeQi})`)
+      const words = q.trim().split(/\s+/).filter(Boolean).slice(0, 8)
+
+      // Full phrase param for ranking boost
+      values.push(`%${q.trim()}%`)
+      phraseIdx = values.length
+
+      // Each word must match
+      for (const word of words) {
+        values.push(`%${word}%`)
+        wordIndices.push(values.length)
+        conditions.push(`(l.title ILIKE $${values.length} OR l.description ILIKE $${values.length})`)
+      }
     }
 
     if (category) {
@@ -45,11 +55,14 @@ router.get('/', optionalAuth, async (req, res, next) => {
     // When browsing: pure listing score (algorithm rank), or explicit user sort
     let orderClause
     if (hasQuery && sort === 'relevance') {
+      const allWordsInTitle = wordIndices.map((i) => `l.title ILIKE $${i}`).join(' AND ')
       orderClause = `
-        ts_rank(
-          to_tsvector('english', COALESCE(l.title,'') || ' ' || COALESCE(l.description,'')),
-          plainto_tsquery('english', $1)
-        ) * 0.5 + (l.score / NULLIF((SELECT MAX(score) FROM listings WHERE status='active'), 0)) * 0.5 DESC NULLS LAST,
+        CASE
+          WHEN l.title ILIKE $${phraseIdx} THEN 3
+          WHEN ${allWordsInTitle} THEN 2
+          WHEN l.title ILIKE $${wordIndices[0] || phraseIdx} THEN 1
+          ELSE 0
+        END DESC,
         l.score DESC
       `
     } else {
