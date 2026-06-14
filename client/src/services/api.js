@@ -20,13 +20,17 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// On 401, clear auth and redirect to login
+// On 401, clear auth — admin routes silently clear token, user routes redirect to login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('hoova-auth')
-      window.location.href = '/login'
+      if (err.config?.url?.startsWith('/admin')) {
+        localStorage.removeItem('hoova-admin-token')
+      } else {
+        localStorage.removeItem('hoova-auth')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(err)
   }

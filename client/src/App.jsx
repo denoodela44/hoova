@@ -40,7 +40,7 @@ function RequireAuth({ children }) {
 
 function RequireAdmin({ children }) {
   const token = localStorage.getItem('hoova-admin-token')
-  if (!token) return <Navigate to="/admin/login" replace />
+  if (!token) return <NotFound />
   return children
 }
 

@@ -6,11 +6,17 @@ const { moderateListing } = require('../utils/listingModerator')
 
 // POST /api/admin/login — standalone admin login, no user account needed
 router.post('/login', (req, res) => {
-  const { email, password } = req.body
+  const { email, password, accessKey } = req.body
   const adminEmail = process.env.ADMIN_EMAIL
   const adminPassword = process.env.ADMIN_PASSWORD
+  const adminAccessKey = process.env.ADMIN_ACCESS_KEY
+
+  // If ADMIN_ACCESS_KEY is set, require it — wrong key returns 404 (not 401)
+  if (adminAccessKey && accessKey !== adminAccessKey) {
+    return res.status(404).json({ success: false, message: 'Not found' })
+  }
   if (!adminEmail || !adminPassword) {
-    return res.status(500).json({ success: false, message: 'ADMIN_EMAIL and ADMIN_PASSWORD not set in environment' })
+    return res.status(500).json({ success: false, message: 'Server misconfiguration' })
   }
   if (email !== adminEmail || password !== adminPassword) {
     return res.status(401).json({ success: false, message: 'Invalid admin credentials' })

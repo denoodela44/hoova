@@ -1,27 +1,36 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react'
 import api from '../../services/api'
 import Logo from '../../components/layout/Logo'
+import NotFound from '../NotFound'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const accessKey = searchParams.get('k')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPwd, setShowPwd] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // No key in URL → render 404, not a login form
+  if (!accessKey) return <NotFound />
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      const res = await api.post('/admin/login', { email, password })
+      const res = await api.post('/admin/login', { email, password, accessKey })
       localStorage.setItem('hoova-admin-token', res.data.data.token)
       navigate('/admin')
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid credentials')
+      const status = err.response?.status
+      // 404 from backend means wrong access key — still show generic error
+      setError(status === 404 ? 'Access denied' : (err.response?.data?.message || 'Invalid credentials'))
     } finally {
       setLoading(false)
     }
