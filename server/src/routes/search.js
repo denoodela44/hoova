@@ -17,13 +17,12 @@ router.get('/', optionalAuth, async (req, res, next) => {
     const conditions = ["l.status = 'active'"]
     const values = []
 
-    // ── Full-text search ──────────────────────────────────────────
+    // ── Search filter: ILIKE for reliable matching, ts_rank used only for ordering ──
     if (hasQuery) {
-      values.push(q.trim())
-      const qi = values.length
-      conditions.push(
-        `to_tsvector('english', COALESCE(l.title,'') || ' ' || COALESCE(l.description,'')) @@ plainto_tsquery('english', $${qi})`
-      )
+      values.push(q.trim())           // $N = raw query (ts_rank)
+      values.push(`%${q.trim()}%`)    // $N+1 = ILIKE pattern
+      const ilikeQi = values.length
+      conditions.push(`(l.title ILIKE $${ilikeQi} OR l.description ILIKE $${ilikeQi})`)
     }
 
     if (category) {
@@ -46,11 +45,10 @@ router.get('/', optionalAuth, async (req, res, next) => {
     // When browsing: pure listing score (algorithm rank), or explicit user sort
     let orderClause
     if (hasQuery && sort === 'relevance') {
-      const qi = 1 // query is always $1
       orderClause = `
         ts_rank(
           to_tsvector('english', COALESCE(l.title,'') || ' ' || COALESCE(l.description,'')),
-          plainto_tsquery('english', $${qi})
+          plainto_tsquery('english', $1)
         ) * 0.5 + (l.score / NULLIF((SELECT MAX(score) FROM listings WHERE status='active'), 0)) * 0.5 DESC NULLS LAST,
         l.score DESC
       `
