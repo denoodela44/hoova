@@ -34,6 +34,11 @@ const botRenderer = require('./middleware/botRenderer')
 const app = express()
 const server = http.createServer(app)
 
+// Serve locally uploaded images (fallback when Cloudinary not configured)
+const uploadsDir = path.join(__dirname, '../../uploads')
+if (!require('fs').existsSync(uploadsDir)) require('fs').mkdirSync(uploadsDir, { recursive: true })
+app.use('/uploads', express.static(uploadsDir))
+
 const io = new Server(server, {
   cors: { origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true },
 })

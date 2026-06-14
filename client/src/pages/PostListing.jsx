@@ -87,7 +87,9 @@ export default function PostListing() {
           )
         )
       } catch (_) {
-        setImages((prev) => prev.filter((img) => img.preview !== item.preview))
+        setImages((prev) => prev.map((img) =>
+          img.preview === item.preview ? { ...img, uploading: false, error: true } : img
+        ))
       }
     }
     setUploading(false)
@@ -106,7 +108,7 @@ export default function PostListing() {
       const payload = {
         ...data,
         price: Number(data.price),
-        images: images.filter((img) => img.url).map((img) => ({ url: img.url })),
+        images: images.filter((img) => img.url && !img.error).map((img) => ({ url: img.url })),
       }
       const res = await api.post('/listings', payload)
       setNewListingId(res.data.data.id)
@@ -384,7 +386,12 @@ export default function PostListing() {
                           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         </div>
                       )}
-                      {i === 0 && <span className="absolute bottom-1 left-1 text-[10px] bg-brand-500 text-gray-900 font-bold px-1.5 py-0.5 rounded">Cover</span>}
+                      {img.error && (
+                        <div className="absolute inset-0 bg-red-500/70 flex items-center justify-center">
+                          <p className="text-white text-[10px] font-bold text-center px-1">Upload failed</p>
+                        </div>
+                      )}
+                      {i === 0 && !img.error && <span className="absolute bottom-1 left-1 text-[10px] bg-[#B81365] text-white font-bold px-1.5 py-0.5 rounded">Cover</span>}
                       <button
                         type="button"
                         onClick={() => removeImage(img.preview)}
