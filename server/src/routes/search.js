@@ -18,16 +18,18 @@ router.get('/', optionalAuth, async (req, res, next) => {
     const values = []
 
     // ── Search filter: each word must appear in title OR description (AND logic) ──
-    let phraseIdx = null
+    // phrasePattern is embedded directly in ORDER BY (not a bind param) so the
+    // COUNT query never has an unreferenced $1 that could trip the pg driver.
+    let phrasePattern = null
     const wordIndices = []
     if (hasQuery) {
       const words = q.trim().split(/\s+/).filter(Boolean).slice(0, 8)
 
-      // Full phrase param for ranking boost
-      values.push(`%${q.trim()}%`)
-      phraseIdx = values.length
+      // Safe inline phrase for ORDER BY (single-quote escaped, no SQL injection risk
+      // because it's only used in an ILIKE literal, never as an identifier)
+      phrasePattern = `%${q.trim().replace(/'/g, "''")}%`
 
-      // Each word must match
+      // Each word must match — these DO go into bind params
       for (const word of words) {
         values.push(`%${word}%`)
         wordIndices.push(values.length)
@@ -58,9 +60,9 @@ router.get('/', optionalAuth, async (req, res, next) => {
       const allWordsInTitle = wordIndices.map((i) => `l.title ILIKE $${i}`).join(' AND ')
       orderClause = `
         CASE
-          WHEN l.title ILIKE $${phraseIdx} THEN 3
+          WHEN l.title ILIKE '${phrasePattern}' THEN 3
           WHEN ${allWordsInTitle} THEN 2
-          WHEN l.title ILIKE $${wordIndices[0] || phraseIdx} THEN 1
+          WHEN l.title ILIKE $${wordIndices[0]} THEN 1
           ELSE 0
         END DESC,
         l.score DESC
