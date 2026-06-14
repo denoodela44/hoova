@@ -6,9 +6,12 @@ const prisma = require('../utils/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { generateUniqueSlug } = require('../utils/slug')
 
+const JWT_SECRET = process.env.JWT_SECRET || 'hoova-jwt-secret-default-2024-xk9mP3qRvL'
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'hoova-refresh-secret-default-2024-yL7nQ2wSbM'
+
 function signTokens(userId) {
-  const token = jwt.sign({ sub: userId }, process.env.JWT_SECRET, { expiresIn: '7d' })
-  const refreshToken = jwt.sign({ sub: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '30d' })
+  const token = jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '7d' })
+  const refreshToken = jwt.sign({ sub: userId }, JWT_REFRESH_SECRET, { expiresIn: '30d' })
   return { token, refreshToken }
 }
 
@@ -164,7 +167,7 @@ router.post('/refresh', async (req, res, next) => {
   try {
     const { refreshToken } = req.body
     if (!refreshToken) return res.status(400).json({ success: false, message: 'Refresh token required' })
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET)
+    const payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET)
     const { token, refreshToken: newRefreshToken } = signTokens(payload.sub)
     res.json({ success: true, data: { token, refreshToken: newRefreshToken } })
   } catch {

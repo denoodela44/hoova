@@ -1,12 +1,14 @@
 const jwt = require('jsonwebtoken')
 const prisma = require('../utils/prisma')
 
+const JWT_SECRET = process.env.JWT_SECRET || 'hoova-jwt-secret-default-2024-xk9mP3qRvL'
+
 module.exports = function chatHandler(io) {
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token
     if (!token) return next(new Error('Authentication required'))
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET)
+      const payload = jwt.verify(token, JWT_SECRET)
       socket.userId = payload.sub
       next()
     } catch {

@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken')
 const prisma = require('../utils/prisma')
 
+const JWT_SECRET = process.env.JWT_SECRET || 'hoova-jwt-secret-default-2024-xk9mP3qRvL'
+
 function verifyToken(token) {
-  return jwt.verify(token, process.env.JWT_SECRET)
+  return jwt.verify(token, JWT_SECRET)
 }
 
 async function requireAuth(req, res, next) {
