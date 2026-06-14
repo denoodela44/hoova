@@ -4,6 +4,7 @@ const prisma = require('../utils/prisma')
 const { requireAuth, optionalAuth } = require('../middleware/auth')
 const { pingIndexNow } = require('../utils/indexNow')
 const { moderateListing } = require('../utils/listingModerator')
+const { updateOneScore } = require('../utils/scoreEngine')
 
 const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 
@@ -18,8 +19,8 @@ const LISTING_INCLUDE = {
 router.get('/', optionalAuth, async (req, res, next) => {
   try {
     const {
-      category, boost_tier, sort = 'newest',
-      min_price, max_price, condition, region, city, limit = 24, page = 1,
+      category, boost_tier, sort = 'relevance',
+      min_price, max_price, condition, region, city, negotiable, limit = 24, page = 1,
       exclude, mine, verified_seller,
     } = req.query
 
@@ -34,17 +35,19 @@ router.get('/', optionalAuth, async (req, res, next) => {
     if (condition && condition !== 'any') where.condition = condition
     if (city) where.city = city
     else if (region) where.region = region
+    if (negotiable === 'true') where.negotiable = true
     if (min_price) where.price = { ...(where.price || {}), gte: Number(min_price) }
     if (max_price) where.price = { ...(where.price || {}), lte: Number(max_price) }
     if (exclude) where.id = { not: exclude }
     if (verified_seller === 'true') where.seller = { id_verified: true }
 
     const orderBy = {
+      relevance:  { score: 'desc' },
       newest:     { created_at: 'desc' },
       price_asc:  { price: 'asc' },
       price_desc: { price: 'desc' },
       popular:    { views_count: 'desc' },
-    }[sort] || { created_at: 'desc' }
+    }[sort] || { score: 'desc' }
 
     const take = Math.min(Number(limit), 48)
     const skip = (Number(page) - 1) * take
@@ -107,9 +110,21 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
     })
     if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' })
 
-    // Increment views (fire-and-forget)
-    prisma.listing.update({ where: { id: listing.id }, data: { views_count: { increment: 1 } } }).catch(() => {})
-    prisma.listingView.create({ data: { listing_id: listing.id, user_id: req.userId || null, ip: req.ip } }).catch(() => {})
+    // Deduplicated view tracking: user-based for logged-in, IP-based for guests (24h cooldown)
+    ;(async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const alreadyViewed = await prisma.listingView.findFirst({
+        where: {
+          listing_id: listing.id,
+          viewed_at: { gte: since },
+          ...(req.userId ? { user_id: req.userId } : { ip: req.ip }),
+        },
+      })
+      if (!alreadyViewed) {
+        await prisma.listing.update({ where: { id: listing.id }, data: { views_count: { increment: 1 } } })
+        await prisma.listingView.create({ data: { listing_id: listing.id, user_id: req.userId || null, ip: req.ip } })
+      }
+    })().catch(() => {})
 
     let is_saved = false
     if (req.userId) {
@@ -131,7 +146,7 @@ router.post('/', requireAuth, [
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg })
 
-    const { title, description, price, category_id, subcategory_id, condition, region, city, area, images = [] } = req.body
+    const { title, description, price, category_id, subcategory_id, condition, negotiable, region, city, area, images = [] } = req.body
 
     // Find or create location
     let location_id = null
@@ -165,6 +180,7 @@ router.post('/', requireAuth, [
         city,
         area,
         condition:      condition || 'used',
+        negotiable:     negotiable === true || negotiable === 'true',
         status:         'pending',
         is_flagged,
         flag_reasons,
@@ -235,6 +251,9 @@ router.patch('/:id', requireAuth, async (req, res, next) => {
       data: updates,
       include: LISTING_INCLUDE,
     })
+
+    // Recalculate score immediately when a listing goes active
+    if (updates.status === 'active') updateOneScore(updated.id).catch(() => {})
 
     res.json({ success: true, data: updated })
   } catch (err) { next(err) }
