@@ -92,8 +92,8 @@ export default function ListingCard({ listing, onSaveToggle }) {
     >
       {/* Image */}
       <div
-        className="relative aspect-square overflow-hidden select-none"
-        style={{ background: '#f3f4f6' }}
+        className="relative overflow-hidden select-none"
+        style={{ aspectRatio: '4/5', background: '#f3f4f6' }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
