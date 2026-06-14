@@ -48,7 +48,7 @@ export default function Register() {
       <AuthIllustration pwdFocused={pwdFocused} />
 
       {/* ── Right: Form / Verify ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 sm:px-14 pt-16 pb-12 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-start px-8 sm:px-14 pt-12 pb-20 overflow-y-auto">
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
@@ -222,7 +222,7 @@ export default function Register() {
           color: #111827;
         }
         .auth-input::placeholder { color: #9ca3af; }
-        .auth-input:focus { border-color: #B81365; box-shadow: 0 0 0 3px rgba(184, 19, 101, 0.15); }
+        .auth-input:focus { border-color: #B81365; }
       `}</style>
     </div>
   )
