@@ -404,9 +404,27 @@ const IMG_SEEDS = {
 async function main() {
   console.log('🌱 Seeding listings...\n')
 
+  // ── Search trends — always upsert regardless of listing state ─────────────
+  const now = new Date()
+  for (const t of SEARCH_TRENDS) {
+    await prisma.searchTrend.upsert({
+      where: { query: t.query },
+      update: { count: t.count, last_searched_at: new Date(now - rand(0, 6) * 86400000) },
+      create: {
+        query:              t.query,
+        display_query:      t.display_query,
+        count:              t.count,
+        zero_results_count: t.zero_results_count || 0,
+        category_slug:      t.category_slug,
+        last_searched_at:   new Date(now - rand(0, 6) * 86400000),
+      },
+    })
+  }
+  console.log('✅ Search trends seeded')
+
   const existingListings = await prisma.listing.count()
   if (existingListings > 0) {
-    console.log(`⚡ Skipping seed: ${existingListings} listings already exist.`)
+    console.log(`⚡ Skipping listings seed: ${existingListings} listings already exist.`)
     return
   }
 
@@ -438,7 +456,6 @@ async function main() {
 
   // ── Create listings ────────────────────────────────────────────────────────
   let created = 0
-  const now = new Date()
 
   for (const l of LISTINGS) {
     const category = catBySlug[l.cat]
@@ -526,22 +543,6 @@ async function main() {
   }
   console.log('\n✅ Category counts updated')
 
-  // ── Search trends ──────────────────────────────────────────────────────────
-  for (const t of SEARCH_TRENDS) {
-    await prisma.searchTrend.upsert({
-      where: { query: t.query },
-      update: { count: t.count, zero_results_count: t.zero_results_count || 0 },
-      create: {
-        query:              t.query,
-        display_query:      t.display_query,
-        count:              t.count,
-        zero_results_count: t.zero_results_count || 0,
-        category_slug:      t.category_slug,
-        last_searched_at:   new Date(now - rand(0, 6) * 86400000),
-      },
-    })
-  }
-  console.log('✅ Search trends seeded')
 
   console.log(`\n🎉 Done! Created ${created} listings across ${SELLERS.length} sellers.`)
   console.log('\nTest accounts (all passwords: hoova1234):')

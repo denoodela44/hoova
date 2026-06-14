@@ -17,6 +17,11 @@ async function fetchOrMock(url, mockFn) {
   catch { return mockFn() }
 }
 
+const FALLBACK_POPULAR = [
+  'iPhone 14', 'Toyota Corolla', '2 bedroom apartment',
+  'Generator', 'Samsung TV', 'Laptop', 'Land for sale', 'Motorbike',
+]
+
 const TOP_CATEGORIES = [
   { slug: 'vehicles',    label: 'Vehicles'    },
   { slug: 'electronics', label: 'Electronics' },
@@ -61,6 +66,17 @@ export default function Home() {
       () => filterMockListings({ sort: 'newest', limit: 12, category: activeTab }).data),
   })
 
+  const { data: trendingTerms = FALLBACK_POPULAR } = useQuery({
+    queryKey: ['trending-searches'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/analytics/trending?limit=8')
+        return res.data.data?.length > 0 ? res.data.data : FALLBACK_POPULAR
+      } catch { return FALLBACK_POPULAR }
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
   const { data: priceDrops, isLoading: priceDropsLoading } = useQuery({
     queryKey: ['listings', 'price-drops'],
     queryFn: () => fetchOrMock('/listings?price_dropped=true&limit=8',
@@ -92,23 +108,14 @@ export default function Home() {
             <SearchAutocomplete large placeholder="Search for cars, phones, houses…" />
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
               <span className="text-pink-200 text-xs font-medium shrink-0">Popular right now:</span>
-              {[
-                { label: 'iPhone 14',          q: 'iPhone 14'         },
-                { label: 'Toyota Corolla',      q: 'Toyota Corolla'    },
-                { label: '2 bedroom apartment', q: '2 bedroom'         },
-                { label: 'Generator',           q: 'Generator'         },
-                { label: 'Samsung TV',          q: 'Samsung TV'        },
-                { label: 'Laptop',              q: 'Laptop'            },
-                { label: 'Land for sale',       q: 'Land'              },
-                { label: 'Motorbike',           q: 'Motorbike'         },
-              ].map(({ label, q }) => (
+              {trendingTerms.map((term) => (
                 <Link
-                  key={q}
-                  to={`/browse?q=${encodeURIComponent(q)}`}
+                  key={term}
+                  to={`/browse?q=${encodeURIComponent(term)}`}
                   className="text-xs font-medium px-3 py-1 rounded-full transition-all duration-150 hover:bg-white hover:text-[#B81365]"
                   style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}
                 >
-                  {label}
+                  {term}
                 </Link>
               ))}
             </div>
