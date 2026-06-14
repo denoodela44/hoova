@@ -140,8 +140,8 @@ async function main() {
 
   // Remove old parent slugs that have been restructured or renamed
   await prisma.category.deleteMany({
-    where: { slug: { in: ['books', 'babies', 'health', 'laptops-pcs', 'cameras', 'electronics-accessories', 'motorcycles', 'trucks-suvs', 'buses-minivans', 'accounting-finance', 'it-software', 'sales-marketing', 'healthcare', 'education', 'home-services', 'professional-services', 'tutoring-lessons', 'living-room', 'bedroom', 'office-furniture', 'kitchen-dining', 'livestock'] } }
-  )
+    where: { slug: { in: ['books', 'babies', 'health', 'laptops-pcs', 'cameras', 'electronics-accessories', 'motorcycles', 'trucks-suvs', 'buses-minivans', 'accounting-finance', 'it-software', 'sales-marketing', 'healthcare', 'education', 'home-services', 'professional-services', 'tutoring-lessons', 'living-room', 'bedroom', 'office-furniture', 'kitchen-dining', 'livestock'] } },
+  })
 
   // Categories
   for (const cat of CATEGORIES) {
