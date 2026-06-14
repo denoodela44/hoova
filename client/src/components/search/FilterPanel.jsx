@@ -1,8 +1,10 @@
+import { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { SlidersHorizontal, X, ShieldCheck } from 'lucide-react'
+import { SlidersHorizontal, X, ShieldCheck, ChevronDown, Search } from 'lucide-react'
 
 const CONDITIONS = ['any', 'new', 'used']
 const SORT_OPTIONS = [
+  { value: 'relevance', label: 'Best Match' },
   { value: 'newest', label: 'Newest First' },
   { value: 'price_asc', label: 'Price: Low → High' },
   { value: 'price_desc', label: 'Price: High → Low' },
@@ -20,8 +22,20 @@ const GHANA_REGIONS = [
   'Bono', 'Bono East', 'Ahafo', 'Savannah', 'North East', 'Oti',
 ]
 
+const TOP_CITIES = ['Accra', 'Kumasi', 'Tamale']
+
 export default function FilterPanel({ onClose }) {
   const [params, setParams] = useSearchParams()
+  const [locationOpen, setLocationOpen] = useState(false)
+  const [locationSearch, setLocationSearch] = useState('')
+  const popoverRef = useRef(null)
+
+  useEffect(() => {
+    if (!locationOpen) return
+    const handler = (e) => { if (popoverRef.current && !popoverRef.current.contains(e.target)) setLocationOpen(false) }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [locationOpen])
 
   const get = (key, fallback = '') => params.get(key) || fallback
 
@@ -54,7 +68,7 @@ export default function FilterPanel({ onClose }) {
 
   const hasFilters = params.has('min_price') || params.has('max_price') ||
     params.has('condition') || params.has('region') || params.has('city') ||
-    params.has('sort') || params.has('verified_seller')
+    params.has('negotiable') || params.has('sort') || params.has('verified_seller')
 
   return (
     <div className="card p-4 space-y-5 text-sm">
@@ -136,47 +150,104 @@ export default function FilterPanel({ onClose }) {
 
       {/* Location */}
       <div>
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Location</label>
-
-        {/* City chips */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Location</label>
+        <div className="flex flex-wrap gap-1.5">
           {/* All chip */}
           <button
             onClick={() => setLocation({ city: '', region: '' })}
-            className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
               !params.get('city') && !params.get('region')
-                ? 'border-[#B81365] bg-[#fdf2f5] text-[#B81365]'
-                : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400'
+                : 'border-gray-200 dark:border-dark-border text-gray-500 hover:border-gray-300'
             }`}
-          >
-            All
-          </button>
-          {CITIES.map((c) => (
+          >All</button>
+
+          {/* Top city chips */}
+          {TOP_CITIES.map((city) => (
             <button
-              key={c}
-              onClick={() => setLocation({ city: c, region: '' })}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
-                params.get('city') === c
-                  ? 'border-[#B81365] bg-[#fdf2f5] text-[#B81365]'
-                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
+              key={city}
+              onClick={() => setLocation({ city, region: '' })}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                params.get('city') === city
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400'
+                  : 'border-gray-200 dark:border-dark-border text-gray-500 hover:border-gray-300'
+              }`}
+            >{city}</button>
+          ))}
+
+          {/* More button + popover */}
+          <div className="relative" ref={popoverRef}>
+            <button
+              onClick={() => setLocationOpen((o) => !o)}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                locationOpen || (params.get('city') && !TOP_CITIES.includes(params.get('city'))) || params.get('region')
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400'
+                  : 'border-gray-200 dark:border-dark-border text-gray-500 hover:border-gray-300'
               }`}
             >
-              {c}
+              {(params.get('city') && !TOP_CITIES.includes(params.get('city'))) ? params.get('city')
+                : params.get('region') ? params.get('region')
+                : '+ More'}
+              <ChevronDown className="w-3 h-3" />
             </button>
-          ))}
-        </div>
 
-        {/* Region dropdown — for broader regional filter */}
-        <select
-          value={get('region')}
-          onChange={(e) => setLocation({ region: e.target.value, city: '' })}
-          className="input text-xs"
+            {locationOpen && (
+              <div className="absolute left-0 top-full mt-1.5 w-56 z-50 rounded-xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface shadow-lg p-2">
+                <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-dark-border mb-2">
+                  <Search className="w-3 h-3 text-gray-400 shrink-0" />
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="Search city or region..."
+                    value={locationSearch}
+                    onChange={(e) => setLocationSearch(e.target.value)}
+                    className="w-full text-xs bg-transparent outline-none text-gray-700 dark:text-gray-200 placeholder-gray-400"
+                  />
+                </div>
+                <div className="max-h-52 overflow-y-auto space-y-0.5">
+                  {[...CITIES, ...GHANA_REGIONS]
+                    .filter((item) => item.toLowerCase().includes(locationSearch.toLowerCase()))
+                    .map((item) => {
+                      const isCity = CITIES.includes(item)
+                      const isActive = isCity ? params.get('city') === item : params.get('region') === item
+                      return (
+                        <button
+                          key={item}
+                          onClick={() => { isCity ? setLocation({ city: item, region: '' }) : setLocation({ region: item, city: '' }); setLocationOpen(false); setLocationSearch('') }}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-all ${
+                            isActive
+                              ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 font-medium'
+                              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-hover'
+                          }`}
+                        >
+                          {item}
+                          {!isCity && <span className="ml-1 text-gray-400 text-[10px]">region</span>}
+                        </button>
+                      )
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Negotiable */}
+      <div>
+        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Price</label>
+        <button
+          onClick={() => set('negotiable', params.get('negotiable') === 'true' ? '' : 'true')}
+          className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
+            params.get('negotiable') === 'true'
+              ? 'border-[#B81365] text-[#B81365] bg-[#fdf2f5]'
+              : 'border-gray-200 text-gray-500 hover:border-gray-300'
+          }`}
         >
-          <option value="">Or filter by region…</option>
-          {GHANA_REGIONS.map((r) => (
-            <option key={r} value={r}>{r}</option>
-          ))}
-        </select>
+          Negotiable only
+          {params.get('negotiable') === 'true' && (
+            <span className="ml-auto w-2 h-2 rounded-full bg-[#B81365]" />
+          )}
+        </button>
       </div>
 
       {/* Verified sellers */}

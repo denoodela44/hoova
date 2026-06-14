@@ -112,12 +112,16 @@ export default function ListingCard({ listing, onSaveToggle }) {
               Promoted
             </span>
           )}
-          {listing.condition === 'new' && !isBoosted && !isAuction && (
+          {!isAuction && (
             <span
               className="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-              style={{ background: 'rgba(34,34,34,0.07)', color: '#222222' }}
+              style={
+                listing.condition === 'new'
+                  ? { background: '#16a34a', color: '#fff' }
+                  : { background: 'rgba(34,34,34,0.55)', color: '#fff' }
+              }
             >
-              New
+              {listing.condition === 'new' ? 'New' : 'Used'}
             </span>
           )}
         </div>
