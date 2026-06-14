@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { SlidersHorizontal, Bell, Loader2 } from 'lucide-react'
-import { useState } from 'react'
 import api from '../services/api'
 import ListingCard from '../components/listings/ListingCard'
 import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
@@ -73,6 +72,13 @@ export default function Browse() {
 
   const listings = data?.pages.flatMap((p) => p?.data ?? []) ?? []
   const total    = data?.pages[0]?.total ?? 0
+  const noResults = !isLoading && total === 0 && !!params.get('q')
+
+  const { data: similarData } = useQuery({
+    queryKey: ['search-similar', params.get('q')],
+    queryFn: () => api.get(`/search/similar?q=${encodeURIComponent(params.get('q'))}&limit=8`).then((r) => r.data.data || []),
+    enabled: noResults,
+  })
 
   const q        = params.get('q')
   const category = params.get('category')
@@ -161,10 +167,24 @@ export default function Browse() {
               {Array.from({ length: 12 }).map((_, i) => <ListingCardSkeleton key={i} />)}
             </div>
           ) : listings.length === 0 ? (
-            <EmptyState
-              title={q ? `No results for "${q}"` : 'Nothing found here'}
-              subtitle="Looks like this one stumped us. Try different filters or a new search term."
-            />
+            <div>
+              <EmptyState
+                title={q ? `No results for "${q}"` : 'Nothing found here'}
+                subtitle="Looks like this one stumped us. Try different filters or a new search term."
+              />
+              {similarData?.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-base font-bold text-gray-800 mb-4">
+                    Similar listings you might like
+                  </h2>
+                  <div className={`grid grid-cols-2 sm:grid-cols-3 ${showFilters ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4`}>
+                    {similarData.map((listing) => (
+                      <ListingCard key={listing.id} listing={listing} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <div className={`grid grid-cols-2 sm:grid-cols-3 ${showFilters ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4`}>

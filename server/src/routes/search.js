@@ -108,4 +108,49 @@ router.get('/', optionalAuth, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/search/similar — OR-word fallback when main search returns 0 results
+router.get('/similar', optionalAuth, async (req, res, next) => {
+  try {
+    const { q = '', limit = 8 } = req.query
+    const words = q.trim().split(/\s+/).filter(Boolean).slice(0, 8)
+    if (!words.length) return res.json({ success: true, data: [] })
+
+    const take = Math.min(Number(limit), 16)
+    const values = []
+
+    // OR logic: any word matching in title or description
+    const orClauses = words.map((word) => {
+      values.push(`%${word}%`)
+      return `(l.title ILIKE $${values.length} OR l.description ILIKE $${values.length})`
+    })
+
+    // Score each result by how many words match (more = ranked higher)
+    const matchScore = words.map((_, i) => {
+      const idx = i + 1
+      return `CASE WHEN (l.title ILIKE $${idx} OR l.description ILIKE $${idx}) THEN 1 ELSE 0 END`
+    }).join(' + ')
+
+    values.push(take)
+    const listings = await prisma.$queryRawUnsafe(`
+      SELECT
+        l.*,
+        json_build_object(
+          'id', u.id, 'name', u.name, 'avatar', u.avatar,
+          'id_verified', u.id_verified, 'rating_avg', u.rating_avg
+        ) AS seller,
+        (SELECT json_agg(json_build_object('url', li.url, 'order', li.order) ORDER BY li.order)
+         FROM listing_images li WHERE li.listing_id = l.id) AS images,
+        json_build_object('id', lo.id, 'region', lo.region, 'city', lo.city, 'area', lo.area) AS location
+      FROM listings l
+      LEFT JOIN users u ON u.id = l.user_id
+      LEFT JOIN locations lo ON lo.id = l.location_id
+      WHERE l.status = 'active' AND (${orClauses.join(' OR ')})
+      ORDER BY (${matchScore}) DESC, l.score DESC
+      LIMIT $${values.length}
+    `, ...values)
+
+    res.json({ success: true, data: listings })
+  } catch (err) { next(err) }
+})
+
 module.exports = router
