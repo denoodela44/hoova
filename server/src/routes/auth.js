@@ -73,7 +73,7 @@ router.post('/register', [
         user: { id: user.id, name: user.name, email: user.email, phone: user.phone, subscription_tier: user.subscription_tier },
         token,
         refreshToken,
-        requiresPhoneVerify: !!fullPhone,
+        requiresPhoneVerify: false, // SMS not yet configured — skip verification
       },
     })
   } catch (err) { next(err) }
