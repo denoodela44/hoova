@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Megaphone, Send, Trash2, CheckCircle, Clock, Users } from 'lucide-react'
 import api from '../../services/api'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 
 const TYPE_META = {
   info:    { label: 'Info',    bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
@@ -27,6 +28,7 @@ export default function AdminAnnouncements() {
   const qc = useQueryClient()
   const [composing, setComposing] = useState(false)
   const [form, setForm] = useState({ title: '', body: '', type: 'info', target: 'all' })
+  const [confirmState, setConfirmState] = useState(null)
 
   const { data: announcements = MOCK } = useQuery({
     queryKey: ['admin', 'announcements'],
@@ -168,14 +170,14 @@ export default function AdminAnnouncements() {
                 </div>
                 <div className="flex gap-1 shrink-0">
                   {!sent && (
-                    <button onClick={() => { if (confirm(`Send "${a.title}" to ${am.label}?`)) sendAnn(a.id) }}
+                    <button onClick={() => setConfirmState({ message: `Send "${a.title}" to ${am.label}?`, confirmLabel: 'Send', danger: false, onConfirm: () => sendAnn(a.id) })}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white"
                       style={{ background: '#B81365' }}>
                       <Send className="w-3 h-3" /> Send
                     </button>
                   )}
                   {!sent && (
-                    <button onClick={() => { if (confirm('Delete draft?')) deleteAnn(a.id) }}
+                    <button onClick={() => setConfirmState({ message: 'Delete this draft announcement?', onConfirm: () => deleteAnn(a.id) })}
                       className="p-1.5 rounded-xl text-red-400 hover:bg-red-50">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -185,6 +187,15 @@ export default function AdminAnnouncements() {
             </div>
           )
         })}
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel || 'Delete'}
+          danger={confirmState.danger !== false}
+          onConfirm={() => { confirmState.onConfirm(); setConfirmState(null) }}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Tag, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Save, X } from 'lucide-react'
 import api from '../../services/api'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 
 const MOCK_CATS = [
   { id: 'c1', name: 'Vehicles',     slug: 'vehicles',     icon_name: '🚗', _count: { listings: 14200 }, children: [
@@ -24,9 +25,10 @@ const MOCK_CATS = [
 export default function AdminCategories() {
   const qc = useQueryClient()
   const [expanded, setExpanded] = useState({})
-  const [editing, setEditing]   = useState(null) // { id, name, slug, icon_name }
-  const [adding, setAdding]     = useState(null)  // { parent_id } | 'root'
+  const [editing, setEditing]   = useState(null)
+  const [adding, setAdding]     = useState(null)
   const [form, setForm]         = useState({ name: '', slug: '', icon_name: '' })
+  const [confirmState, setConfirmState] = useState(null)
 
   const { data: categories = MOCK_CATS } = useQuery({
     queryKey: ['admin', 'categories'],
@@ -117,7 +119,7 @@ export default function AdminCategories() {
                     className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => { if (confirm(`Delete "${cat.name}"?`)) deleteCat(cat.id) }}
+                  <button onClick={() => setConfirmState({ message: `Delete "${cat.name}" and all its subcategories?`, onConfirm: () => deleteCat(cat.id) })}
                     className="p-1.5 rounded-lg text-red-400 hover:bg-red-50">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -163,7 +165,7 @@ export default function AdminCategories() {
                         className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100">
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => { if (confirm(`Delete "${sub.name}"?`)) deleteCat(sub.id) }}
+                      <button onClick={() => setConfirmState({ message: `Delete subcategory "${sub.name}"?`, onConfirm: () => deleteCat(sub.id) })}
                         className="p-1.5 rounded-lg text-red-400 hover:bg-red-50">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -174,6 +176,13 @@ export default function AdminCategories() {
             ))}
           </div>
         ))}
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          onConfirm={() => { confirmState.onConfirm(); setConfirmState(null) }}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
       </div>
     </div>
   )

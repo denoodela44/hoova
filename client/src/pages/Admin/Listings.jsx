@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -83,6 +84,7 @@ const SORT_OPTIONS   = [
 export default function AdminListings() {
   const qc = useQueryClient()
   const [page, setPage]         = useState(1)
+  const [confirmState, setConfirmState] = useState(null)
   const [q, setQ]               = useState('')
   const [status, setStatus]     = useState('all')
   const [search, setSearch]     = useState('')
@@ -397,7 +399,7 @@ export default function AdminListings() {
                             <XCircle className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <button onClick={() => { if (confirm(`Delete "${l.title}"?`)) deleteListing(l.id) }}
+                        <button onClick={() => setConfirmState({ message: `Delete "${l.title}"?`, onConfirm: () => deleteListing(l.id) })}
                           className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-colors" title="Delete">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -424,6 +426,13 @@ export default function AdminListings() {
             </button>
           </div>
         </div>
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          onConfirm={() => { confirmState.onConfirm(); setConfirmState(null) }}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
       </div>
     </div>
   )

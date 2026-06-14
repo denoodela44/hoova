@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ConfirmModal from '../../components/ui/ConfirmModal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -84,6 +85,7 @@ export default function AdminUsers() {
   const [sort, setSort]           = useState('newest')
   const [tierModal, setTierModal] = useState(null)
   const [drawer, setDrawer]       = useState(null)   // user object
+  const [confirmState, setConfirmState] = useState(null)
   const [showCharts, setShowCharts] = useState(true)
 
   const { data } = useQuery({
@@ -393,7 +395,7 @@ export default function AdminUsers() {
                           <Ban className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => { if (confirm(`Delete "${u.name}"? All their listings will also be deleted.`)) deleteUser(u.id) }}
+                          onClick={() => setConfirmState({ message: `Delete "${u.name}"? All their listings will also be deleted.`, onConfirm: () => deleteUser(u.id) })}
                           className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-colors" title="Delete user">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -430,7 +432,15 @@ export default function AdminUsers() {
           onVerify={() => updateUser({ id: drawer.id, id_verified: !drawer.id_verified })}
           onBan={() => updateUser({ id: drawer.id, is_banned: !drawer.is_banned })}
           onChangeTier={() => { setTierModal({ userId: drawer.id, currentTier: drawer.subscription_tier }); setDrawer(null) }}
-          onDelete={() => { if (confirm(`Delete ${drawer.name}?`)) deleteUser(drawer.id) }}
+          onDelete={() => setConfirmState({ message: `Delete ${drawer.name}? All their listings will also be deleted.`, onConfirm: () => { deleteUser(drawer.id); setDrawer(null) } })}
+        />
+      )}
+
+      {confirmState && (
+        <ConfirmModal
+          message={confirmState.message}
+          onConfirm={() => { confirmState.onConfirm(); setConfirmState(null) }}
+          onCancel={() => setConfirmState(null)}
         />
       )}
 
