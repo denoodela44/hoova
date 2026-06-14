@@ -5,13 +5,17 @@ const api = axios.create({
   timeout: 15000,
 })
 
+const isAdminSession = () => !!localStorage.getItem('hoova-admin-token')
+const onAdminPage = () => window.location.pathname.startsWith('/admin')
+
 // Attach JWT on every request
 api.interceptors.request.use((config) => {
   try {
-    // Admin routes use separate admin token
-    if (config.url?.startsWith('/admin')) {
-      const adminToken = localStorage.getItem('hoova-admin-token')
-      if (adminToken) { config.headers.Authorization = `Bearer ${adminToken}`; return config }
+    const adminToken = localStorage.getItem('hoova-admin-token')
+    // Use admin token for /admin/* URLs or when browsing admin pages
+    if (adminToken && (config.url?.startsWith('/admin') || onAdminPage())) {
+      config.headers.Authorization = `Bearer ${adminToken}`
+      return config
     }
     const stored = JSON.parse(localStorage.getItem('hoova-auth') || '{}')
     const token = stored?.state?.token
@@ -20,12 +24,12 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// On 401, clear auth — admin routes silently clear token, user routes redirect to login
+// On 401: admin sessions never redirect to user login
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      if (err.config?.url?.startsWith('/admin')) {
+      if (isAdminSession() || onAdminPage()) {
         localStorage.removeItem('hoova-admin-token')
       } else {
         localStorage.removeItem('hoova-auth')
