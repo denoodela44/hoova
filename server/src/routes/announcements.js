@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth, requireAdmin } = require('../middleware/auth')
+const { requireAuth, requireAdminToken } = require('../middleware/auth')
 
 // ── GET /api/announcements — public: latest announcements for banner ─
 router.get('/', async (_req, res, next) => {
@@ -15,7 +15,7 @@ router.get('/', async (_req, res, next) => {
 })
 
 // ── GET /api/announcements/admin — admin: all announcements ──────────
-router.get('/admin', requireAuth, requireAdmin, async (_req, res, next) => {
+router.get('/admin', requireAdminToken, async (_req, res, next) => {
   try {
     const announcements = await prisma.announcement.findMany({
       orderBy: { created_at: 'desc' },
@@ -25,7 +25,7 @@ router.get('/admin', requireAuth, requireAdmin, async (_req, res, next) => {
 })
 
 // ── POST /api/announcements — admin: create ──────────────────────────
-router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
+router.post('/', requireAdminToken, async (req, res, next) => {
   try {
     const { title, body, type = 'info', target = 'all' } = req.body
     if (!title?.trim() || !body?.trim()) {
@@ -46,7 +46,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
 })
 
 // ── POST /api/announcements/:id/send — admin: send to users ──────────
-router.post('/:id/send', requireAuth, requireAdmin, async (req, res, next) => {
+router.post('/:id/send', requireAdminToken, async (req, res, next) => {
   try {
     const announcement = await prisma.announcement.findUnique({ where: { id: req.params.id } })
     if (!announcement) return res.status(404).json({ success: false, message: 'Not found' })
@@ -84,7 +84,7 @@ router.post('/:id/send', requireAuth, requireAdmin, async (req, res, next) => {
 })
 
 // ── DELETE /api/announcements/:id — admin: delete draft ─────────────
-router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
+router.delete('/:id', requireAdminToken, async (req, res, next) => {
   try {
     const ann = await prisma.announcement.findUnique({ where: { id: req.params.id } })
     if (ann?.sent_at) return res.status(400).json({ success: false, message: 'Cannot delete sent announcements' })

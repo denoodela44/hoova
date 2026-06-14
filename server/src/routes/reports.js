@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth, requireAdmin } = require('../middleware/auth')
+const { requireAuth, requireAdminToken } = require('../middleware/auth')
 
 const VALID_REASONS = ['spam', 'scam', 'inappropriate', 'prohibited', 'wrong_category', 'duplicate', 'other']
 
@@ -40,7 +40,7 @@ router.post('/', requireAuth, async (req, res, next) => {
 })
 
 // ── GET /api/reports — admin: list all reports ───────────────────────
-router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
+router.get('/', requireAdminToken, async (req, res, next) => {
   try {
     const page   = Math.max(1, parseInt(req.query.page)  || 1)
     const limit  = Math.min(50, parseInt(req.query.limit) || 20)
@@ -112,7 +112,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
 })
 
 // ── PATCH /api/reports/:id — admin: update status ────────────────────
-router.patch('/:id', requireAuth, requireAdmin, async (req, res, next) => {
+router.patch('/:id', requireAdminToken, async (req, res, next) => {
   try {
     const { status, action_taken } = req.body
     const report = await prisma.report.update({

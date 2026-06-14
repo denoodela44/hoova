@@ -8,6 +8,11 @@ const api = axios.create({
 // Attach JWT on every request
 api.interceptors.request.use((config) => {
   try {
+    // Admin routes use separate admin token
+    if (config.url?.startsWith('/admin')) {
+      const adminToken = localStorage.getItem('hoova-admin-token')
+      if (adminToken) { config.headers.Authorization = `Bearer ${adminToken}`; return config }
+    }
     const stored = JSON.parse(localStorage.getItem('hoova-auth') || '{}')
     const token = stored?.state?.token
     if (token) config.headers.Authorization = `Bearer ${token}`

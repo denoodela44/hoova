@@ -42,4 +42,21 @@ function requireAdmin(req, res, next) {
   next()
 }
 
-module.exports = { requireAuth, optionalAuth, requireAdmin }
+const ADMIN_JWT_SECRET = process.env.ADMIN_SECRET || 'hoova-admin-secret-fallback-2024'
+
+function requireAdminToken(req, res, next) {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, message: 'Admin login required' })
+  }
+  try {
+    const payload = jwt.verify(header.slice(7), ADMIN_JWT_SECRET)
+    if (payload.role !== 'admin') throw new Error('Not admin token')
+    req.adminEmail = payload.email
+    next()
+  } catch {
+    return res.status(401).json({ success: false, message: 'Admin session expired' })
+  }
+}
+
+module.exports = { requireAuth, optionalAuth, requireAdmin, requireAdminToken, ADMIN_JWT_SECRET }

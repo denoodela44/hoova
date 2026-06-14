@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth, requireAdmin } = require('../middleware/auth')
+const { requireAuth, requireAdminToken } = require('../middleware/auth')
 
 // Keys exposed publicly (for frontend tracking + branding injection)
 const PUBLIC_KEYS = [
@@ -43,7 +43,7 @@ router.get('/public', async (_req, res, next) => {
 
 // ── GET /api/settings/admin ──────────────────────────────────────────
 // Admin: return all settings
-router.get('/admin', requireAuth, requireAdmin, async (_req, res, next) => {
+router.get('/admin', requireAdminToken, async (_req, res, next) => {
   try {
     const rows = await prisma.siteSetting.findMany({ orderBy: { key: 'asc' } })
     const data = {}
@@ -54,7 +54,7 @@ router.get('/admin', requireAuth, requireAdmin, async (_req, res, next) => {
 
 // ── PATCH /api/settings/admin ────────────────────────────────────────
 // Admin: upsert any number of key-value pairs
-router.patch('/admin', requireAuth, requireAdmin, async (req, res, next) => {
+router.patch('/admin', requireAdminToken, async (req, res, next) => {
   try {
     const entries = Object.entries(req.body)
     if (!entries.length) return res.status(400).json({ success: false, message: 'No settings provided' })

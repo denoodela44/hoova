@@ -1,9 +1,25 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth, requireAdmin } = require('../middleware/auth')
+const jwt = require('jsonwebtoken')
+const { requireAdminToken, ADMIN_JWT_SECRET } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
 
-router.use(requireAuth, requireAdmin)
+// POST /api/admin/login — standalone admin login, no user account needed
+router.post('/login', (req, res) => {
+  const { email, password } = req.body
+  const adminEmail = process.env.ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminEmail || !adminPassword) {
+    return res.status(500).json({ success: false, message: 'ADMIN_EMAIL and ADMIN_PASSWORD not set in environment' })
+  }
+  if (email !== adminEmail || password !== adminPassword) {
+    return res.status(401).json({ success: false, message: 'Invalid admin credentials' })
+  }
+  const token = jwt.sign({ role: 'admin', email }, ADMIN_JWT_SECRET, { expiresIn: '12h' })
+  res.json({ success: true, data: { token, email } })
+})
+
+router.use(requireAdminToken)
 
 // ══════════════════════════════════════════════════════════════════
 //  LISTINGS

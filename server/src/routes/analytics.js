@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth, requireAdmin } = require('../middleware/auth')
+const { requireAuth, requireAdminToken } = require('../middleware/auth')
 const { logSearch } = require('../utils/searchLogger')
 
 // GET /api/analytics/trending — public, top searched terms (used on homepage)
@@ -40,7 +40,7 @@ router.post('/search', async (req, res) => {
 })
 
 // GET /api/analytics/searches — search analytics (admin)
-router.get('/searches', requireAuth, requireAdmin, async (req, res, next) => {
+router.get('/searches', requireAdminToken, async (req, res, next) => {
   try {
     const { days = 30, category } = req.query
     const since = new Date(Date.now() - Number(days) * 86400000)
@@ -119,7 +119,7 @@ router.get('/searches', requireAuth, requireAdmin, async (req, res, next) => {
 })
 
 // GET /api/analytics/admin/dashboard — platform overview stats
-router.get('/admin/dashboard', requireAuth, requireAdmin, async (req, res, next) => {
+router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
   try {
     const today     = new Date(); today.setHours(0, 0, 0, 0)
     const yesterday = new Date(today - 86400000)

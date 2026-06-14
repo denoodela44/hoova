@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import AdminLayout from './pages/Admin/AdminLayout'
+import AdminLogin from './pages/Admin/AdminLogin'
 import AdminDashboard from './pages/Admin/Dashboard'
 import SearchAnalytics from './pages/Admin/SearchAnalytics'
 import AdminListings from './pages/Admin/Listings'
@@ -38,9 +39,8 @@ function RequireAuth({ children }) {
 }
 
 function RequireAdmin({ children }) {
-  const { isLoggedIn, user } = useAuthStore()
-  if (!isLoggedIn()) return <Navigate to="/login" replace />
-  if (user?.subscription_tier !== 'admin') return <Navigate to="/" replace />
+  const token = localStorage.getItem('hoova-admin-token')
+  if (!token) return <Navigate to="/admin/login" replace />
   return children
 }
 
@@ -63,6 +63,7 @@ export default function App() {
           <Route path="/store/:slug"  element={<SellerStore />} />
           <Route path="/buy/:category/:city" element={<CategoryCityLanding />} />
           <Route path="/buy/:category" element={<Browse />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminDashboard />} />
             <Route path="search" element={<SearchAnalytics />} />
