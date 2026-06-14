@@ -38,11 +38,10 @@ function RequireAuth({ children }) {
 }
 
 function RequireAdmin({ children }) {
-  // TODO: restore auth check after DB is connected
+  const { isLoggedIn, user } = useAuthStore()
+  if (!isLoggedIn()) return <Navigate to="/login" replace />
+  if (user?.subscription_tier !== 'admin') return <Navigate to="/" replace />
   return children
-  // const { isLoggedIn, user } = useAuthStore()
-  // if (!isLoggedIn()) return <Navigate to="/login" replace />
-  // if (user?.subscription_tier !== 'admin') return <Navigate to="/" replace />
 }
 
 export default function App() {

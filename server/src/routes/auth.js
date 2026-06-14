@@ -181,4 +181,23 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ success: true, data: { id, name, email, phone, avatar, bio, phone_verified, email_verified, id_verified, subscription_tier, rating_avg, review_count, created_at } })
 })
 
+// POST /api/auth/make-admin  — one-time setup, requires ADMIN_SECRET env var
+router.post('/make-admin', async (req, res, next) => {
+  try {
+    const { email, secret } = req.body
+    const adminSecret = process.env.ADMIN_SECRET
+    if (!adminSecret) return res.status(500).json({ success: false, message: 'ADMIN_SECRET not configured on server' })
+    if (!secret || secret !== adminSecret) return res.status(403).json({ success: false, message: 'Invalid secret' })
+    if (!email) return res.status(400).json({ success: false, message: 'Email required' })
+    const user = await prisma.user.update({
+      where: { email },
+      data: { subscription_tier: 'admin' },
+    })
+    res.json({ success: true, message: `✅ ${user.name} (${user.email}) is now an admin` })
+  } catch (err) {
+    if (err.code === 'P2025') return res.status(404).json({ success: false, message: 'No user found with that email' })
+    next(err)
+  }
+})
+
 module.exports = router
