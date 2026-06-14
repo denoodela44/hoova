@@ -41,6 +41,7 @@ const PLANS = {
   free:     { label: 'Free',     price: 0,   color: '#6b7280', bg: '#f3f4f6', features: ['5 active listings', 'Basic search placement', 'Standard support'] },
   pro:      { label: 'Pro',      price: 50,  color: '#B81365', bg: '#fdf2f5', features: ['25 active listings', 'Priority search placement', '3 featured boosts/month', 'Store profile page', 'Analytics dashboard'] },
   business: { label: 'Business', price: 150, color: '#c2410c', bg: '#fff7ed', features: ['Unlimited listings', 'Top search placement', '10 featured boosts/month', 'Verified badge', 'Dedicated support', 'Custom store URL'] },
+  admin:    { label: 'Admin',    price: 0,   color: '#7c3aed', bg: '#f5f3ff', features: ['Full platform access', 'All features unlocked', 'Admin dashboard'] },
 }
 
 export default function Dashboard() {
