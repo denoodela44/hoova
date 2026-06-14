@@ -10,28 +10,31 @@ router.get('/env-debug', (_req, res) => {
   res.json({ found: adminKeys, nodeEnv: process.env.NODE_ENV })
 })
 
-// POST /api/admin/login — standalone admin login, no user account needed
+// POST /api/admin/login — standalone admin login
 router.post('/login', (req, res) => {
   const { email, password, accessKey } = req.body
   const adminEmail = process.env.ADMIN_EMAIL
   const adminPassword = process.env.ADMIN_PASSWORD
   const adminAccessKey = process.env.ADMIN_ACCESS_KEY
 
-  // If ADMIN_ACCESS_KEY is set, require it — wrong key returns 404 (not 401)
-  if (adminAccessKey && accessKey !== adminAccessKey) {
+  // Wrong or missing access key → 404 (hide that admin exists)
+  if (!adminAccessKey) {
+    return res.status(500).json({ success: false, message: 'ADMIN_ACCESS_KEY not set in Railway' })
+  }
+  if (accessKey !== adminAccessKey) {
     return res.status(404).json({ success: false, message: 'Not found' })
   }
-  if (!adminEmail) {
-    return res.status(500).json({ success: false, message: 'ADMIN_EMAIL missing in Railway' })
+
+  // If ADMIN_EMAIL + ADMIN_PASSWORD are set, also verify them
+  // If they're missing (Railway env var issue), the access key alone is sufficient
+  if (adminEmail && adminPassword) {
+    if (email !== adminEmail || password !== adminPassword) {
+      return res.status(401).json({ success: false, message: 'Invalid admin credentials' })
+    }
   }
-  if (!adminPassword) {
-    return res.status(500).json({ success: false, message: 'ADMIN_PASSWORD missing in Railway' })
-  }
-  if (email !== adminEmail || password !== adminPassword) {
-    return res.status(401).json({ success: false, message: 'Invalid admin credentials' })
-  }
-  const token = jwt.sign({ role: 'admin', email }, ADMIN_JWT_SECRET, { expiresIn: '12h' })
-  res.json({ success: true, data: { token, email } })
+
+  const token = jwt.sign({ role: 'admin', email: email || 'admin' }, ADMIN_JWT_SECRET, { expiresIn: '12h' })
+  res.json({ success: true, data: { token, email: email || 'admin' } })
 })
 
 router.use(requireAdminToken)
