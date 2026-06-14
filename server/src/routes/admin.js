@@ -1,14 +1,7 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth } = require('../middleware/auth')
+const { requireAuth, requireAdmin } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
-
-function requireAdmin(req, res, next) {
-  if (req.user?.subscription_tier !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin access required' })
-  }
-  next()
-}
 
 router.use(requireAuth, requireAdmin)
 

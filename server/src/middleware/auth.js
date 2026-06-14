@@ -34,4 +34,12 @@ function optionalAuth(req, _res, next) {
   next()
 }
 
-module.exports = { requireAuth, optionalAuth }
+function requireAdmin(req, res, next) {
+  const isAdmin =
+    req.user?.subscription_tier === 'admin' ||
+    (process.env.ADMIN_EMAIL && req.user?.email === process.env.ADMIN_EMAIL)
+  if (!isAdmin) return res.status(403).json({ success: false, message: 'Admin access required' })
+  next()
+}
+
+module.exports = { requireAuth, optionalAuth, requireAdmin }

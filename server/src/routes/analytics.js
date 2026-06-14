@@ -1,15 +1,7 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth } = require('../middleware/auth')
+const { requireAuth, requireAdmin } = require('../middleware/auth')
 const { logSearch } = require('../utils/searchLogger')
-
-// ── Middleware: admin-only guard ───────────────────────────────
-function requireAdmin(req, res, next) {
-  if (req.user?.subscription_tier !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin access required' })
-  }
-  next()
-}
 
 // GET /api/analytics/trending — public, top searched terms (used on homepage)
 router.get('/trending', async (req, res, next) => {

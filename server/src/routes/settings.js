@@ -1,13 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth } = require('../middleware/auth')
-
-function requireAdmin(req, res, next) {
-  if (!req.user || req.user.subscription_tier !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin only' })
-  }
-  next()
-}
+const { requireAuth, requireAdmin } = require('../middleware/auth')
 
 // Keys exposed publicly (for frontend tracking + branding injection)
 const PUBLIC_KEYS = [

@@ -1,13 +1,6 @@
 const router = require('express').Router()
 const prisma = require('../utils/prisma')
-const { requireAuth } = require('../middleware/auth')
-
-function requireAdmin(req, res, next) {
-  if (req.user?.subscription_tier !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin only' })
-  }
-  next()
-}
+const { requireAuth, requireAdmin } = require('../middleware/auth')
 
 // ── GET /api/announcements — public: latest announcements for banner ─
 router.get('/', async (_req, res, next) => {
