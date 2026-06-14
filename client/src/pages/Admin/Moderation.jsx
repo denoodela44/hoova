@@ -64,26 +64,13 @@ export default function Moderation() {
 
   const { data: counts = { pending: 0, flagged: 0, soft_live: 0 } } = useQuery({
     queryKey: ['admin', 'moderation', 'counts'],
-    queryFn: async () => {
-      try { return await api.get('/admin/moderation/counts').then((r) => r.data.data) }
-      catch { return { pending: 8, flagged: 5, soft_live: 4 } }
-    },
+    queryFn: () => api.get('/admin/moderation/counts').then((r) => r.data.data),
     refetchInterval: 30000,
   })
 
   const { data } = useQuery({
     queryKey: ['admin', 'moderation', tab, page],
-    queryFn: async () => {
-      try {
-        return await api.get(`/admin/moderation/${endpointMap[tab]}?page=${page}&limit=20`).then((r) => r.data.data)
-      } catch {
-        return {
-          listings:   tab === 'pending' ? MOCK_PENDING : tab === 'flagged' ? MOCK_FLAGGED : MOCK_SOFT,
-          total:      tab === 'pending' ? 8 : tab === 'flagged' ? 5 : 4,
-          totalPages: 1,
-        }
-      }
-    },
+    queryFn: () => api.get(`/admin/moderation/${endpointMap[tab]}?page=${page}&limit=20`).then((r) => r.data.data),
     keepPreviousData: true,
   })
 

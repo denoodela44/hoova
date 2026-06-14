@@ -239,7 +239,6 @@ router.post('/moderation/:id/approve', async (req, res, next) => {
       data:  {
         status:      'active',
         is_flagged:  false,
-        reviewed_by: req.user.id,
         reviewed_at: new Date(),
       },
       select: { id: true, title: true, user_id: true },
@@ -275,7 +274,6 @@ router.post('/moderation/:id/reject', async (req, res, next) => {
       data:  {
         status:      'rejected',
         flag_note:   reason,
-        reviewed_by: req.user.id,
         reviewed_at: new Date(),
       },
       select: { id: true, title: true, user_id: true },
@@ -316,7 +314,7 @@ router.post('/moderation/bulk-approve', async (req, res, next) => {
 
     await prisma.listing.updateMany({
       where: { id: { in: ids }, status: { in: ['pending', 'soft_live'] } },
-      data:  { status: 'active', is_flagged: false, reviewed_by: req.user.id, reviewed_at: new Date() },
+      data:  { status: 'active', is_flagged: false, reviewed_at: new Date() },
     })
 
     // Notify sellers in batch

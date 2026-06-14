@@ -20,15 +20,17 @@ const MOCK = {
 }
 
 export default function Dashboard() {
-  const { data = MOCK } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'dashboard'],
-    queryFn: async () => {
-      try {
-        return await api.get('/analytics/admin/dashboard').then((r) => r.data.data)
-      } catch { return MOCK }
-    },
+    queryFn: () => api.get('/analytics/admin/dashboard').then((r) => r.data.data),
     refetchInterval: 60000,
   })
+
+  if (isLoading || !data) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#B81365', borderTopColor: 'transparent' }} />
+    </div>
+  )
 
   return (
     <div className="space-y-6 max-w-6xl">
