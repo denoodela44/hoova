@@ -154,6 +154,7 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
               boxShadow: '0 4px 32px rgba(0,0,0,0.14), 0 1px 6px rgba(0,0,0,0.08)',
               height: 56,
               overflow: 'hidden',
+              outline: 'none',
             }}
           >
             {/* Search icon */}
@@ -169,7 +170,7 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
               onFocus={() => setOpen(true)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              className="flex-1 h-full text-[15px] text-gray-800 bg-transparent outline-none placeholder-gray-400 min-w-0"
+              className="flex-1 h-full text-[15px] text-gray-800 bg-transparent outline-none focus:outline-none ring-0 focus:ring-0 border-0 placeholder-gray-400 min-w-0"
               autoComplete="off"
               spellCheck={false}
             />
@@ -218,8 +219,8 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
             {/* Search button */}
             <button
               type="submit"
-              className="h-full text-white font-bold shrink-0 transition-opacity active:opacity-90 hover:opacity-90 px-4 sm:px-7 text-[15px]"
-              style={{ background: '#B81365' }}
+              className="h-full text-white font-bold shrink-0 active:opacity-90 hover:opacity-90 px-5 sm:px-8"
+              style={{ background: '#B81365', fontSize: 15, letterSpacing: '-0.01em' }}
             >
               <span className="hidden sm:inline">Search</span>
               <Search className="w-5 h-5 sm:hidden" strokeWidth={2.5} />

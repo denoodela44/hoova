@@ -206,27 +206,22 @@ export default function ListingCard({ listing, onSaveToggle }) {
       {/* Content */}
       <div className="p-3.5">
         {/* Price / Bid */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div>
-            {isAuction && (
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider leading-none mb-0.5">
-                {listing.bid_count > 0 ? 'Current bid' : 'Starting bid'}
-              </p>
-            )}
+        <div className="mb-1">
+          {isAuction && (
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider leading-none mb-0.5">
+              {listing.bid_count > 0 ? 'Current bid' : 'Starting bid'}
+            </p>
+          )}
+          <div className="flex items-center gap-2 flex-wrap">
             <p
               className="font-bold"
               style={{ fontFamily: "'Poppins', sans-serif", fontSize: 15, color: isAuction ? '#B81365' : 'inherit' }}
             >
               {formatPrice(isAuction ? (listing.current_bid || listing.starting_bid || listing.price) : listing.price)}
             </p>
-            {isAuction && listing.bid_count > 0 && (
-              <p className="text-[11px] text-gray-400">{listing.bid_count} bid{listing.bid_count !== 1 ? 's' : ''}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
             {listing.price_dropped && !isAuction && (
               <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded" style={{ background: '#dcfce7', color: '#15803d' }}>
-                ↓ Drop
+                ↓ Price drop
               </span>
             )}
             {listing.negotiable && !isAuction && (
@@ -235,6 +230,9 @@ export default function ListingCard({ listing, onSaveToggle }) {
               </span>
             )}
           </div>
+          {isAuction && listing.bid_count > 0 && (
+            <p className="text-[11px] text-gray-400">{listing.bid_count} bid{listing.bid_count !== 1 ? 's' : ''}</p>
+          )}
         </div>
 
         {/* Title */}
@@ -292,13 +290,7 @@ export default function ListingCard({ listing, onSaveToggle }) {
             <MapPin className="w-3 h-3 shrink-0" />
             <span className="truncate">{listing.location?.city || listing.city || 'Ghana'}</span>
           </span>
-          <div className="flex items-center gap-1 shrink-0">
-            {listing.seller?.created_at && (
-              <span>{memberDuration(listing.seller.created_at)}</span>
-            )}
-            <span>·</span>
-            <span>{timeAgo(listing.created_at)}</span>
-          </div>
+          <span className="shrink-0">{timeAgo(listing.created_at)}</span>
         </div>
       </div>
     </Link>
