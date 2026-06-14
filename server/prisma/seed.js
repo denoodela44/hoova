@@ -97,8 +97,10 @@ const LOCATIONS = [
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Enable pg_trgm for fuzzy search
+  // Enable pg_trgm and create trigram indexes for fast fuzzy search
   await prisma.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS pg_trgm')
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS listings_title_trgm ON listings USING gin (title gin_trgm_ops)')
+  await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS listings_desc_trgm ON listings USING gin (description gin_trgm_ops)')
 
   // Categories
   for (const cat of CATEGORIES) {
