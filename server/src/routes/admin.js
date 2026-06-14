@@ -40,7 +40,7 @@ router.get('/listings', async (req, res, next) => {
     const page    = Math.max(1, parseInt(req.query.page)  || 1)
     const limit   = Math.min(50, parseInt(req.query.limit) || 20)
     const skip    = (page - 1) * limit
-    const { status, category, q } = req.query
+    const { status, category, q, sort } = req.query
 
     const where = {}
     if (status)   where.status = status
@@ -53,6 +53,15 @@ router.get('/listings', async (req, res, next) => {
       ]
     }
 
+    const ORDER = {
+      newest:     { created_at: 'desc' },
+      oldest:     { created_at: 'asc' },
+      views_desc: { views_count: 'desc' },
+      price_desc: { price: 'desc' },
+      price_asc:  { price: 'asc' },
+    }
+    const orderBy = ORDER[sort] || ORDER.newest
+
     const [listings, total] = await Promise.all([
       prisma.listing.findMany({
         where,
@@ -62,7 +71,7 @@ router.get('/listings', async (req, res, next) => {
           images:   { take: 1, orderBy: { order: 'asc' }, select: { url: true } },
           _count:   { select: { saves: true, conversations: true } },
         },
-        orderBy: { created_at: 'desc' },
+        orderBy,
         skip,
         take: limit,
       }),
@@ -450,8 +459,10 @@ router.patch('/users/:id', async (req, res, next) => {
 // DELETE /api/admin/users/:id  (can't delete yourself)
 router.delete('/users/:id', async (req, res, next) => {
   try {
-    if (req.params.id === req.user.id) {
-      return res.status(400).json({ success: false, message: "You can't delete your own account" })
+    const user = await prisma.user.findUnique({ where: { id: req.params.id }, select: { email: true } })
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' })
+    if (user.email === req.adminEmail) {
+      return res.status(400).json({ success: false, message: "Can't delete the admin account" })
     }
     await prisma.user.delete({ where: { id: req.params.id } })
     res.json({ success: true })

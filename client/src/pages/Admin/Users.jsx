@@ -88,23 +88,19 @@ export default function AdminUsers() {
   const [confirmState, setConfirmState] = useState(null)
   const [showCharts, setShowCharts] = useState(true)
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'users', page, tier, verified, search, sort],
     queryFn: async () => {
-      try {
-        const params = new URLSearchParams({ page, limit: 20, sort })
-        if (tier !== 'all') params.set('tier', tier)
-        if (verified !== 'all') params.set('verified', verified)
-        if (search) params.set('q', search)
-        return await api.get(`/admin/users?${params}`).then((r) => r.data.data)
-      } catch {
-        return { users: MOCK_USERS, total: 4821, page: 1, totalPages: 242, stats: MOCK_STATS, growth: MOCK_GROWTH, tier_distribution: MOCK_TIER_DIST }
-      }
+      const params = new URLSearchParams({ page, limit: 20, sort })
+      if (tier !== 'all') params.set('tier', tier)
+      if (verified !== 'all') params.set('verified', verified)
+      if (search) params.set('q', search)
+      return await api.get(`/admin/users?${params}`).then((r) => r.data.data)
     },
     keepPreviousData: true,
   })
 
-  const users       = data?.users             || MOCK_USERS
+  const users       = data?.users             || []
   const stats       = data?.stats             || MOCK_STATS
   const totalPages  = data?.totalPages        || 1
   const growth      = data?.growth            || MOCK_GROWTH
