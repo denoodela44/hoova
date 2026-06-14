@@ -294,8 +294,8 @@ export default function SearchAnalytics() {
 
             {/* Search terms table */}
             <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
-              <div className="p-4 flex items-center gap-3" style={{ borderBottom: '1px solid #f0eeeb' }}>
-                <div className="relative flex-1 max-w-sm">
+              <div className="p-4 flex flex-wrap items-center gap-3" style={{ borderBottom: '1px solid #f0eeeb' }}>
+                <div className="relative flex-1 min-w-48">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input value={liveSearch} onChange={(e) => setLiveSearch(e.target.value)}
                     placeholder="Filter search terms…"
@@ -312,6 +312,32 @@ export default function SearchAnalytics() {
                   ))}
                 </div>
                 <span className="text-[10px] font-bold text-gray-400">{filtered.length} terms</span>
+                <button
+                  onClick={() => {
+                    const exportRows = [
+                      ['Rank', 'Search Term', 'Category', 'Total Searches', 'Zero Result Searches', 'Last Searched'],
+                      ...terms.map((t, i) => [
+                        i + 1,
+                        `"${(t.query || '').replace(/"/g, '""')}"`,
+                        t.category_slug || '',
+                        t.count,
+                        t.zero_results_count,
+                        new Date(t.last_searched_at).toISOString(),
+                      ]),
+                    ]
+                    const csv = exportRows.map((r) => r.join(',')).join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `hoova-searches-${days}d-${new Date().toISOString().slice(0, 10)}.csv`
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all ml-auto"
+                  style={{ background: '#dcfce7', color: '#15803d' }}>
+                  ↓ Export CSV
+                </button>
               </div>
 
               {!liveData ? (

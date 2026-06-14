@@ -118,6 +118,42 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/analytics/searches/export — full CSV download (admin)
+router.get('/searches/export', requireAdminToken, async (req, res, next) => {
+  try {
+    const { days = 365, category } = req.query
+    const since = new Date(Date.now() - Number(days) * 86400000)
+    const where = {
+      last_searched_at: { gte: since },
+      ...(category ? { category_slug: category } : {}),
+    }
+
+    const terms = await prisma.searchTrend.findMany({
+      where,
+      orderBy: { count: 'desc' },
+      select: { query: true, display_query: true, count: true, zero_results_count: true, category_slug: true, last_searched_at: true },
+    })
+
+    const rows = [
+      ['Rank', 'Search Term', 'Normalised Term', 'Category', 'Total Searches', 'Zero Result Searches', 'Last Searched'],
+      ...terms.map((t, i) => [
+        i + 1,
+        `"${(t.display_query || t.query).replace(/"/g, '""')}"`,
+        `"${t.query}"`,
+        t.category_slug || '',
+        t.count,
+        t.zero_results_count,
+        t.last_searched_at.toISOString(),
+      ]),
+    ]
+
+    const csv = rows.map((r) => r.join(',')).join('\n')
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader('Content-Disposition', `attachment; filename="hoova-searches-${days}d.csv"`)
+    res.send(csv)
+  } catch (err) { next(err) }
+})
+
 // GET /api/analytics/admin/dashboard — platform overview stats
 router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
   try {
