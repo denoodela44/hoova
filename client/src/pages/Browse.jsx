@@ -31,7 +31,8 @@ export default function Browse() {
       p.set('page', pageParam)
       p.set('limit', PAGE_SIZE)
       try {
-        return await api.get(`/listings?${p.toString()}`).then((r) => r.data)
+        const endpoint = params.get('q') ? '/search' : '/listings'
+        return await api.get(`${endpoint}?${p.toString()}`).then((r) => r.data)
       } catch {
         return filterMockListings({
           q:         params.get('q')         || '',
