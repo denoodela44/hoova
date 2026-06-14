@@ -44,7 +44,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'img-src': ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://*.cloudinary.com', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://picsum.photos', 'https://fastly.picsum.photos', 'https://ui-avatars.com'],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com', 'https://*.cloudinary.com', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://picsum.photos', 'https://fastly.picsum.photos', 'https://ui-avatars.com', 'https://images.unsplash.com'],
       'connect-src': ["'self'", 'wss:', 'ws:'],
     },
   },

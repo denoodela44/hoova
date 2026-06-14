@@ -48,7 +48,7 @@ export default function Register() {
       <AuthIllustration pwdFocused={pwdFocused} />
 
       {/* ── Right: Form / Verify ── */}
-      <div className="flex-1 flex flex-col items-center justify-start px-8 sm:px-14 pt-12 pb-20 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-start lg:justify-center px-8 sm:px-14 pt-10 pb-16 lg:pt-0 lg:pb-0 overflow-y-auto">
         <div className="w-full max-w-sm">
 
           {/* Mobile logo */}
