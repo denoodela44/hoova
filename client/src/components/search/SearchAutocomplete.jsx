@@ -185,43 +185,44 @@ export default function SearchAutocomplete({ large = false, placeholder = 'What 
               </button>
             )}
 
-            {/* Divider */}
-            <div className="w-px h-7 shrink-0 bg-gray-200 mx-1" />
-
-            {/* Location picker */}
-            <div className="relative flex items-center gap-1.5 px-3 shrink-0">
-              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: '#B81365' }} />
-              <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                style={{
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none',
-                  appearance: 'none',
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#374151',
-                  cursor: 'pointer',
-                  paddingRight: '1.25rem',
-                  maxWidth: 108,
-                }}
-              >
-                <option value="">Anywhere</option>
-                {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <ChevronDown className="w-3 h-3 text-gray-400 absolute right-3 pointer-events-none" />
+            {/* Divider + Location picker — hidden on mobile */}
+            <div className="hidden sm:flex items-center shrink-0">
+              <div className="w-px h-7 bg-gray-200 mx-1" />
+              <div className="relative flex items-center gap-1.5 px-3">
+                <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: '#B81365' }} />
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  style={{
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'none',
+                    appearance: 'none',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#374151',
+                    cursor: 'pointer',
+                    paddingRight: '1.25rem',
+                    maxWidth: 108,
+                  }}
+                >
+                  <option value="">Anywhere</option>
+                  {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <ChevronDown className="w-3 h-3 text-gray-400 absolute right-3 pointer-events-none" />
+              </div>
             </div>
 
             {/* Search button */}
             <button
               type="submit"
-              className="h-full px-7 text-white font-bold text-[15px] shrink-0 transition-opacity active:opacity-90 hover:opacity-90"
+              className="h-full text-white font-bold shrink-0 transition-opacity active:opacity-90 hover:opacity-90 px-4 sm:px-7 text-[15px]"
               style={{ background: '#B81365' }}
             >
-              Search
+              <span className="hidden sm:inline">Search</span>
+              <Search className="w-5 h-5 sm:hidden" strokeWidth={2.5} />
             </button>
           </div>
         </form>
