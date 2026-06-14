@@ -131,7 +131,7 @@ export default function Home() {
       </div>
 
       {/* ── CATEGORY GRID ─────────────────────────────────────────── */}
-      <section className="py-12" style={{ background: '#ECEAE6' }}>
+      <section className="py-6 sm:py-10" style={{ background: '#ECEAE6' }}>
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
             What you shopping for?

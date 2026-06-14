@@ -47,7 +47,7 @@ function RequireAdmin({ children }) {
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-clip">
       <TrackingInjector />
       <Navbar />
       <main className="flex-1 pb-16 lg:pb-0">

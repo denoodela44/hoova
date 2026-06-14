@@ -222,7 +222,7 @@ export default function Register() {
           color: #111827;
         }
         .auth-input::placeholder { color: #9ca3af; }
-        .auth-input:focus { border-color: #B81365; }
+        .auth-input:focus { border-color: #B81365; box-shadow: 0 0 0 3px rgba(184, 19, 101, 0.15); }
       `}</style>
     </div>
   )
