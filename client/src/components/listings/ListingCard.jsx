@@ -218,93 +218,60 @@ export default function ListingCard({ listing, onSaveToggle }) {
       </div>
 
       {/* Content */}
-      <div className="p-3.5">
-        {/* Price / Bid */}
-        <div className="mb-1">
+      <div className="p-3">
+        {/* Price */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-1">
           {isAuction && (
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider leading-none mb-0.5">
-              {listing.bid_count > 0 ? 'Current bid' : 'Starting bid'}
-            </p>
+            <span className="text-[9px] text-gray-400 uppercase tracking-widest font-semibold">
+              {listing.bid_count > 0 ? 'Bid' : 'Start'}
+            </span>
           )}
-          <div className="flex items-center gap-2 flex-wrap">
-            <p
-              className="font-bold"
-              style={{ fontFamily: "'Poppins', sans-serif", fontSize: 15, color: isAuction ? '#B81365' : 'inherit' }}
-            >
-              {formatPrice(isAuction ? (listing.current_bid || listing.starting_bid || listing.price) : listing.price)}
-            </p>
-            {listing.price_dropped && !isAuction && (
-              <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded" style={{ background: '#dcfce7', color: '#15803d' }}>
-                ↓ Price drop
-              </span>
-            )}
-            {listing.negotiable && !isAuction && (
-              <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded" style={{ background: '#fdf2f5', color: '#B81365' }}>
-                Negotiable
-              </span>
-            )}
-          </div>
+          <p
+            className="font-bold leading-none"
+            style={{ fontFamily: "'Poppins', sans-serif", fontSize: 14, color: isAuction ? '#B81365' : 'var(--color-text)' }}
+          >
+            {formatPrice(isAuction ? (listing.current_bid || listing.starting_bid || listing.price) : listing.price)}
+          </p>
+          {listing.price_dropped && !isAuction && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#dcfce7', color: '#15803d' }}>↓</span>
+          )}
+          {listing.negotiable && !isAuction && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#fdf2f5', color: '#B81365' }}>OBO</span>
+          )}
           {isAuction && listing.bid_count > 0 && (
-            <p className="text-[11px] text-gray-400">{listing.bid_count} bid{listing.bid_count !== 1 ? 's' : ''}</p>
+            <span className="text-[10px] text-gray-400 ml-auto shrink-0">{listing.bid_count}b</span>
           )}
         </div>
 
         {/* Title */}
         <p
-          className="text-sm font-medium leading-snug line-clamp-2 mb-3"
+          className="text-[13px] font-semibold leading-snug line-clamp-2 mb-2.5"
           style={{ color: 'var(--color-text)' }}
         >
           {listing.title}
         </p>
 
-        {/* Seller */}
-        {listing.seller && (
-          <div
-            className="flex items-center gap-1.5 pt-2.5"
-            style={{ borderTop: '1px solid var(--color-border)' }}
-          >
+        {/* Footer row: seller + location + time */}
+        <div className="flex items-center gap-1 min-w-0" style={{ fontSize: 11, color: 'var(--color-text-subtle)' }}>
+          {listing.seller && (
             <img
-              src={listing.seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.seller.name || 'S')}&size=32&background=F8C0C8&color=B81365&bold=true`}
+              src={listing.seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.seller.name || 'S')}&size=24&background=F8C0C8&color=B81365&bold=true`}
               alt={listing.seller.name}
-              className="w-5 h-5 rounded-full object-cover shrink-0"
+              className="w-4 h-4 rounded-full object-cover shrink-0"
             />
-            <span
-              className="text-xs font-medium truncate min-w-0"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              {listing.seller.name}
+          )}
+          {listing.seller?.id_verified && <ShieldCheck className="w-3 h-3 shrink-0" style={{ color: '#16a34a' }} />}
+          {listing.seller?.rating_avg >= 4 && (
+            <span className="flex items-center gap-0.5 shrink-0 font-semibold" style={{ color: '#555' }}>
+              <Star className="w-2.5 h-2.5 fill-current" style={{ color: '#f59e0b' }} />
+              {Number(listing.seller.rating_avg).toFixed(1)}
             </span>
-            {listing.seller.id_verified && (
-              <span
-                className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                style={{ background: '#dcfce7', color: '#15803d' }}
-              >
-                <ShieldCheck className="w-2.5 h-2.5" />
-                Verified
-              </span>
-            )}
-            {listing.seller.rating_avg >= 4 && (
-              <span
-                className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
-                style={{ background: 'rgba(34,34,34,0.07)', color: '#222222' }}
-              >
-                <Star className="w-2.5 h-2.5 fill-current" />
-                {Number(listing.seller.rating_avg).toFixed(1)}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Location + age */}
-        <div
-          className="flex items-center justify-between mt-2"
-          style={{ fontSize: 11, color: 'var(--color-text-subtle)' }}
-        >
-          <span className="flex items-center gap-0.5 truncate">
-            <MapPin className="w-3 h-3 shrink-0" />
+          )}
+          <span className="flex items-center gap-0.5 truncate min-w-0 ml-auto" style={{ color: 'var(--color-text-subtle)' }}>
+            <MapPin className="w-2.5 h-2.5 shrink-0" />
             <span className="truncate">{listing.location?.city || listing.city || 'Ghana'}</span>
           </span>
-          <span className="shrink-0">{timeAgo(listing.created_at)}</span>
+          <span className="shrink-0 ml-1">{timeAgo(listing.created_at)}</span>
         </div>
       </div>
     </Link>

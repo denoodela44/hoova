@@ -176,7 +176,7 @@ export default function Home() {
       </section>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 py-12">
         <div className="flex gap-8 items-start">
 
           <aside className="hidden lg:block w-52 shrink-0 sticky top-24">
@@ -189,7 +189,7 @@ export default function Home() {
             {(featuredLoading || (featured && featured.length > 0)) && (
               <section>
                 <SectionHeader title="Spotlight Listings" link="/browse?boost_tier=spotlight" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
                   {featuredLoading
                     ? Array.from({ length: 4 }).map((_, i) => <ListingCardSkeleton key={i} />)
                     : featured.map((l) => <ListingCard key={l.id} listing={l} />)}
@@ -218,7 +218,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
                 {newestLoading
                   ? Array.from({ length: 8 }).map((_, i) => <ListingCardSkeleton key={i} />)
                   : newest?.map((l) => <ListingCard key={l.id} listing={l} />)}
