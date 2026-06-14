@@ -11,6 +11,23 @@ function requireAdmin(req, res, next) {
   next()
 }
 
+// GET /api/analytics/trending — public, top searched terms (used on homepage)
+router.get('/trending', async (req, res, next) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 8, 20)
+    const since = new Date(Date.now() - 7 * 86400000) // last 7 days
+
+    const trends = await prisma.searchTrend.findMany({
+      where: { last_searched_at: { gte: since }, count: { gt: 1 } },
+      orderBy: { count: 'desc' },
+      take: limit,
+      select: { display_query: true, count: true },
+    })
+
+    res.json({ success: true, data: trends.map((t) => t.display_query) })
+  } catch (err) { next(err) }
+})
+
 // POST /api/analytics/search — fire-and-forget from frontend search bar
 router.post('/search', async (req, res) => {
   const { query, results_count = 0, source = 'hero', category_slug } = req.body

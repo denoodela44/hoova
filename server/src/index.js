@@ -28,6 +28,7 @@ const sitemapRoutes = require('./routes/sitemap')
 const chatHandler = require('./socket/chatHandler')
 const { expireListings } = require('./jobs/expireListings')
 const { autoApprovePending } = require('./jobs/autoApprove')
+const { runScoreUpdate } = require('./jobs/updateScores')
 const botRenderer = require('./middleware/botRenderer')
 
 const app = express()
@@ -84,7 +85,11 @@ chatHandler(io)
 
 // Cron jobs
 cron.schedule('0 2 * * *', expireListings)
-cron.schedule('*/5 * * * *', autoApprovePending) // every 5 minutes
+cron.schedule('*/5 * * * *', autoApprovePending)
+cron.schedule('*/30 * * * *', runScoreUpdate) // re-score all active listings every 30 min
+
+// Score all listings on startup
+runScoreUpdate()
 
 // Serve React build in production — must be after all API routes
 if (process.env.NODE_ENV === 'production') {
