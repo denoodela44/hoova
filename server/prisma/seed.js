@@ -97,6 +97,9 @@ const LOCATIONS = [
 async function main() {
   console.log('🌱 Seeding database...')
 
+  // Enable pg_trgm for fuzzy search
+  await prisma.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS pg_trgm')
+
   // Categories
   for (const cat of CATEGORIES) {
     const parent = await prisma.category.upsert({

@@ -108,32 +108,21 @@ router.get('/', optionalAuth, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-// GET /api/search/similar — OR-word fallback when main search returns 0 results
+// GET /api/search/similar — fuzzy fallback when main search returns 0 results
 router.get('/similar', optionalAuth, async (req, res, next) => {
   try {
     const { q = '', limit = 8 } = req.query
-    const words = q.trim().split(/\s+/).filter(Boolean).slice(0, 8)
-    if (!words.length) return res.json({ success: true, data: [] })
+    const query = q.trim()
+    if (!query) return res.json({ success: true, data: [] })
 
     const take = Math.min(Number(limit), 16)
-    const values = []
 
-    // OR logic: any word matching in title or description
-    const orClauses = words.map((word) => {
-      values.push(`%${word}%`)
-      return `(l.title ILIKE $${values.length} OR l.description ILIKE $${values.length})`
-    })
-
-    // Score each result by how many words match (more = ranked higher)
-    const matchScore = words.map((_, i) => {
-      const idx = i + 1
-      return `CASE WHEN (l.title ILIKE $${idx} OR l.description ILIKE $${idx}) THEN 1 ELSE 0 END`
-    }).join(' + ')
-
-    values.push(take)
+    // Use trigram similarity for typo tolerance (e.g. "corola" → "corolla")
+    // word_similarity checks if query words appear similarly in the title
     const listings = await prisma.$queryRawUnsafe(`
       SELECT
         l.*,
+        word_similarity($1, l.title) AS _sim,
         json_build_object(
           'id', u.id, 'name', u.name, 'avatar', u.avatar,
           'id_verified', u.id_verified, 'rating_avg', u.rating_avg
@@ -144,10 +133,16 @@ router.get('/similar', optionalAuth, async (req, res, next) => {
       FROM listings l
       LEFT JOIN users u ON u.id = l.user_id
       LEFT JOIN locations lo ON lo.id = l.location_id
-      WHERE l.status = 'active' AND (${orClauses.join(' OR ')})
-      ORDER BY (${matchScore}) DESC, l.score DESC
-      LIMIT $${values.length}
-    `, ...values)
+      WHERE l.status = 'active'
+        AND (
+          word_similarity($1, l.title) > 0.15
+          OR word_similarity($1, l.description) > 0.15
+          OR l.title ILIKE $2
+          OR l.description ILIKE $2
+        )
+      ORDER BY word_similarity($1, l.title) DESC, l.score DESC
+      LIMIT $3
+    `, query, `%${query}%`, take)
 
     res.json({ success: true, data: listings })
   } catch (err) { next(err) }
