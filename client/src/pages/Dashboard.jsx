@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -634,6 +634,8 @@ function StoreTab({ user, setTab }) {
     cover_banner: user.cover_banner || '',
   })
   const [saved, setSaved] = useState(false)
+  const [bannerUploading, setBannerUploading] = useState(false)
+  const bannerInputRef = useRef(null)
 
   const { mutate: save, isPending } = useMutation({
     mutationFn: () => api.patch('/sellers/me/store', form),
@@ -643,6 +645,20 @@ function StoreTab({ user, setTab }) {
       setTimeout(() => setSaved(false), 3000)
     },
   })
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setBannerUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('image', file)
+      const res = await api.post('/uploads/image', fd)
+      setForm((f) => ({ ...f, cover_banner: res.data.url }))
+    } catch { /* silent */ } finally {
+      setBannerUploading(false)
+    }
+  }
 
   const autoSlug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -659,23 +675,29 @@ function StoreTab({ user, setTab }) {
     <div className="space-y-5 max-w-2xl">
       {/* Cover banner */}
       <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
-        <div className="h-32 relative" style={{ background: form.cover_banner ? `url(${form.cover_banner}) center/cover` : '#ECEAE6' }}>
-          {!form.cover_banner && (
-            <div className="absolute inset-0 flex items-center justify-center">
+        <button
+          onClick={() => bannerInputRef.current?.click()}
+          disabled={bannerUploading}
+          className="w-full h-32 relative group text-left"
+          style={{ background: form.cover_banner ? `url(${form.cover_banner}) center/cover` : '#ECEAE6' }}
+        >
+          <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-none">
+            <Camera className="w-6 h-6 text-white" />
+            <span className="text-xs font-semibold text-white">{bannerUploading ? 'Uploading…' : 'Upload Cover Photo'}</span>
+          </div>
+          {!form.cover_banner && !bannerUploading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
               <Camera className="w-8 h-8 text-gray-400" />
+              <span className="text-xs text-gray-400 font-medium">Click to upload cover photo</span>
             </div>
           )}
-        </div>
-        <div className="p-5 space-y-3">
-          <div>
-            <label className="text-xs font-bold text-gray-600 block mb-1.5">Cover Banner URL</label>
-            <input value={form.cover_banner}
-              onChange={(e) => setForm((f) => ({ ...f, cover_banner: e.target.value }))}
-              placeholder="https://… (1200×400 recommended)"
-              className="w-full px-3 py-2.5 rounded-xl text-sm border focus:outline-none"
-              style={{ border: '1px solid #e5e7eb' }} />
-          </div>
-        </div>
+          {bannerUploading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <div className="w-6 h-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            </div>
+          )}
+        </button>
+        <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
       </div>
 
       {/* Store info */}
@@ -961,6 +983,27 @@ function AccountTab({ user }) {
   const [avatarUrl, setAvatarUrl]   = useState(user.avatar || '')
   const [avatarMsg, setAvatarMsg]   = useState(null)
   const [avatarPending, setAvatarPending] = useState(false)
+  const avatarInputRef = useRef(null)
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarPending(true); setAvatarMsg(null)
+    try {
+      const fd = new FormData()
+      fd.append('image', file)
+      const res = await api.post('/uploads/image', fd)
+      const url = res.data.url
+      setAvatarUrl(url)
+      await api.patch('/users/me', { avatar: url })
+      setAuth({ ...user, avatar: url }, null, null)
+      setAvatarMsg({ type: 'success', text: 'Photo updated!' })
+    } catch {
+      setAvatarMsg({ type: 'error', text: 'Upload failed — try again.' })
+    } finally {
+      setAvatarPending(false)
+    }
+  }
 
   // Profile completeness
   const checks = [
@@ -1133,19 +1176,31 @@ function AccountTab({ user }) {
           <p className="text-sm font-bold text-gray-800">Profile Photo</p>
         </div>
         <div className="flex items-center gap-4">
-          <img src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=B81365&color=fff&size=80`}
-            alt="avatar" className="w-16 h-16 rounded-2xl object-cover shrink-0" />
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarPending}
+            className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 group"
+          >
+            <img
+              src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=B81365&color=fff&size=80`}
+              alt="avatar" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="w-5 h-5 text-white" />
+            </div>
+          </button>
           <div className="flex-1 space-y-2">
-            <input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="Paste image URL (https://…)"
-              className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none"
-              style={{ border: '1px solid #e5e7eb' }} />
-            <button onClick={saveAvatar} disabled={avatarPending}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
-              style={{ background: '#B81365' }}>
-              {avatarPending ? 'Saving…' : 'Update Photo'}
+            <p className="text-xs text-gray-500">Click your photo to upload a new one from your device.</p>
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarPending}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+              style={{ background: '#B81365' }}
+            >
+              <Camera className="w-3.5 h-3.5" />
+              {avatarPending ? 'Uploading…' : 'Upload Photo'}
             </button>
           </div>
+          <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
         </div>
         {avatarMsg && (
           <p className="text-xs font-semibold px-3 py-2 rounded-xl"
