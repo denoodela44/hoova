@@ -168,6 +168,9 @@ export default function SearchAnalytics() {
   const [tab, setTab]         = useState('live')
   const [liveSearch, setLiveSearch] = useState('')
   const [liveCat, setLiveCat]       = useState('all')
+  const [liveSort, setLiveSort]     = useState('count')
+  const [liveResults, setLiveResults] = useState('all')
+  const [liveMinVol, setLiveMinVol] = useState('')
   const [catFilter, setCatFilter] = useState('all')
   const [sigCatFilter, setSigCatFilter] = useState('all')
   const [sigSort, setSigSort] = useState('opp')
@@ -309,10 +312,19 @@ export default function SearchAnalytics() {
       {tab === 'live' && (() => {
         const terms = liveData?.top_terms || []
         const liveCats = ['all', ...new Set(terms.map((t) => t.category_slug).filter(Boolean))]
+        const minVol = liveMinVol ? Number(liveMinVol) : 0
         const filtered = terms
           .filter((t) => liveCat === 'all' || t.category_slug === liveCat)
           .filter((t) => !liveSearch || t.query.toLowerCase().includes(liveSearch.toLowerCase()))
+          .filter((t) => liveResults === 'zero' ? t.zero_results_count > 0 : liveResults === 'has' ? t.zero_results_count === 0 : true)
+          .filter((t) => minVol === 0 || t.count >= minVol)
+          .sort((a, b) =>
+            liveSort === 'recent' ? new Date(b.last_searched_at) - new Date(a.last_searched_at) :
+            liveSort === 'zero'   ? b.zero_results_count - a.zero_results_count :
+            b.count - a.count
+          )
         const maxLiveCount = Math.max(...terms.map((t) => t.count), 1)
+        const activeFilters = (liveCat !== 'all' ? 1 : 0) + (liveResults !== 'all' ? 1 : 0) + (minVol > 0 ? 1 : 0) + (liveSearch ? 1 : 0)
 
         return (
           <div className="space-y-5">
@@ -373,66 +385,140 @@ export default function SearchAnalytics() {
 
             {/* Search terms table */}
             <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
-              <div className="p-4 flex flex-wrap items-center gap-3" style={{ borderBottom: '1px solid #f0eeeb' }}>
-                <div className="relative flex-1 min-w-48">
+              {/* ── Toolbar row 1: search + actions ── */}
+              <div className="px-4 pt-4 pb-3 flex flex-wrap items-center gap-2" style={{ borderBottom: '1px solid #f5f4f2' }}>
+                <div className="relative flex-1 min-w-44">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input value={liveSearch} onChange={(e) => setLiveSearch(e.target.value)}
-                    placeholder="Filter search terms…"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl text-xs border focus:outline-none"
+                    placeholder="Search terms…"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl text-xs focus:outline-none"
                     style={{ border: '1px solid #e5e7eb' }} />
                 </div>
-                <div className="flex gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
-                  {liveCats.slice(0, 6).map((c) => (
-                    <button key={c} onClick={() => setLiveCat(c)}
-                      className="px-3 py-1.5 rounded-lg text-[10px] font-semibold capitalize transition-all"
-                      style={liveCat === c ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
-                      {c}
-                    </button>
-                  ))}
+                <span className="text-[10px] font-bold text-gray-400 shrink-0">
+                  {filtered.length} of {terms.length}
+                  {activeFilters > 0 && <span className="ml-1 px-1.5 py-0.5 rounded-full text-white" style={{ background: '#B81365' }}>{activeFilters} filters</span>}
+                </span>
+                <div className="flex items-center gap-1.5 ml-auto">
+                  <button
+                    onClick={() => {
+                      const exportRows = [
+                        ['Rank', 'Search Term', 'Category', 'Total Searches', 'Zero Result Searches', 'Last Searched'],
+                        ...filtered.map((t, i) => [
+                          i + 1,
+                          `"${(t.query || '').replace(/"/g, '""')}"`,
+                          t.category_slug || '',
+                          t.count,
+                          t.zero_results_count,
+                          new Date(t.last_searched_at).toISOString(),
+                        ]),
+                      ]
+                      const csv = exportRows.map((r) => r.join(',')).join('\n')
+                      const blob = new Blob([csv], { type: 'text/csv' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `hoova-searches-${days}d-${new Date().toISOString().slice(0, 10)}.csv`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all"
+                    style={{ background: '#dcfce7', color: '#15803d' }}>
+                    ↓ Export CSV
+                  </button>
+                  <button
+                    onClick={handleRecategorize}
+                    disabled={recategorizing || !terms.length}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
+                    style={{ background: '#f3e8ff', color: '#7e22ce' }}>
+                    <Sparkles className="w-3 h-3" />
+                    {recategorizing ? 'Categorizing…' : 'AI Categorize'}
+                  </button>
+                  <button
+                    onClick={handleClearAll}
+                    disabled={clearing || !terms.length}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
+                    style={{ background: '#fee2e2', color: '#dc2626' }}>
+                    <Trash2 className="w-3 h-3" />
+                    {clearing ? 'Clearing…' : 'Clear All'}
+                  </button>
                 </div>
-                <span className="text-[10px] font-bold text-gray-400">{filtered.length} terms</span>
-                <button
-                  onClick={() => {
-                    const exportRows = [
-                      ['Rank', 'Search Term', 'Category', 'Total Searches', 'Zero Result Searches', 'Last Searched'],
-                      ...terms.map((t, i) => [
-                        i + 1,
-                        `"${(t.query || '').replace(/"/g, '""')}"`,
-                        t.category_slug || '',
-                        t.count,
-                        t.zero_results_count,
-                        new Date(t.last_searched_at).toISOString(),
-                      ]),
-                    ]
-                    const csv = exportRows.map((r) => r.join(',')).join('\n')
-                    const blob = new Blob([csv], { type: 'text/csv' })
-                    const url = URL.createObjectURL(blob)
-                    const a = document.createElement('a')
-                    a.href = url
-                    a.download = `hoova-searches-${days}d-${new Date().toISOString().slice(0, 10)}.csv`
-                    a.click()
-                    URL.revokeObjectURL(url)
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all ml-auto"
-                  style={{ background: '#dcfce7', color: '#15803d' }}>
-                  ↓ Export CSV
-                </button>
-                <button
-                  onClick={handleRecategorize}
-                  disabled={recategorizing || !terms.length}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
-                  style={{ background: '#f3e8ff', color: '#7e22ce' }}>
-                  <Sparkles className="w-3 h-3" />
-                  {recategorizing ? 'Categorizing…' : 'AI Categorize'}
-                </button>
-                <button
-                  onClick={handleClearAll}
-                  disabled={clearing || !terms.length}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold transition-all disabled:opacity-40"
-                  style={{ background: '#fee2e2', color: '#dc2626' }}>
-                  <Trash2 className="w-3 h-3" />
-                  {clearing ? 'Clearing…' : 'Clear All'}
-                </button>
+              </div>
+
+              {/* ── Toolbar row 2: filter chips ── */}
+              <div className="px-4 py-2.5 flex flex-wrap items-center gap-2" style={{ borderBottom: '1px solid #f0eeeb', background: '#fafaf9' }}>
+
+                {/* Category */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mr-0.5">Cat</span>
+                  <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ background: '#ECEAE6' }}>
+                    {liveCats.slice(0, 7).map((c) => (
+                      <button key={c} onClick={() => setLiveCat(c)}
+                        className="px-2.5 py-1 rounded-md text-[10px] font-semibold capitalize transition-all"
+                        style={liveCat === c ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-px h-4 shrink-0" style={{ background: '#e5e7eb' }} />
+
+                {/* Sort */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mr-0.5">Sort</span>
+                  <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ background: '#ECEAE6' }}>
+                    {[['count','Most Searched'],['recent','Most Recent'],['zero','Zero Results']].map(([v, label]) => (
+                      <button key={v} onClick={() => setLiveSort(v)}
+                        className="px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all"
+                        style={liveSort === v ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-px h-4 shrink-0" style={{ background: '#e5e7eb' }} />
+
+                {/* Results */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide mr-0.5">Results</span>
+                  <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ background: '#ECEAE6' }}>
+                    {[['all','All'],['has','Has Results'],['zero','Zero Only']].map(([v, label]) => (
+                      <button key={v} onClick={() => setLiveResults(v)}
+                        className="px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all"
+                        style={liveResults === v ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-px h-4 shrink-0" style={{ background: '#e5e7eb' }} />
+
+                {/* Min volume */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Min searches</span>
+                  <input
+                    type="number" min="0" value={liveMinVol}
+                    onChange={(e) => setLiveMinVol(e.target.value)}
+                    placeholder="Any"
+                    className="w-16 px-2 py-1 rounded-lg text-[10px] text-center focus:outline-none"
+                    style={{ border: '1px solid #e5e7eb', background: 'white' }}
+                  />
+                </div>
+
+                {/* Reset */}
+                {activeFilters > 0 && (
+                  <>
+                    <div className="w-px h-4 shrink-0" style={{ background: '#e5e7eb' }} />
+                    <button
+                      onClick={() => { setLiveCat('all'); setLiveSort('count'); setLiveResults('all'); setLiveMinVol(''); setLiveSearch('') }}
+                      className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all"
+                      style={{ color: '#B81365', background: '#fdf2f5' }}>
+                      ✕ Reset filters
+                    </button>
+                  </>
+                )}
               </div>
               {recatResult && (
                 <div className="px-4 pb-2">
