@@ -107,19 +107,11 @@ export default function Home() {
         {loggedIn ? (
           <div className="max-w-2xl mx-auto px-6 py-10 sm:py-14">
             {/* Personalized greeting */}
-            <div className="flex items-center gap-3 mb-6">
-              <img
-                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'U')}&size=56&background=F8C0C8&color=B81365&bold=true`}
-                alt={user?.name}
-                className="w-12 h-12 rounded-full object-cover shrink-0"
-                style={{ border: '2px solid rgba(255,255,255,0.3)' }}
-              />
-              <div>
-                <p className="text-pink-200 text-sm font-medium">Welcome back 👋</p>
-                <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  Hey, {firstName}!
-                </h1>
-              </div>
+            <div className="mb-6">
+              <p className="text-pink-200 text-sm font-medium">Welcome back 👋</p>
+              <h1 className="text-white font-black text-2xl sm:text-3xl leading-tight" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                Hey, {firstName}!
+              </h1>
             </div>
 
             {/* Search */}
