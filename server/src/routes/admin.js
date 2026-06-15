@@ -810,4 +810,136 @@ router.delete('/categories/:id', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// ══════════════════════════════════════════════════════════════════
+//  MARKETING — lead segments + campaign notifications
+// ══════════════════════════════════════════════════════════════════
+
+// GET /api/admin/marketing/segments — counts for each segment
+router.get('/marketing/segments', async (req, res, next) => {
+  try {
+    const now = new Date()
+    const day30 = new Date(now - 30 * 86400000)
+    const day7  = new Date(now - 7 * 86400000)
+
+    const [freeSellers, inactiveUsers, newUsers, unverifiedSellers] = await Promise.all([
+      prisma.user.count({ where: { subscription_tier: 'free', listings: { some: {} } } }),
+      prisma.user.count({ where: { created_at: { lt: day30 }, listings: { none: {} } } }),
+      prisma.user.count({ where: { created_at: { gte: day7 } } }),
+      prisma.user.count({ where: { id_verified: false, listings: { some: { status: 'active' } } } }),
+    ])
+
+    res.json({ success: true, data: { free_sellers: freeSellers, inactive: inactiveUsers, new_users: newUsers, unverified_sellers: unverifiedSellers } })
+  } catch (err) { next(err) }
+})
+
+// GET /api/admin/marketing/leads — paginated user list for a segment
+router.get('/marketing/leads', async (req, res, next) => {
+  try {
+    const { segment = 'free_sellers', min_listings = 0, days = 30, sort = 'listings', page = 1, limit = 50 } = req.query
+    const take = Math.min(Number(limit), 200)
+    const skip = (Number(page) - 1) * take
+    const since = new Date(Date.now() - Number(days) * 86400000)
+    const minL  = Number(min_listings)
+
+    const SELECT = {
+      id: true, name: true, email: true, phone: true, avatar: true,
+      subscription_tier: true, id_verified: true, phone_verified: true,
+      created_at: true, rating_avg: true, review_count: true,
+      _count: { select: { listings: true } },
+    }
+
+    let where = {}
+    if (segment === 'free_sellers') {
+      where = { subscription_tier: 'free', listings: minL > 0 ? { some: {} } : undefined }
+      if (minL > 0) where.listings = { some: {} }
+    } else if (segment === 'inactive') {
+      where = { created_at: { lt: since }, listings: { none: {} } }
+    } else if (segment === 'new_users') {
+      where = { created_at: { gte: since } }
+    } else if (segment === 'unverified_sellers') {
+      where = { id_verified: false, listings: { some: { status: 'active' } } }
+    }
+
+    const orderBy = sort === 'listings' ? { listings: { _count: 'desc' } }
+      : sort === 'newest' ? { created_at: 'desc' }
+      : sort === 'oldest' ? { created_at: 'asc' }
+      : { created_at: 'desc' }
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({ where, select: SELECT, orderBy, take, skip }),
+      prisma.user.count({ where }),
+    ])
+
+    // Filter by min_listings client-side (already done server-side for free_sellers above)
+    const filtered = minL > 0
+      ? users.filter((u) => u._count.listings >= minL)
+      : users
+
+    res.json({
+      success: true,
+      data: filtered.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        avatar: u.avatar,
+        subscription_tier: u.subscription_tier,
+        id_verified: u.id_verified,
+        phone_verified: u.phone_verified,
+        listing_count: u._count.listings,
+        rating_avg: u.rating_avg,
+        created_at: u.created_at,
+      })),
+      total,
+      page: Number(page),
+    })
+  } catch (err) { next(err) }
+})
+
+// POST /api/admin/marketing/notify — send system notification to a segment
+router.post('/marketing/notify', async (req, res, next) => {
+  try {
+    const { segment = 'free_sellers', min_listings = 0, days = 30, title, body, link } = req.body
+    if (!title || !body) return res.status(400).json({ success: false, message: 'title and body are required' })
+
+    const since = new Date(Date.now() - Number(days) * 86400000)
+    const minL  = Number(min_listings)
+
+    let where = {}
+    if (segment === 'free_sellers')        where = { subscription_tier: 'free', listings: { some: {} } }
+    else if (segment === 'inactive')       where = { created_at: { lt: since }, listings: { none: {} } }
+    else if (segment === 'new_users')      where = { created_at: { gte: since } }
+    else if (segment === 'unverified_sellers') where = { id_verified: false, listings: { some: { status: 'active' } } }
+
+    const users = await prisma.user.findMany({ where, select: { id: true } })
+
+    // Filter by listing count if needed
+    let targetIds = users.map((u) => u.id)
+    if (minL > 0 && (segment === 'free_sellers' || segment === 'unverified_sellers')) {
+      const counts = await prisma.listing.groupBy({
+        by: ['user_id'],
+        where: { user_id: { in: targetIds } },
+        _count: { id: true },
+        having: { id: { _count: { gte: minL } } },
+      })
+      const qualifiedIds = new Set(counts.map((c) => c.user_id))
+      targetIds = targetIds.filter((id) => qualifiedIds.has(id))
+    }
+
+    if (targetIds.length === 0) return res.json({ success: true, sent: 0 })
+
+    await prisma.notification.createMany({
+      data: targetIds.map((user_id) => ({
+        user_id,
+        type: 'system',
+        title,
+        body,
+        data: link ? { link } : {},
+      })),
+    })
+
+    res.json({ success: true, sent: targetIds.length })
+  } catch (err) { next(err) }
+})
+
 module.exports = router

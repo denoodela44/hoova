@@ -4,7 +4,7 @@ import api from '../../services/api'
 import {
   LayoutDashboard, Search, Users, Package,
   TrendingUp, ShieldCheck, LogOut, Settings2, ShieldAlert,
-  DollarSign, Flag, Zap, Tag, Megaphone, Cpu, CreditCard,
+  DollarSign, Flag, Zap, Tag, Megaphone, Cpu, CreditCard, Crosshair,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import Logo from '../../components/layout/Logo'
@@ -20,6 +20,7 @@ const NAV = [
   { to: '/admin/revenue',      label: 'Revenue',          icon: DollarSign },
   { to: '/admin/intelligence', label: 'Seller Intel',     icon: TrendingUp },
   { to: '/admin/categories',   label: 'Categories',       icon: Tag },
+  { to: '/admin/marketing',     label: 'Marketing',        icon: Crosshair },
   { to: '/admin/announcements',label: 'Announcements',    icon: Megaphone },
   { to: '/admin/search',       label: 'Search Analytics', icon: Search },
   { to: '/admin/pricing',      label: 'Pricing',          icon: CreditCard },
