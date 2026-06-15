@@ -183,6 +183,15 @@ export default function Navbar() {
             <Plus className="w-4 h-4" />
             {isLoggedIn() ? 'Post Ad' : 'Join Free'}
           </Link>
+          {!isLoggedIn() && (
+            <Link
+              to="/login"
+              className="flex items-center justify-center w-full py-2.5 rounded-xl text-sm font-semibold text-white/90 hover:text-white transition-colors duration-150"
+              style={{ background: 'rgba(255,255,255,0.12)' }}
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       )}
     </header>
