@@ -83,8 +83,11 @@ router.get('/sitemap.xml', async (req, res, next) => {
       { loc: BASE_URL, lastmod: today, changefreq: 'daily', priority: '1.0' },
       { loc: `${BASE_URL}/browse`, lastmod: today, changefreq: 'hourly', priority: '0.9' },
       { loc: `${BASE_URL}/post`, lastmod: today, changefreq: 'monthly', priority: '0.6' },
-      { loc: `${BASE_URL}/about`, lastmod: today, changefreq: 'monthly', priority: '0.4' },
-      { loc: `${BASE_URL}/safety`, lastmod: today, changefreq: 'monthly', priority: '0.3' },
+      { loc: `${BASE_URL}/market`, lastmod: today, changefreq: 'daily', priority: '0.7' },
+      { loc: `${BASE_URL}/safety`, lastmod: today, changefreq: 'monthly', priority: '0.5' },
+      { loc: `${BASE_URL}/privacy`, lastmod: today, changefreq: 'monthly', priority: '0.3' },
+      { loc: `${BASE_URL}/terms`, lastmod: today, changefreq: 'monthly', priority: '0.3' },
+      { loc: `${BASE_URL}/contact`, lastmod: today, changefreq: 'monthly', priority: '0.4' },
     ]
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

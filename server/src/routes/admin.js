@@ -3,6 +3,7 @@ const prisma = require('../utils/prisma')
 const jwt = require('jsonwebtoken')
 const { requireAdminToken, ADMIN_JWT_SECRET } = require('../middleware/auth')
 const { moderateListing } = require('../utils/listingModerator')
+const { updateOneScore } = require('../utils/scoreEngine')
 
 // POST /api/admin/login — standalone admin login
 router.post('/login', (req, res) => {
@@ -730,12 +731,13 @@ router.patch('/boosts/:id', async (req, res, next) => {
       data:  { paid: Boolean(paid) },
     })
 
-    // Update listing boost_tier if approved
+    // Update listing boost_tier if approved, then immediately recalculate score
     if (paid) {
       await prisma.listing.update({
         where: { id: boost.listing_id },
         data:  { boost_tier: boost.tier, boost_ends_at: boost.ends_at },
       })
+      updateOneScore(boost.listing_id).catch(() => {})
     }
 
     res.json({ success: true, data: boost })

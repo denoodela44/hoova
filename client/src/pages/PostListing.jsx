@@ -2,11 +2,11 @@ import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { Upload, X, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Gavel, Tag } from 'lucide-react'
+import { Upload, X, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Gavel, Tag, Sparkles, Loader2 } from 'lucide-react'
 import api from '../services/api'
 import useAuthStore from '../store/authStore'
 
-const STEPS = ['Category', 'Details', 'Photos', 'Location', 'Review']
+const STEPS = ['Details', 'Category', 'Photos', 'Location', 'Review']
 
 const GHANA_REGIONS = [
   'Greater Accra', 'Ashanti', 'Western', 'Eastern', 'Central',
@@ -22,6 +22,10 @@ export default function PostListing() {
   const [uploading, setUploading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [newListingId, setNewListingId] = useState(null)
+  const [showAI, setShowAI] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: { condition: 'used', currency: 'GHS' }
@@ -44,6 +48,26 @@ export default function PostListing() {
     queryFn: () => api.get(`/categories?parent_id=${selectedCategory}`).then((r) => r.data.data),
     enabled: !!selectedCategory,
   })
+
+  const handleAIFill = async () => {
+    if (!aiPrompt.trim()) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const res = await api.post('/listings/ai-assist', { prompt: aiPrompt })
+      const d = res.data.data
+      if (d.title)       setValue('title', d.title)
+      if (d.description) setValue('description', d.description)
+      if (d.condition)   setValue('condition', d.condition)
+      if (d.price_suggestion) setValue('price', d.price_suggestion)
+      setShowAI(false)
+      setAiPrompt('')
+    } catch (err) {
+      setAiError(err.response?.data?.message || 'AI fill failed — please try again')
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   if (!isLoggedIn()) {
     navigate('/login', { state: { from: '/post' } })
@@ -170,42 +194,48 @@ export default function PostListing() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="card p-6 space-y-5">
-          {/* Step 0: Category */}
+          {/* Step 0: Details — title first */}
           {step === 0 && (
             <div className="space-y-4">
-              <h2 className="font-semibold text-base">Choose a category</h2>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Category *</label>
-                <select
-                  className={`input ${errors.category_id ? 'border-red-400' : ''}`}
-                  {...register('category_id', { required: 'Select a category' })}
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-base">Describe your item</h2>
+                <button
+                  type="button"
+                  onClick={() => setShowAI((s) => !s)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: showAI ? '#B81365' : '#fdf2f5', color: showAI ? '#fff' : '#B81365', border: '1px solid #F8C0C8' }}
                 >
-                  <option value="">-- Select category --</option>
-                  {categories.filter((c) => !c.parent_id).map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-                {errors.category_id && <p className="text-xs text-red-500 mt-1">{errors.category_id.message}</p>}
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Smart Fill with AI
+                </button>
               </div>
 
-              {subcategories.length > 0 && (
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Subcategory</label>
-                  <select className="input" {...register('subcategory_id')}>
-                    <option value="">-- Select subcategory --</option>
-                    {subcategories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+              {/* AI fill panel */}
+              {showAI && (
+                <div className="rounded-2xl p-4 space-y-3" style={{ background: '#fdf2f5', border: '1px solid #F8C0C8' }}>
+                  <p className="text-xs font-semibold" style={{ color: '#B81365' }}>
+                    Describe your item in plain English — AI will fill in the title, description and price for you.
+                  </p>
+                  <textarea
+                    rows={3}
+                    placeholder="e.g. Selling my iPhone 14 Pro Max 256GB space black, bought 6 months ago, barely used, comes with original box and charger, no scratches..."
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    className="w-full rounded-xl border border-pink-200 px-3 py-2.5 text-sm outline-none resize-none focus:border-pink-400"
+                    style={{ background: 'white' }}
+                  />
+                  {aiError && <p className="text-xs text-red-500">{aiError}</p>}
+                  <button
+                    type="button"
+                    onClick={handleAIFill}
+                    disabled={aiLoading || !aiPrompt.trim()}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-opacity"
+                    style={{ background: '#B81365' }}
+                  >
+                    {aiLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</> : <><Sparkles className="w-4 h-4" /> Fill with AI</>}
+                  </button>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Step 1: Details */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-base">Describe your item</h2>
 
               {/* Listing type selector */}
               <div>
@@ -344,6 +374,38 @@ export default function PostListing() {
                       <p className="text-xs text-gray-400 mt-0.5">Buyers will see a "Negotiable" badge and can send you offers</p>
                     </div>
                   </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 1: Category */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <h2 className="font-semibold text-base">Choose a category</h2>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Category *</label>
+                <select
+                  className={`input ${errors.category_id ? 'border-red-400' : ''}`}
+                  {...register('category_id', { required: 'Select a category' })}
+                >
+                  <option value="">-- Select category --</option>
+                  {categories.filter((c) => !c.parent_id).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                {errors.category_id && <p className="text-xs text-red-500 mt-1">{errors.category_id.message}</p>}
+              </div>
+
+              {subcategories.length > 0 && (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Subcategory</label>
+                  <select className="input" {...register('subcategory_id')}>
+                    <option value="">-- Select subcategory --</option>
+                    {subcategories.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>

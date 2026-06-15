@@ -361,6 +361,15 @@ function ListingsTab() {
                         : <ToggleLeft className="w-3.5 h-3.5 text-gray-400" />}
                     </button>
                   )}
+                  {l.status === 'active' && (
+                    <button
+                      onClick={() => { if (confirm('Mark this listing as sold?')) toggleMutation.mutate({ id: l.id, status: 'sold' }) }}
+                      className="p-1.5 rounded-lg text-green-600 hover:bg-green-50"
+                      title="Mark as Sold"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <button onClick={() => { if (confirm('Delete this listing?')) deleteMutation.mutate(l.id) }}
                     className="p-1.5 rounded-lg text-red-400 hover:bg-red-50">
                     <Trash2 className="w-3.5 h-3.5" />

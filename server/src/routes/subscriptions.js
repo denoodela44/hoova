@@ -54,8 +54,36 @@ const PLANS = {
 }
 
 // ── GET /api/subscriptions/plans ─────────────────────────────────────
-router.get('/plans', (_req, res) => {
-  res.json({ success: true, data: Object.values(PLANS) })
+// Reads prices from SiteSetting (admin-editable), falls back to PLANS defaults
+router.get('/plans', async (_req, res, next) => {
+  try {
+    const PRICE_KEYS = [
+      'price_plan_pro', 'price_plan_business',
+      'limit_plan_pro_listings', 'limit_plan_pro_photos', 'limit_plan_pro_credits',
+      'limit_plan_biz_photos', 'limit_plan_biz_credits',
+    ]
+    const rows = await prisma.siteSetting.findMany({ where: { key: { in: PRICE_KEYS } } })
+    const s = {}
+    rows.forEach((r) => { s[r.key] = Number(r.value) })
+
+    const plans = {
+      free: PLANS.free,
+      pro: {
+        ...PLANS.pro,
+        price_ghs:           s.price_plan_pro          ?? PLANS.pro.price_ghs,
+        listings_per_month:  s.limit_plan_pro_listings ?? PLANS.pro.listings_per_month,
+        photos_per_listing:  s.limit_plan_pro_photos   ?? PLANS.pro.photos_per_listing,
+        boost_credits:       s.limit_plan_pro_credits  ?? PLANS.pro.boost_credits,
+      },
+      business: {
+        ...PLANS.business,
+        price_ghs:           s.price_plan_business    ?? PLANS.business.price_ghs,
+        photos_per_listing:  s.limit_plan_biz_photos  ?? PLANS.business.photos_per_listing,
+        boost_credits:       s.limit_plan_biz_credits ?? PLANS.business.boost_credits,
+      },
+    }
+    res.json({ success: true, data: Object.values(plans) })
+  } catch (err) { next(err) }
 })
 
 // ── GET /api/subscriptions/me ────────────────────────────────────────

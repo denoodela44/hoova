@@ -349,24 +349,6 @@ const LISTINGS = [
   },
 ]
 
-// ── Search trends to seed ────────────────────────────────────────────────────
-const SEARCH_TRENDS = [
-  { query: 'iphone 15', display_query: 'iPhone 15', count: 342, category_slug: 'phones-tablets' },
-  { query: 'toyota corolla', display_query: 'Toyota Corolla', count: 289, category_slug: 'cars' },
-  { query: '3 bedroom house accra', display_query: '3 bedroom house Accra', count: 231, category_slug: 'houses-rent' },
-  { query: 'macbook pro', display_query: 'MacBook Pro', count: 198, category_slug: 'laptops-pcs' },
-  { query: 'samsung galaxy s24', display_query: 'Samsung Galaxy S24', count: 176, category_slug: 'phones-tablets' },
-  { query: 'land east legon', display_query: 'land East Legon', count: 154, category_slug: 'land-plots' },
-  { query: 'ankara dress', display_query: 'Ankara dress', count: 143, category_slug: 'womens-clothing' },
-  { query: 'playstation 5', display_query: 'PlayStation 5', count: 138, zero_results_count: 138, category_slug: 'electronics' },
-  { query: 'honda civic', display_query: 'Honda Civic', count: 127, category_slug: 'cars' },
-  { query: 'sofa accra', display_query: 'sofa Accra', count: 112, category_slug: 'living-room' },
-  { query: 'hyundai elantra', display_query: 'Hyundai Elantra', count: 98, category_slug: 'cars' },
-  { query: 'kente cloth', display_query: 'Kente cloth', count: 87, category_slug: 'womens-clothing' },
-  { query: 'apartment airport residential', display_query: 'apartment Airport Residential', count: 76, category_slug: 'houses-rent' },
-  { query: 'dyson airwrap', display_query: 'Dyson Airwrap', count: 71, category_slug: 'health' },
-  { query: 'dell laptop ghana', display_query: 'Dell laptop Ghana', count: 64, category_slug: 'laptops-pcs' },
-]
 
 // ── Picsum seeds for different categories ────────────────────────────────────
 const IMG_SEEDS = {
@@ -404,24 +386,7 @@ const IMG_SEEDS = {
 async function main() {
   console.log('🌱 Seeding listings...\n')
 
-  // ── Search trends — always upsert regardless of listing state ─────────────
   const now = new Date()
-  for (const t of SEARCH_TRENDS) {
-    await prisma.searchTrend.upsert({
-      where: { query: t.query },
-      update: { count: t.count, last_searched_at: new Date(now - rand(0, 6) * 86400000) },
-      create: {
-        query:              t.query,
-        display_query:      t.display_query,
-        count:              t.count,
-        zero_results_count: t.zero_results_count || 0,
-        category_slug:      t.category_slug,
-        last_searched_at:   new Date(now - rand(0, 6) * 86400000),
-      },
-    })
-  }
-  console.log('✅ Search trends seeded')
-
   const existingListings = await prisma.listing.count()
   if (existingListings > 0) {
     console.log(`⚡ Skipping listings seed: ${existingListings} listings already exist.`)

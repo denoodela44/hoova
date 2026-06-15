@@ -59,7 +59,7 @@ export default function ListingCard({ listing, onSaveToggle }) {
   }
   const handleLinkClick = (e) => { if (didSwipe.current) { e.preventDefault(); didSwipe.current = false } }
 
-  const isBoosted  = listing.boost_tier === 'featured' || listing.boost_tier === 'spotlight'
+  const isBoosted  = !!listing.boost_tier
   const isAuction  = listing.listing_type === 'auction'
   const auctionEnded = isAuction && new Date(listing.auction_end_at) <= new Date()
 

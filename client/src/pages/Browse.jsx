@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { SlidersHorizontal, Bell, Loader2 } from 'lucide-react'
+import { SlidersHorizontal, Bell, Loader2, ChevronUp } from 'lucide-react'
 import api from '../services/api'
 import ListingCard from '../components/listings/ListingCard'
 import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
@@ -21,6 +21,13 @@ export default function Browse() {
   const sentinelRef = useRef(null)
 
   const paramsKey = params.toString()
+  const [showScrollTop, setShowScrollTop] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ['listings', 'browse', paramsKey],
@@ -213,6 +220,18 @@ export default function Browse() {
           )}
         </div>
       </div>
+
+      {/* Back-to-top button — mobile-first, above mobile nav bar */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-20 right-4 lg:bottom-6 z-50 w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-opacity"
+          style={{ background: '#B81365', color: 'white' }}
+          aria-label="Back to top"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </button>
+      )}
     </div>
   )
 }

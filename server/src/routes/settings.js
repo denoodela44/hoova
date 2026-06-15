@@ -73,4 +73,31 @@ router.patch('/admin', requireAdminToken, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// ── GET /api/settings/pricing ────────────────────────────────────────
+// Returns all editable prices, falling back to hardcoded defaults
+const PRICING_DEFAULTS = {
+  price_plan_pro:           '50',
+  price_plan_business:      '150',
+  price_boost_featured:     '30',
+  price_boost_spotlight:    '60',
+  price_boost_top:          '100',
+  limit_plan_pro_listings:  '50',
+  limit_plan_pro_photos:    '20',
+  limit_plan_pro_credits:   '3',
+  limit_plan_biz_photos:    '30',
+  limit_plan_biz_credits:   '10',
+}
+
+router.get('/pricing', requireAdminToken, async (_req, res, next) => {
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      where: { key: { in: Object.keys(PRICING_DEFAULTS) } },
+    })
+    const data = { ...PRICING_DEFAULTS }
+    rows.forEach((r) => { data[r.key] = r.value })
+    res.json({ success: true, data })
+  } catch (err) { next(err) }
+})
+
 module.exports = router
+module.exports.PRICING_DEFAULTS = PRICING_DEFAULTS

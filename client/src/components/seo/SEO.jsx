@@ -157,6 +157,45 @@ export function ListingSEO({ listing }) {
     ],
   }
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `What is the price of ${listing.title} in ${city}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `The listed price for ${listing.title} in ${city}, Ghana is ${price}. The seller ${listing.negotiable ? 'is open to negotiation on price' : 'has set a fixed price'}. Contact the seller directly on HOOVA Ghana for more details.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `Where can I buy ${listing.title} in Ghana?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `You can buy ${listing.title} in ${city}${region ? ', ' + region : ''}, Ghana. This listing is available on HOOVA Ghana classifieds — browse the listing, check seller reviews and contact them directly through the platform.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `Is it safe to buy ${listing.title} on HOOVA Ghana?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `HOOVA Ghana verifies sellers using Ghana Card ID verification and displays trust signals including ratings, reviews, account age and response rate. Always inspect items before paying and prefer meeting in a safe public place in ${city}.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `What should I check before buying ${listing.condition === 'used' ? 'a used' : 'a new'} ${listing.title}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Before buying ${listing.title}, verify the item matches the listing photos, check for damage or defects, confirm the price, and ask the seller for any receipts or warranty documentation. ${listing.condition === 'used' ? 'For used items, test all functions thoroughly before payment.' : 'For new items, ensure original sealed packaging is intact.'}`,
+        },
+      },
+    ],
+  }
+
   return (
     <Helmet>
       <title>{title} | HOOVA Ghana</title>
@@ -185,6 +224,7 @@ export function ListingSEO({ listing }) {
 
       <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
       <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
     </Helmet>
   )
 }
@@ -302,4 +342,65 @@ function buildCategoryFAQ(category, location) {
       },
     },
   ]
+}
+
+/* ── Home page structured data ───────────────────────────────── */
+export function HomeSEO() {
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'HOOVA Ghana',
+    alternateName: 'Hoova',
+    url: BASE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${BASE_URL}/browse?q={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
+  }
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'HOOVA Ghana',
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
+    description: DEFAULT_DESCRIPTION,
+    areaServed: { '@type': 'Country', name: 'Ghana' },
+    sameAs: [
+      'https://www.facebook.com/hoovaghana',
+      'https://www.instagram.com/hoovaghana',
+      'https://twitter.com/HoovaGhana',
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      areaServed: 'GH',
+      availableLanguage: 'English',
+    },
+  }
+
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'HOOVA Ghana Classifieds',
+    description: DEFAULT_DESCRIPTION,
+    url: BASE_URL,
+    priceRange: 'Free',
+    areaServed: { '@type': 'Country', name: 'Ghana' },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Accra',
+      addressRegion: 'Greater Accra',
+      addressCountry: 'GH',
+    },
+  }
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
+    </Helmet>
+  )
 }

@@ -9,7 +9,7 @@ import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
 import CategoryNav from '../components/search/CategoryNav'
 import SearchAutocomplete from '../components/search/SearchAutocomplete'
 import CategorySidebar from '../components/search/CategorySidebar'
-import SEO from '../components/seo/SEO'
+import SEO, { HomeSEO } from '../components/seo/SEO'
 import { filterMockListings, MOCK_CATEGORIES } from '../mocks/data'
 import { getCategoryStyle } from '../utils/categoryStyles'
 
@@ -94,6 +94,7 @@ export default function Home() {
         description="HOOVA is Ghana's smartest classifieds marketplace."
         url="/"
       />
+      <HomeSEO />
 
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section style={{ background: '#B81365' }}>

@@ -4,7 +4,7 @@ import api from '../../services/api'
 import {
   LayoutDashboard, Search, Users, Package,
   TrendingUp, ShieldCheck, LogOut, Settings2, ShieldAlert,
-  DollarSign, Flag, Zap, Tag, Megaphone, Cpu,
+  DollarSign, Flag, Zap, Tag, Megaphone, Cpu, CreditCard,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import Logo from '../../components/layout/Logo'
@@ -22,6 +22,7 @@ const NAV = [
   { to: '/admin/categories',   label: 'Categories',       icon: Tag },
   { to: '/admin/announcements',label: 'Announcements',    icon: Megaphone },
   { to: '/admin/search',       label: 'Search Analytics', icon: Search },
+  { to: '/admin/pricing',      label: 'Pricing',          icon: CreditCard },
   { to: '/admin/settings',     label: 'Settings',         icon: Settings2 },
 ]
 

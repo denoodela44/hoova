@@ -5,6 +5,7 @@ const { requireAuth, optionalAuth } = require('../middleware/auth')
 const { pingIndexNow } = require('../utils/indexNow')
 const { moderateListing } = require('../utils/listingModerator')
 const { updateOneScore } = require('../utils/scoreEngine')
+const Anthropic = require('@anthropic-ai/sdk')
 
 const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 
@@ -330,6 +331,44 @@ router.delete('/:id/save', requireAuth, async (req, res, next) => {
   try {
     await prisma.savedListing.deleteMany({ where: { user_id: req.user.id, listing_id: req.params.id } })
     res.json({ success: true })
+  } catch (err) { next(err) }
+})
+
+// POST /api/listings/ai-assist — generate listing fields from plain-English description
+router.post('/ai-assist', requireAuth, async (req, res, next) => {
+  try {
+    const { prompt } = req.body
+    if (!prompt || String(prompt).trim().length < 5) {
+      return res.status(400).json({ success: false, message: 'Please describe your item' })
+    }
+
+    const client = new Anthropic()
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 700,
+      messages: [{
+        role: 'user',
+        content: `You are a marketplace listing assistant for HOOVA Ghana (hoovagh.com), a buy-and-sell marketplace in Ghana.
+
+A seller described their item in plain English: "${String(prompt).trim().slice(0, 600)}"
+
+Generate a marketplace listing optimised for search. Reply with ONLY valid JSON, no other text:
+{
+  "title": "specific descriptive title under 80 chars — include brand, model, key spec if known",
+  "description": "3 short paragraphs: (1) what the item is and key features, (2) current condition and what is included, (3) reason for selling and any extras. Use plain English, Ghana context.",
+  "price_suggestion": estimated fair market price in Ghana Cedis as a plain number,
+  "category_slug": exactly one of: vehicles, electronics, real-estate, fashion, jobs, services, furniture, agriculture, sports, health, pets, food, other,
+  "condition": "new" or "used"
+}`,
+      }],
+    })
+
+    const text = message.content[0]?.text?.trim() || ''
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return res.status(500).json({ success: false, message: 'AI could not generate listing — please fill in manually' })
+
+    const data = JSON.parse(match[0])
+    res.json({ success: true, data })
   } catch (err) { next(err) }
 })
 
