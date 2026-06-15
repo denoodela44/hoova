@@ -5,7 +5,7 @@ import {
   Heart, Share2, MapPin, Eye, Clock, BadgeCheck, Star,
   MessageSquare, ChevronLeft, ChevronRight, Flag,
   Zap, ArrowLeft, ShieldCheck, X, AlertTriangle, CheckCircle,
-  Send, PhoneCall, UserCheck, CalendarDays, Tag
+  Send, PhoneCall, UserCheck, CalendarDays, Tag, EyeOff, Phone,
 } from 'lucide-react'
 import api from '../services/api'
 import useAuthStore from '../store/authStore'
@@ -43,6 +43,8 @@ export default function ListingDetail() {
   const [reportReason, setReportReason] = useState('')
   const [reportDetail, setReportDetail] = useState('')
   const [reportSubmitted, setReportSubmitted] = useState(false)
+  const [contactState, setContactState] = useState('hidden') // 'hidden' | 'loading' | 'revealed'
+  const [sellerPhone, setSellerPhone] = useState(null)
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: ['listing', id],
@@ -59,16 +61,27 @@ export default function ListingDetail() {
     },
   })
 
+  // Other listings from the same seller
+  const { data: sellerListings } = useQuery({
+    queryKey: ['listings', 'seller', listing?.seller?.id, id],
+    queryFn: () =>
+      api.get(`/listings?seller_id=${listing.seller.id}&exclude=${id}&limit=6&sort=newest`)
+        .then((r) => r.data.data?.filter?.((l) => l.id !== id) || []),
+    enabled: !!listing?.seller?.id,
+  })
+
+  // Similar listings from OTHER sellers
   const { data: related } = useQuery({
     queryKey: ['listings', 'related', id],
     queryFn: async () => {
       try {
-        return await api.get(`/listings?category=${listing?.category?.slug}&limit=6&exclude=${id}`).then((r) => r.data.data)
+        return await api.get(`/listings?category=${listing.category.slug}&exclude=${id}&exclude_seller=${listing.seller.id}&limit=6`)
+          .then((r) => r.data.data)
       } catch {
         return filterMockListings({ category: listing?.category?.slug }).data.filter((l) => l.id !== id).slice(0, 6)
       }
     },
-    enabled: !!listing?.category?.slug,
+    enabled: !!listing?.category?.slug && !!listing?.seller?.id,
   })
 
   const handleSave = async () => {
@@ -88,10 +101,23 @@ export default function ListingDetail() {
     } catch (_) {}
   }
 
-  const handleWhatsApp = () => {
-    if (!listing?.seller?.phone) return
+  const handleRevealContact = async () => {
+    if (!isLoggedIn()) { navigate('/login'); return }
+    setContactState('loading')
+    try {
+      const res = await api.get(`/listings/${id}/contact`)
+      setSellerPhone(res.data.data.phone)
+      setContactState('revealed')
+    } catch {
+      setContactState('hidden')
+    }
+  }
+
+  const handleWhatsApp = (phone) => {
+    const num = (phone || sellerPhone || '').replace(/\D/g, '')
+    if (!num) return
     const text = `Hi, I'm interested in your listing on HOOVA: "${listing.title}" — ${window.location.href}`
-    window.open(`https://wa.me/${listing.seller.phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank')
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank')
   }
 
   const handleShare = () => {
@@ -327,23 +353,34 @@ export default function ListingDetail() {
             </div>
           </div>
 
-          {/* Related listings */}
+          {/* More from this seller */}
+          {sellerListings?.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-base">More from {listing.seller?.name}</h3>
+                <Link
+                  to={`/seller/${listing.seller?.id}`}
+                  className="text-xs font-semibold hover:underline"
+                  style={{ color: '#B81365' }}
+                >
+                  View store →
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {sellerListings.slice(0, 6).map((l) => (
+                  <ListingThumb key={l.id} listing={l} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Similar from other sellers */}
           {related?.length > 0 && (
             <div>
               <h3 className="font-bold text-base mb-3">Similar Listings</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {related.slice(0, 6).map((l) => (
-                  <Link key={l.id} to={`/listing/${l.id}`} className="card overflow-hidden hover:shadow-card-hover transition-all group">
-                    <img
-                      src={l.images?.[0]?.url || '/placeholder.jpg'}
-                      alt={l.title}
-                      className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <div className="p-2.5">
-                      <p className="font-bold text-sm">{formatPrice(l.price)}</p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">{l.title}</p>
-                    </div>
-                  </Link>
+                  <ListingThumb key={l.id} listing={l} />
                 ))}
               </div>
             </div>
@@ -435,17 +472,52 @@ export default function ListingDetail() {
                     Make an Offer
                   </button>
                 )}
-                {listing.seller?.phone && (
-                  <button
-                    onClick={handleWhatsApp}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors"
-                    style={{ background: '#22c55e', color: '#fff' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#16a34a'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#22c55e'}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    WhatsApp Seller
-                  </button>
+
+                {/* Contact reveal */}
+                {listing.seller?.phone_exists && (
+                  <>
+                    {contactState !== 'revealed' ? (
+                      <button
+                        onClick={handleRevealContact}
+                        disabled={contactState === 'loading'}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
+                        style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #e5e7eb' }}
+                      >
+                        {contactState === 'loading' ? (
+                          <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#374151', borderTopColor: 'transparent' }} />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+                        {contactState === 'loading' ? 'Fetching…' : isLoggedIn() ? 'Show Contact' : 'Login to see contact'}
+                      </button>
+                    ) : (
+                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #e5e7eb' }}>
+                        <div className="px-3 py-2 text-center" style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Seller's Number</p>
+                          <p className="text-base font-black text-gray-900 mt-0.5" style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: '0.03em' }}>
+                            {sellerPhone}
+                          </p>
+                        </div>
+                        <div className="flex">
+                          <a
+                            href={`tel:${sellerPhone?.replace(/\s/g, '')}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold transition-colors"
+                            style={{ color: '#374151' }}
+                          >
+                            <Phone className="w-4 h-4" /> Call
+                          </a>
+                          <div style={{ width: 1, background: '#e5e7eb' }} />
+                          <button
+                            onClick={() => handleWhatsApp(sellerPhone)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-semibold transition-colors"
+                            style={{ color: '#16a34a' }}
+                          >
+                            <MessageSquare className="w-4 h-4" /> WhatsApp
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -518,13 +590,24 @@ export default function ListingDetail() {
               Offer
             </button>
           )}
-          <button
-            onClick={handleWhatsApp}
-            className="px-4 py-2.5 rounded-xl text-white font-semibold text-sm transition-colors"
-            style={{ background: '#22c55e' }}
-          >
-            WhatsApp
-          </button>
+          {contactState === 'revealed' ? (
+            <button
+              onClick={() => handleWhatsApp(sellerPhone)}
+              className="px-4 py-2.5 rounded-xl text-white font-semibold text-sm"
+              style={{ background: '#22c55e' }}
+            >
+              WhatsApp
+            </button>
+          ) : listing.seller?.phone_exists ? (
+            <button
+              onClick={handleRevealContact}
+              disabled={contactState === 'loading'}
+              className="px-4 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+              style={{ background: '#f3f4f6', color: '#374151' }}
+            >
+              {contactState === 'loading' ? '…' : 'Contact'}
+            </button>
+          ) : null}
           <button onClick={handleContact} className="btn-primary px-4">
             <MessageSquare className="w-4 h-4" /> Chat
           </button>
@@ -644,6 +727,28 @@ export default function ListingDetail() {
         </div>
       )}
     </div>
+  )
+}
+
+/* ── Listing thumbnail card ── */
+function ListingThumb({ listing: l }) {
+  return (
+    <Link to={`/listing/${l.id}`} className="card overflow-hidden hover:shadow-card-hover transition-all group">
+      <img
+        src={l.images?.[0]?.url || '/placeholder.jpg'}
+        alt={l.title}
+        className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform"
+      />
+      <div className="p-2.5">
+        <p className="font-bold text-sm">{formatPrice(l.price)}</p>
+        <p className="text-xs text-gray-500 truncate mt-0.5">{l.title}</p>
+        {l.location?.city && (
+          <p className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5">
+            <MapPin className="w-2.5 h-2.5" /> {l.location.city}
+          </p>
+        )}
+      </div>
+    </Link>
   )
 }
 

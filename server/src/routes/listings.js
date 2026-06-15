@@ -10,9 +10,18 @@ const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 
 const LISTING_INCLUDE = {
   images: { orderBy: { order: 'asc' } },
-  seller: { select: { id: true, name: true, avatar: true, phone: true, id_verified: true, rating_avg: true, review_count: true, created_at: true } },
+  // phone intentionally excluded — use GET /:id/contact (auth required) to reveal
+  seller: { select: { id: true, name: true, avatar: true, phone: true, phone_verified: true, id_verified: true, rating_avg: true, review_count: true, created_at: true } },
   category: { select: { id: true, name: true, slug: true } },
   location: true,
+}
+
+// Strip phone from a listing object before sending to non-auth or public endpoints
+function publicListing(listing) {
+  if (!listing) return listing
+  const { seller, ...rest } = listing
+  const { phone, ...sellerPublic } = seller || {}
+  return { ...rest, seller: { ...sellerPublic, phone_exists: !!phone }, _phone: phone }
 }
 
 // GET /api/listings — browse with filters
@@ -21,7 +30,7 @@ router.get('/', optionalAuth, async (req, res, next) => {
     const {
       category, boost_tier, sort = 'relevance',
       min_price, max_price, condition, region, city, negotiable, limit = 24, page = 1,
-      exclude, mine, verified_seller,
+      exclude, mine, verified_seller, seller_id, exclude_seller,
     } = req.query
 
     const where = { status: 'active' }
@@ -40,6 +49,8 @@ router.get('/', optionalAuth, async (req, res, next) => {
     if (max_price) where.price = { ...(where.price || {}), lte: Number(max_price) }
     if (exclude) where.id = { not: exclude }
     if (verified_seller === 'true') where.seller = { id_verified: true }
+    if (seller_id) where.user_id = seller_id
+    if (exclude_seller) where.user_id = { not: exclude_seller }
 
     const orderBy = {
       relevance:  { score: 'desc' },
@@ -132,7 +143,27 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
       is_saved = !!save
     }
 
-    res.json({ success: true, data: { ...listing, is_saved } })
+    const { _phone, ...pub } = publicListing({ ...listing, is_saved })
+    res.json({ success: true, data: pub })
+  } catch (err) { next(err) }
+})
+
+// GET /api/listings/:id/contact — auth-only, returns seller phone
+router.get('/:id/contact', requireAuth, async (req, res, next) => {
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, title: true, seller: { select: { id: true, phone: true, phone_verified: true } } },
+    })
+    if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' })
+    if (!listing.seller?.phone) return res.status(404).json({ success: false, message: 'Seller has no phone on file' })
+
+    // Fire-and-forget contact reveal log
+    prisma.listingView.create({
+      data: { listing_id: listing.id, user_id: req.user.id, ip: req.ip },
+    }).catch(() => {})
+
+    res.json({ success: true, data: { phone: listing.seller.phone, phone_verified: listing.seller.phone_verified } })
   } catch (err) { next(err) }
 })
 
