@@ -1,8 +1,6 @@
-export function formatPrice(amount, currency = 'GHS') {
+export function formatPrice(amount) {
   if (amount == null) return ''
-  return new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency,
+  return 'GHS ' + new Intl.NumberFormat('en-GH', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount)
