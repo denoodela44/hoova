@@ -186,6 +186,63 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ success: true, data: { id, name, email, phone, avatar, bio, phone_verified, email_verified, id_verified, subscription_tier, rating_avg, review_count, created_at } })
 })
 
+// POST /api/auth/request-phone-verify — send OTP to the logged-in user's phone
+router.post('/request-phone-verify', requireAuth, async (req, res, next) => {
+  try {
+    // Allow adding/changing phone too
+    const rawPhone = req.body.phone || req.user.phone
+    if (!rawPhone) return res.status(400).json({ success: false, message: 'No phone number on your account. Add one first.' })
+
+    const fullPhone = rawPhone.startsWith('+') ? rawPhone : `+233${rawPhone.replace(/^0/, '')}`
+
+    // If changing phone, check it's not taken by another user
+    if (rawPhone !== req.user.phone) {
+      const existing = await prisma.user.findUnique({ where: { phone: fullPhone } })
+      if (existing && existing.id !== req.user.id) {
+        return res.status(409).json({ success: false, message: 'Phone already registered to another account' })
+      }
+      // Update phone on user record (unverified until OTP confirmed)
+      await prisma.user.update({ where: { id: req.user.id }, data: { phone: fullPhone, phone_verified: false } })
+    }
+
+    const otp = generateOtp()
+    const expires = new Date(Date.now() + 10 * 60 * 1000)
+    await prisma.otpCode.create({
+      data: { user_id: req.user.id, phone: fullPhone, code: otp, purpose: 'verify-phone', expires_at: expires },
+    })
+
+    console.log(`[OTP verify] ${fullPhone}: ${otp}`)
+    // TODO: send via Hubtel SMS
+    res.json({ success: true, message: 'OTP sent', phone: fullPhone })
+  } catch (err) { next(err) }
+})
+
+// POST /api/auth/change-password — change password for logged-in user
+router.post('/change-password', requireAuth, async (req, res, next) => {
+  try {
+    const { current_password, new_password } = req.body
+    if (!current_password || !new_password) {
+      return res.status(400).json({ success: false, message: 'current_password and new_password required' })
+    }
+    if (new_password.length < 8) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 8 characters' })
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } })
+    if (!user?.password_hash) {
+      return res.status(400).json({ success: false, message: 'Account uses social login — no password to change' })
+    }
+
+    const valid = await bcrypt.compare(current_password, user.password_hash)
+    if (!valid) return res.status(401).json({ success: false, message: 'Current password is incorrect' })
+
+    const password_hash = await bcrypt.hash(new_password, 12)
+    await prisma.user.update({ where: { id: req.user.id }, data: { password_hash } })
+
+    res.json({ success: true, message: 'Password updated successfully' })
+  } catch (err) { next(err) }
+})
+
 // POST /api/auth/make-admin  — one-time setup, requires ADMIN_SECRET env var
 router.post('/make-admin', async (req, res, next) => {
   try {

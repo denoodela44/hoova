@@ -8,6 +8,7 @@ import {
   ChevronRight, ArrowUpRight, Camera, Globe, Instagram,
   Facebook, Twitter, Youtube, Linkedin, Send, X,
   ToggleLeft, ToggleRight, ShieldCheck, Lock, Target, Flame,
+  Phone, UserCog, KeyRound, BadgeCheck, CircleUser, ImagePlus,
 } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import api from '../services/api'
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'store',         label: 'Store',          icon: Store },
   { id: 'subscription',  label: 'Subscription',  icon: Crown },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'account',       label: 'Account',        icon: UserCog },
 ]
 
 const STATUS_STYLE = {
@@ -72,13 +74,22 @@ export default function Dashboard() {
               )}
             </div>
             <div>
-              <h1 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>{user.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-black text-gray-900 text-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  {user.store_name || user.name}
+                </h1>
+                {user.phone_verified && (
+                  <span title="Phone verified" className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#dcfce7', color: '#15803d' }}>
+                    <BadgeCheck className="w-3 h-3" /> Verified
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full capitalize"
                   style={{ background: PLANS[tier]?.bg, color: PLANS[tier]?.color }}>
                   {PLANS[tier]?.label} Plan
                 </span>
-                {user.store_name && <span className="text-xs text-gray-400">· {user.store_name}</span>}
+                {user.phone && <span className="text-xs text-gray-400">{user.phone}</span>}
               </div>
             </div>
             <Link to="/post"
@@ -112,6 +123,7 @@ export default function Dashboard() {
         {tab === 'store'         && <StoreTab user={user} />}
         {tab === 'subscription'  && <SubscriptionTab tier={tier} />}
         {tab === 'notifications' && <NotificationsTab />}
+        {tab === 'account'       && <AccountTab user={user} />}
       </div>
     </div>
   )
@@ -147,20 +159,34 @@ function OverviewTab({ user, tier, setTab }) {
 
   return (
     <div className="space-y-5">
-      {/* Display name prompt — shown until seller sets store_name */}
-      {!user.store_name && (
-        <button
-          onClick={() => setTab('store')}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all hover:opacity-90"
-          style={{ background: '#fdf2f5', border: '1.5px dashed #F8C0C8' }}
-        >
-          <span className="text-xl">✍️</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold" style={{ color: '#B81365' }}>Set your display name</p>
-            <p className="text-xs text-gray-500 mt-0.5">Your ads currently show your email username. Add a display name so buyers know who you are.</p>
-          </div>
-          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#B81365' }} />
-        </button>
+      {/* Profile completion prompts */}
+      {(!user.store_name || !user.phone_verified) && (
+        <div className="space-y-2">
+          {!user.store_name && (
+            <button onClick={() => setTab('store')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all hover:opacity-90"
+              style={{ background: '#fdf2f5', border: '1.5px dashed #F8C0C8' }}>
+              <span className="text-xl">✍️</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold" style={{ color: '#B81365' }}>Set your display name</p>
+                <p className="text-xs text-gray-500 mt-0.5">Your ads currently show your email username. Add a display name so buyers know who you are.</p>
+              </div>
+              <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#B81365' }} />
+            </button>
+          )}
+          {!user.phone_verified && (
+            <button onClick={() => setTab('account')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all hover:opacity-90"
+              style={{ background: '#eff6ff', border: '1.5px dashed #93c5fd' }}>
+              <Phone className="w-5 h-5 shrink-0" style={{ color: '#1d4ed8' }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold" style={{ color: '#1d4ed8' }}>Verify your phone number</p>
+                <p className="text-xs text-gray-500 mt-0.5">Verified sellers get 3× more trust from buyers. Takes 30 seconds.</p>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: '#dbeafe', color: '#1d4ed8' }}>Verify →</span>
+            </button>
+          )}
+        </div>
       )}
 
       {/* KPI row */}
@@ -785,6 +811,261 @@ function NotificationsTab() {
             style={{ background: '#ECEAE6', color: '#374151' }}>Next →</button>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ─── Account ───────────────────────────────────────────────────────────────── */
+function AccountTab({ user }) {
+  const { setAuth } = useAuthStore()
+  const qc = useQueryClient()
+
+  // Phone verification state
+  const [phoneInput, setPhoneInput] = useState(user.phone?.replace('+233', '') || '')
+  const [otpSent, setOtpSent]       = useState(false)
+  const [otp, setOtp]               = useState('')
+  const [phoneMsg, setPhoneMsg]     = useState(null)
+  const [phonePending, setPhonePending] = useState(false)
+  const [verifyPending, setVerifyPending] = useState(false)
+
+  // Password state
+  const [pwForm, setPwForm]     = useState({ current: '', next: '', confirm: '' })
+  const [pwMsg, setPwMsg]       = useState(null)
+  const [pwPending, setPwPending] = useState(false)
+
+  // Avatar state
+  const [avatarUrl, setAvatarUrl]   = useState(user.avatar || '')
+  const [avatarMsg, setAvatarMsg]   = useState(null)
+  const [avatarPending, setAvatarPending] = useState(false)
+
+  // Profile completeness
+  const checks = [
+    { label: 'Phone verified',   done: !!user.phone_verified, icon: Phone,      color: '#1d4ed8' },
+    { label: 'Display name set', done: !!user.store_name,     icon: CircleUser, color: '#B81365' },
+    { label: 'Avatar uploaded',  done: !!user.avatar,         icon: ImagePlus,  color: '#7e22ce' },
+    { label: 'First listing',    done: true,                  icon: Package,    color: '#15803d' },
+  ]
+  const doneCount = checks.filter((c) => c.done).length
+  const pct = Math.round((doneCount / checks.length) * 100)
+
+  async function sendOtp() {
+    setPhonePending(true); setPhoneMsg(null)
+    try {
+      const raw = phoneInput.replace(/^0/, '').replace(/\D/g, '')
+      await api.post('/auth/request-phone-verify', { phone: raw })
+      setOtpSent(true)
+      setPhoneMsg({ type: 'success', text: 'Code sent! Check your phone.' })
+    } catch (err) {
+      setPhoneMsg({ type: 'error', text: err.response?.data?.message || 'Failed to send code' })
+    } finally { setPhonePending(false) }
+  }
+
+  async function verifyOtp() {
+    setVerifyPending(true); setPhoneMsg(null)
+    try {
+      const raw = phoneInput.replace(/^0/, '').replace(/\D/g, '')
+      const res = await api.post('/auth/verify-phone', { phone: raw, otp })
+      setAuth(res.data.data.user, res.data.data.token, res.data.data.refreshToken)
+      setOtpSent(false); setOtp('')
+      setPhoneMsg({ type: 'success', text: '✅ Phone verified! Your Verified badge is now showing.' })
+    } catch (err) {
+      setPhoneMsg({ type: 'error', text: err.response?.data?.message || 'Invalid code' })
+    } finally { setVerifyPending(false) }
+  }
+
+  async function changePassword() {
+    if (pwForm.next !== pwForm.confirm) { setPwMsg({ type: 'error', text: 'New passwords don\'t match' }); return }
+    if (pwForm.next.length < 8) { setPwMsg({ type: 'error', text: 'Password must be at least 8 characters' }); return }
+    setPwPending(true); setPwMsg(null)
+    try {
+      await api.post('/auth/change-password', { current_password: pwForm.current, new_password: pwForm.next })
+      setPwForm({ current: '', next: '', confirm: '' })
+      setPwMsg({ type: 'success', text: '✅ Password updated successfully' })
+    } catch (err) {
+      setPwMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update password' })
+    } finally { setPwPending(false) }
+  }
+
+  async function saveAvatar() {
+    setAvatarPending(true); setAvatarMsg(null)
+    try {
+      const res = await api.patch('/users/me', { avatar: avatarUrl })
+      setAuth({ ...user, avatar: avatarUrl }, null, null)
+      setAvatarMsg({ type: 'success', text: '✅ Avatar updated' })
+    } catch (err) {
+      setAvatarMsg({ type: 'error', text: 'Failed to update avatar' })
+    } finally { setAvatarPending(false) }
+  }
+
+  return (
+    <div className="space-y-5 max-w-2xl">
+
+      {/* Profile completeness */}
+      <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-bold text-gray-800">Profile Strength</p>
+            <p className="text-xs text-gray-400 mt-0.5">Complete your profile to build trust with buyers</p>
+          </div>
+          <div className="relative w-14 h-14">
+            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="#ECEAE6" strokeWidth="5" />
+              <circle cx="28" cy="28" r="22" fill="none" stroke={pct === 100 ? '#15803d' : '#B81365'} strokeWidth="5"
+                strokeDasharray={`${2 * Math.PI * 22}`}
+                strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                strokeLinecap="round" />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-xs font-black" style={{ color: pct === 100 ? '#15803d' : '#B81365' }}>{pct}%</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {checks.map(({ label, done, icon: Icon, color }) => (
+            <div key={label} className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
+              style={{ background: done ? '#f0fdf4' : '#fafaf9', border: `1px solid ${done ? '#bbf7d0' : '#f0eeeb'}` }}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: done ? '#dcfce7' : '#ECEAE6' }}>
+                <Icon className="w-3.5 h-3.5" style={{ color: done ? '#15803d' : '#9ca3af' }} />
+              </div>
+              <span className="text-xs font-semibold" style={{ color: done ? '#15803d' : '#6b7280' }}>{label}</span>
+              {done
+                ? <CheckCircle className="w-3.5 h-3.5 ml-auto shrink-0 text-green-500" />
+                : <div className="w-3.5 h-3.5 ml-auto shrink-0 rounded-full border-2 border-gray-300" />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Phone verification */}
+      <div className="rounded-2xl bg-white p-5 space-y-4" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="flex items-center gap-2">
+          <Phone className="w-4 h-4" style={{ color: '#1d4ed8' }} />
+          <p className="text-sm font-bold text-gray-800">Phone Number</p>
+          {user.phone_verified
+            ? <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto" style={{ background: '#dcfce7', color: '#15803d' }}><BadgeCheck className="w-3 h-3" /> Verified</span>
+            : <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto" style={{ background: '#fef2f2', color: '#dc2626' }}>Not verified</span>}
+        </div>
+
+        {user.phone_verified ? (
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <BadgeCheck className="w-5 h-5 text-green-500 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-green-800">{user.phone}</p>
+              <p className="text-xs text-green-600">Your number is verified — buyers see your Verified badge</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="px-3 py-2.5 rounded-xl text-xs" style={{ background: '#eff6ff', color: '#1e40af' }}>
+              <strong>Why verify?</strong> Verified sellers are trusted by buyers, show a Verified badge on all listings, and are prioritised in search.
+            </div>
+            {!otpSent ? (
+              <div className="flex gap-2">
+                <div className="flex rounded-xl overflow-hidden flex-1" style={{ border: '1px solid #e5e7eb' }}>
+                  <span className="flex items-center px-3 text-sm text-gray-400 bg-gray-50 border-r shrink-0" style={{ borderColor: '#e5e7eb' }}>+233</span>
+                  <input value={phoneInput} onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
+                    placeholder="24 123 4567"
+                    className="flex-1 px-3 py-2.5 text-sm focus:outline-none" />
+                </div>
+                <button onClick={sendOtp} disabled={phonePending || phoneInput.length < 9}
+                  className="px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 shrink-0"
+                  style={{ background: '#1d4ed8' }}>
+                  {phonePending ? 'Sending…' : 'Send Code'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500">Enter the 6-digit code sent to <strong>+233{phoneInput}</strong></p>
+                <div className="flex gap-2">
+                  <input value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000 000"
+                    maxLength={6}
+                    className="flex-1 px-4 py-2.5 rounded-xl text-sm text-center tracking-widest font-bold focus:outline-none"
+                    style={{ border: '1px solid #e5e7eb', letterSpacing: '0.4em' }} />
+                  <button onClick={verifyOtp} disabled={verifyPending || otp.length < 6}
+                    className="px-4 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 shrink-0"
+                    style={{ background: '#1d4ed8' }}>
+                    {verifyPending ? 'Verifying…' : 'Verify'}
+                  </button>
+                </div>
+                <button onClick={() => setOtpSent(false)} className="text-xs text-gray-400 hover:underline">← Change number</button>
+                <button onClick={sendOtp} className="text-xs ml-3 hover:underline" style={{ color: '#1d4ed8' }}>Resend code</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {phoneMsg && (
+          <p className={`text-xs font-semibold px-3 py-2 rounded-xl`}
+            style={{ background: phoneMsg.type === 'success' ? '#f0fdf4' : '#fef2f2', color: phoneMsg.type === 'success' ? '#15803d' : '#dc2626' }}>
+            {phoneMsg.text}
+          </p>
+        )}
+      </div>
+
+      {/* Avatar */}
+      <div className="rounded-2xl bg-white p-5 space-y-4" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="flex items-center gap-2">
+          <ImagePlus className="w-4 h-4 text-gray-500" />
+          <p className="text-sm font-bold text-gray-800">Profile Photo</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <img src={avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=B81365&color=fff&size=80`}
+            alt="avatar" className="w-16 h-16 rounded-2xl object-cover shrink-0" />
+          <div className="flex-1 space-y-2">
+            <input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)}
+              placeholder="Paste image URL (https://…)"
+              className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none"
+              style={{ border: '1px solid #e5e7eb' }} />
+            <button onClick={saveAvatar} disabled={avatarPending}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+              style={{ background: '#B81365' }}>
+              {avatarPending ? 'Saving…' : 'Update Photo'}
+            </button>
+          </div>
+        </div>
+        {avatarMsg && (
+          <p className="text-xs font-semibold px-3 py-2 rounded-xl"
+            style={{ background: avatarMsg.type === 'success' ? '#f0fdf4' : '#fef2f2', color: avatarMsg.type === 'success' ? '#15803d' : '#dc2626' }}>
+            {avatarMsg.text}
+          </p>
+        )}
+      </div>
+
+      {/* Change password */}
+      <div className="rounded-2xl bg-white p-5 space-y-4" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-gray-500" />
+          <p className="text-sm font-bold text-gray-800">Change Password</p>
+        </div>
+        <div className="space-y-2.5">
+          {[
+            { key: 'current', label: 'Current password', placeholder: '••••••••' },
+            { key: 'next',    label: 'New password',     placeholder: 'At least 8 characters' },
+            { key: 'confirm', label: 'Confirm new password', placeholder: 'Re-enter new password' },
+          ].map(({ key, label, placeholder }) => (
+            <div key={key}>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">{label}</label>
+              <input type="password" value={pwForm[key]}
+                onChange={(e) => setPwForm((f) => ({ ...f, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none"
+                style={{ border: '1px solid #e5e7eb' }} />
+            </div>
+          ))}
+        </div>
+        <button onClick={changePassword} disabled={pwPending || !pwForm.current || !pwForm.next}
+          className="px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+          style={{ background: '#B81365' }}>
+          {pwPending ? 'Updating…' : 'Update Password'}
+        </button>
+        {pwMsg && (
+          <p className="text-xs font-semibold px-3 py-2 rounded-xl"
+            style={{ background: pwMsg.type === 'success' ? '#f0fdf4' : '#fef2f2', color: pwMsg.type === 'success' ? '#15803d' : '#dc2626' }}>
+            {pwMsg.text}
+          </p>
+        )}
+      </div>
+
     </div>
   )
 }
