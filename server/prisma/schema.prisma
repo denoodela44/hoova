@@ -252,14 +252,16 @@ model Review {
 }
 
 model Boost {
-  id         String   @id @default(uuid())
-  listing_id String
-  tier       String   // featured | spotlight | top
-  starts_at  DateTime @default(now())
-  ends_at    DateTime
-  paid       Boolean  @default(false)
-  amount     Float?
-  created_at DateTime @default(now())
+  id           String   @id @default(uuid())
+  listing_id   String
+  user_id      String?
+  tier         String   // featured | spotlight | top
+  starts_at    DateTime @default(now())
+  ends_at      DateTime
+  paid         Boolean  @default(false)
+  amount       Float?
+  paystack_ref String?  @unique
+  created_at   DateTime @default(now())
 
   listing Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
 

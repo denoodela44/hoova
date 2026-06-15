@@ -193,7 +193,29 @@ router.post('/webhook', async (req, res, next) => {
     const event = req.body
     if (event.event !== 'charge.success') return res.sendStatus(200)
 
-    const { user_id, plan, type } = event.data?.metadata || {}
+    const { user_id, plan, type, listing_id, boost_id, tier } = event.data?.metadata || {}
+
+    if (type === 'boost' && boost_id && listing_id) {
+      const endsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      await prisma.$transaction([
+        prisma.boost.update({ where: { id: boost_id }, data: { paid: true } }),
+        prisma.listing.update({
+          where: { id: listing_id },
+          data: { boost_tier: tier, boost_ends_at: endsAt },
+        }),
+      ])
+      prisma.notification.create({
+        data: {
+          user_id,
+          type:  'system',
+          title: 'Boost activated!',
+          body:  `Your ${tier} boost is now live and will run for 7 days.`,
+          data:  { listing_id, boost_id },
+        },
+      }).catch(() => {})
+      return res.sendStatus(200)
+    }
+
     if (type !== 'subscription' || !user_id || !plan) return res.sendStatus(200)
 
     await prisma.$transaction([

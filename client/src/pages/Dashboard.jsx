@@ -14,6 +14,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import api from '../services/api'
 import useAuthStore from '../store/authStore'
 import { formatPrice, timeAgo } from '../utils/format'
+import BoostModal from '../components/listings/BoostModal'
 
 const TABS = [
   { id: 'overview',      label: 'Overview',     icon: LayoutDashboard },
@@ -310,6 +311,7 @@ function OverviewTab({ user, tier, setTab }) {
 function ListingsTab() {
   const qc = useQueryClient()
   const [filter, setFilter] = useState('all')
+  const [boostListing, setBoostListing] = useState(null)
 
   const { data = [], isLoading } = useQuery({
     queryKey: ['my-listings'],
@@ -426,6 +428,14 @@ function ListingsTab() {
                   {(l.status === 'pending' || l.status === 'soft_live') && (
                     <span className="flex-1 py-2 text-[10px] text-center text-gray-300">In review</span>
                   )}
+                  {l.status === 'active' && !l.boost_tier && (
+                    <button title="Boost"
+                      onClick={() => setBoostListing(l)}
+                      className="px-3 py-2 hover:bg-yellow-50 transition-colors"
+                      style={{ color: '#854d0e' }}>
+                      <Zap className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {l.status === 'active' && (
                     <button title="Pause"
                       onClick={() => toggleMutation.mutate({ id: l.id, status: 'expired' })}
@@ -443,6 +453,13 @@ function ListingsTab() {
             )
           })}
         </div>
+      )}
+
+      {boostListing && (
+        <BoostModal
+          listing={boostListing}
+          onClose={() => setBoostListing(null)}
+        />
       )}
     </div>
   )

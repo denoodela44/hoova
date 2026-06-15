@@ -25,7 +25,8 @@ const reportsRoutes = require('./routes/reports')
 const announcementsRoutes = require('./routes/announcements')
 const sitemapRoutes = require('./routes/sitemap')
 const marketIntelligenceRoutes = require('./routes/marketIntelligence')
-const offerRoutes = require('./routes/offers')
+const offerRoutes  = require('./routes/offers')
+const boostRoutes  = require('./routes/boosts')
 
 const chatHandler = require('./socket/chatHandler')
 const { expireListings } = require('./jobs/expireListings')
@@ -85,6 +86,7 @@ app.use('/api/reports', reportsRoutes)
 app.use('/api/announcements', announcementsRoutes)
 app.use('/api/market-intelligence', marketIntelligenceRoutes)
 app.use('/api/offers', offerRoutes)
+app.use('/api/boosts', boostRoutes)
 app.use('/', sitemapRoutes) // sitemap.xml + robots.txt at root
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }))
