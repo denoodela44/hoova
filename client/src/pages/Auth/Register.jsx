@@ -26,7 +26,7 @@ export default function Register() {
   const onSubmit = async (data) => {
     setError('')
     try {
-      const payload = { ...data, name: `${data.firstName} ${data.lastName}`.trim() }
+      const payload = { ...data }
       const res = await api.post('/auth/register', payload)
       const { user, token, refreshToken, requiresPhoneVerify } = res.data.data
       if (requiresPhoneVerify) {
@@ -78,29 +78,6 @@ export default function Register() {
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
-                <div className="flex gap-3">
-                  <FormField label="First name" error={errors.firstName?.message}>
-                    <input
-                      placeholder="Kwame"
-                      className="auth-input"
-                      {...register('firstName', {
-                        required: 'First name required',
-                        minLength: { value: 2, message: 'Too short' },
-                      })}
-                    />
-                  </FormField>
-                  <FormField label="Last name" error={errors.lastName?.message}>
-                    <input
-                      placeholder="Mensah"
-                      className="auth-input"
-                      {...register('lastName', {
-                        required: 'Last name required',
-                        minLength: { value: 2, message: 'Too short' },
-                      })}
-                    />
-                  </FormField>
-                </div>
 
                 <FormField label="Email address" error={errors.email?.message}>
                   <input

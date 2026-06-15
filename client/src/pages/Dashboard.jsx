@@ -147,6 +147,22 @@ function OverviewTab({ user, tier, setTab }) {
 
   return (
     <div className="space-y-5">
+      {/* Display name prompt — shown until seller sets store_name */}
+      {!user.store_name && (
+        <button
+          onClick={() => setTab('store')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all hover:opacity-90"
+          style={{ background: '#fdf2f5', border: '1.5px dashed #F8C0C8' }}
+        >
+          <span className="text-xl">✍️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold" style={{ color: '#B81365' }}>Set your display name</p>
+            <p className="text-xs text-gray-500 mt-0.5">Your ads currently show your email username. Add a display name so buyers know who you are.</p>
+          </div>
+          <ChevronRight className="w-4 h-4 shrink-0" style={{ color: '#B81365' }} />
+        </button>
+      )}
+
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {KPIs.map(({ label, value, icon: Icon, color, bg }) => (

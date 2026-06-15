@@ -255,8 +255,8 @@ export default function ListingCard({ listing, onSaveToggle }) {
         <div className="flex items-center gap-1 min-w-0" style={{ fontSize: 11, color: 'var(--color-text-subtle)' }}>
           {listing.seller && (
             <img
-              src={listing.seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.seller.name || 'S')}&size=24&background=F8C0C8&color=B81365&bold=true`}
-              alt={listing.seller.name}
+              src={listing.seller.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.seller.store_name || listing.seller.name || 'S')}&size=24&background=F8C0C8&color=B81365&bold=true`}
+              alt={listing.seller.store_name || listing.seller.name}
               className="w-4 h-4 rounded-full object-cover shrink-0"
             />
           )}

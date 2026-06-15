@@ -8,6 +8,55 @@ import useAuthStore from '../store/authStore'
 
 const STEPS = ['Details', 'Category', 'Photos', 'Location', 'Review']
 
+const CATEGORY_SPECS = {
+  electronics: [
+    { key: 'brand',    label: 'Brand',        type: 'text',   placeholder: 'Apple, Samsung, HP, Lenovo…' },
+    { key: 'model',    label: 'Model',         type: 'text',   placeholder: 'iPhone 14 Pro, MacBook Air…' },
+    { key: 'storage',  label: 'Storage',       type: 'select', options: ['16GB','32GB','64GB','128GB','256GB','512GB','1TB','2TB'] },
+    { key: 'ram',      label: 'RAM',           type: 'select', options: ['2GB','3GB','4GB','6GB','8GB','12GB','16GB','32GB','64GB'] },
+    { key: 'color',    label: 'Color',         type: 'text',   placeholder: 'Space Black, Silver, Blue…' },
+    { key: 'screen',   label: 'Screen Size',   type: 'text',   placeholder: '6.1", 15.6", 55"…' },
+    { key: 'network',  label: 'Network',       type: 'select', options: ['5G','4G LTE','3G','Wi-Fi Only'] },
+  ],
+  vehicles: [
+    { key: 'make',         label: 'Make / Brand',  type: 'text',   placeholder: 'Toyota, Honda, Hyundai…' },
+    { key: 'model',        label: 'Model',          type: 'text',   placeholder: 'Corolla, CR-V, Kia Morning…' },
+    { key: 'year',         label: 'Year',           type: 'number', placeholder: '2020' },
+    { key: 'mileage',      label: 'Mileage (km)',   type: 'number', placeholder: '45000' },
+    { key: 'fuel_type',    label: 'Fuel Type',      type: 'select', options: ['Petrol','Diesel','Hybrid','Electric','LPG'] },
+    { key: 'transmission', label: 'Transmission',   type: 'select', options: ['Automatic','Manual'] },
+    { key: 'color',        label: 'Colour',         type: 'text',   placeholder: 'Silver, Black, White…' },
+  ],
+  'real-estate': [
+    { key: 'property_type', label: 'Property Type', type: 'select', options: ['Apartment','House','Land','Commercial','Office','Shop','Warehouse'] },
+    { key: 'bedrooms',      label: 'Bedrooms',       type: 'select', options: ['Studio','1','2','3','4','5','6+'] },
+    { key: 'bathrooms',     label: 'Bathrooms',      type: 'select', options: ['1','2','3','4+'] },
+    { key: 'size_sqft',     label: 'Size (sqft)',    type: 'number', placeholder: '1200' },
+    { key: 'furnished',     label: 'Furnished',      type: 'select', options: ['Furnished','Unfurnished','Semi-Furnished'] },
+  ],
+  fashion: [
+    { key: 'brand',    label: 'Brand',    type: 'text', placeholder: 'Nike, Zara, Gucci…' },
+    { key: 'size',     label: 'Size',     type: 'text', placeholder: 'S, M, L, XL, 42…' },
+    { key: 'color',    label: 'Colour',   type: 'text', placeholder: 'Black, White, Red…' },
+    { key: 'material', label: 'Material', type: 'text', placeholder: 'Cotton, Leather, Silk…' },
+  ],
+  furniture: [
+    { key: 'material',   label: 'Material',   type: 'text', placeholder: 'Wood, Metal, Fabric…' },
+    { key: 'color',      label: 'Colour',     type: 'text', placeholder: 'Brown, Black, White…' },
+    { key: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'L120 × W80 × H75 cm…' },
+  ],
+  agriculture: [
+    { key: 'item_type', label: 'Type',     type: 'text', placeholder: 'Tractor, Seeds, Fertilizer…' },
+    { key: 'brand',     label: 'Brand',    type: 'text', placeholder: 'Massey Ferguson, Yara…' },
+    { key: 'quantity',  label: 'Quantity', type: 'text', placeholder: '50 bags, 1 unit…' },
+  ],
+  sports: [
+    { key: 'brand', label: 'Brand', type: 'text', placeholder: 'Nike, Adidas, Wilson…' },
+    { key: 'size',  label: 'Size',  type: 'text', placeholder: 'Medium, Large, 42…' },
+    { key: 'color', label: 'Colour', type: 'text', placeholder: 'Black, White…' },
+  ],
+}
+
 const GHANA_REGIONS = [
   'Greater Accra', 'Ashanti', 'Western', 'Eastern', 'Central',
   'Volta', 'Northern', 'Upper East', 'Upper West', 'Brong-Ahafo',
@@ -26,6 +75,7 @@ export default function PostListing() {
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [specs, setSpecs] = useState({})
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: { condition: 'used', currency: 'GHS' }
@@ -36,6 +86,11 @@ export default function PostListing() {
   const title = watch('title') || ''
   const description = watch('description') || ''
   const price = watch('price')
+
+  const selectedCategoryObj = categories.find(c => c.id === selectedCategory)
+  const catSlug = selectedCategoryObj?.slug || ''
+  const specFields = CATEGORY_SPECS[catSlug] || []
+  const setSpec = (key, val) => setSpecs(prev => ({ ...prev, [key]: val }))
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -56,10 +111,14 @@ export default function PostListing() {
     try {
       const res = await api.post('/listings/ai-assist', { prompt: aiPrompt })
       const d = res.data.data
-      if (d.title)       setValue('title', d.title)
-      if (d.description) setValue('description', d.description)
-      if (d.condition)   setValue('condition', d.condition)
+      if (d.title)            setValue('title', d.title)
+      if (d.description)      setValue('description', d.description)
+      if (d.condition)        setValue('condition', d.condition)
       if (d.price_suggestion) setValue('price', d.price_suggestion)
+      if (d.category_slug) {
+        const match = categories.find(c => c.slug === d.category_slug && !c.parent_id)
+        if (match) setValue('category_id', match.id)
+      }
       setShowAI(false)
       setAiPrompt('')
     } catch (err) {
@@ -129,8 +188,15 @@ export default function PostListing() {
       return
     }
     try {
+      const filledSpecs = specFields.filter(f => specs[f.key])
+      let finalDescription = data.description || ''
+      if (filledSpecs.length > 0) {
+        const specLine = filledSpecs.map(f => `${f.label}: ${specs[f.key]}`).join('  •  ')
+        finalDescription = `${specLine}\n\n${finalDescription}`
+      }
       const payload = {
         ...data,
+        description: finalDescription,
         price: Number(data.price),
         images: images.filter((img) => img.url && !img.error).map((img) => ({ url: img.url })),
       }
@@ -406,6 +472,43 @@ export default function PostListing() {
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
+                </div>
+              )}
+
+              {/* Dynamic spec fields based on category */}
+              {specFields.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px" style={{ background: '#e9e6e0' }} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Item Specs</span>
+                    <div className="flex-1 h-px" style={{ background: '#e9e6e0' }} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {specFields.map((field) => (
+                      <div key={field.key}>
+                        <label className="block text-xs font-medium text-gray-500 mb-1.5">{field.label}</label>
+                        {field.type === 'select' ? (
+                          <select
+                            value={specs[field.key] || ''}
+                            onChange={(e) => setSpec(field.key, e.target.value)}
+                            className="input"
+                          >
+                            <option value="">-- Select --</option>
+                            {field.options.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            type={field.type}
+                            placeholder={field.placeholder}
+                            value={specs[field.key] || ''}
+                            onChange={(e) => setSpec(field.key, e.target.value)}
+                            className="input"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-gray-400">Specs help buyers find your listing faster. Fill what applies.</p>
                 </div>
               )}
             </div>

@@ -12,7 +12,7 @@ const BASE_URL = process.env.SITE_URL || 'https://hoova.com.gh'
 const LISTING_INCLUDE = {
   images: { orderBy: { order: 'asc' } },
   // phone intentionally excluded — use GET /:id/contact (auth required) to reveal
-  seller: { select: { id: true, name: true, avatar: true, phone: true, phone_verified: true, id_verified: true, rating_avg: true, review_count: true, created_at: true } },
+  seller: { select: { id: true, name: true, store_name: true, avatar: true, phone: true, phone_verified: true, id_verified: true, rating_avg: true, review_count: true, created_at: true } },
   category: { select: { id: true, name: true, slug: true } },
   location: true,
 }

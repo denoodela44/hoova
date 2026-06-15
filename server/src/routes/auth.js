@@ -21,7 +21,7 @@ function generateOtp() {
 
 // POST /api/auth/register
 router.post('/register', [
-  body('name').trim().isLength({ min: 2 }),
+  body('name').optional().trim().isLength({ min: 2 }),
   body('email').optional().isEmail().normalizeEmail(),
   body('phone').optional().matches(/^[0-9]{9,10}$/),
   body('password').isLength({ min: 8 }),
@@ -30,7 +30,8 @@ router.post('/register', [
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg })
 
-    const { name, email, phone, password } = req.body
+    const { email, phone, password } = req.body
+    const name = req.body.name || (email ? email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').trim() : null) || 'Seller'
 
     if (!email && !phone) {
       return res.status(400).json({ success: false, message: 'Email or phone required' })
