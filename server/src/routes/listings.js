@@ -144,8 +144,21 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
       is_saved = !!save
     }
 
+    // Fetch offers for this listing (scoped by role)
+    let offers = []
+    if (req.userId) {
+      const isOwner = listing.user_id === req.userId
+      offers = await prisma.offer.findMany({
+        where: isOwner
+          ? { listing_id: listing.id }
+          : { listing_id: listing.id, buyer_id: req.userId },
+        include: { buyer: { select: { id: true, name: true, avatar: true } } },
+        orderBy: { created_at: 'desc' },
+      })
+    }
+
     const { _phone, ...pub } = publicListing({ ...listing, is_saved })
-    res.json({ success: true, data: pub })
+    res.json({ success: true, data: { ...pub, offers } })
   } catch (err) { next(err) }
 })
 
@@ -311,6 +324,51 @@ router.delete('/:id', requireAuth, async (req, res, next) => {
     if (listing.user_id !== req.user.id) return res.status(403).json({ success: false, message: 'Forbidden' })
     await prisma.listing.delete({ where: { id: req.params.id } })
     res.json({ success: true })
+  } catch (err) { next(err) }
+})
+
+// POST /api/listings/:id/offers — buyer submits a price offer
+router.post('/:id/offers', requireAuth, async (req, res, next) => {
+  try {
+    const listing = await prisma.listing.findUnique({
+      where: { id: req.params.id },
+      select: { id: true, user_id: true, title: true, price: true, negotiable: true, status: true },
+    })
+    if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' })
+    if (listing.status !== 'active') return res.status(400).json({ success: false, message: 'Listing is not active' })
+    if (!listing.negotiable) return res.status(400).json({ success: false, message: 'This listing is not accepting offers' })
+    if (listing.user_id === req.user.id) return res.status(400).json({ success: false, message: 'You cannot make an offer on your own listing' })
+
+    const num = Number(req.body.amount)
+    if (!num || num <= 0) return res.status(400).json({ success: false, message: 'Enter a valid offer amount' })
+    if (num > listing.price) return res.status(400).json({ success: false, message: 'Offer cannot exceed asking price' })
+
+    const existing = await prisma.offer.findFirst({
+      where: { listing_id: listing.id, buyer_id: req.user.id, status: 'pending' },
+    })
+    if (existing) return res.status(400).json({ success: false, message: 'You already have a pending offer on this listing' })
+
+    const offer = await prisma.offer.create({
+      data: {
+        listing_id: listing.id,
+        buyer_id:   req.user.id,
+        amount:     num,
+        message:    req.body.message?.trim() || null,
+      },
+      include: { buyer: { select: { id: true, name: true, avatar: true } } },
+    })
+
+    prisma.notification.create({
+      data: {
+        user_id: listing.user_id,
+        type:    'offer',
+        title:   'New offer received',
+        body:    `${req.user.name} offered GHS ${num.toLocaleString()} on "${listing.title}"`,
+        data:    { listing_id: listing.id, offer_id: offer.id },
+      },
+    }).catch(() => {})
+
+    res.status(201).json({ success: true, data: offer })
   } catch (err) { next(err) }
 })
 

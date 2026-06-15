@@ -41,6 +41,7 @@ model User {
   notifications     Notification[]
   subscriptions     Subscription[]
   otp_codes         OtpCode[]
+  offers            Offer[]         @relation("OffersBuyer")
 
   @@map("users")
 }
@@ -134,6 +135,7 @@ model Listing {
   views           ListingView[]
   price_history   PriceHistory[]
   boosts          Boost[]
+  offers          Offer[]
 
   @@map("listings")
 }
@@ -364,6 +366,25 @@ model SiteSetting {
   updated_at DateTime @updatedAt
 
   @@map("site_settings")
+}
+
+model Offer {
+  id             String   @id @default(uuid())
+  listing_id     String
+  buyer_id       String
+  amount         Float
+  message        String?
+  status         String   @default("pending") // pending | accepted | declined | countered
+  counter_amount Float?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  listing  Listing @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  buyer    User    @relation("OffersBuyer", fields: [buyer_id], references: [id], onDelete: Cascade)
+
+  @@index([listing_id])
+  @@index([buyer_id])
+  @@map("offers")
 }
 
 model Ad {
