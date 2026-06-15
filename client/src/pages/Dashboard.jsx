@@ -395,7 +395,7 @@ function ListingsTab() {
                 <div className="p-3 flex-1 flex flex-col">
                   <Link to={`/listing/${l.id}`}
                     className="text-xs font-bold text-gray-900 hover:underline line-clamp-2 leading-snug mb-1">{l.title}</Link>
-                  <p className="text-sm font-black mb-2" style={{ color: '#B81365', fontFamily: "'Poppins', sans-serif" }}>
+                  <p className="text-sm font-semibold mb-2" style={{ color: '#B81365' }}>
                     {formatPrice(l.price)}
                   </p>
                   <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-auto">

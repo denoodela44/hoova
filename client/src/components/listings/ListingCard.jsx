@@ -227,7 +227,7 @@ export default function ListingCard({ listing, onSaveToggle }) {
             </span>
           )}
           <p
-            className="font-bold leading-none"
+            className="font-semibold leading-none"
             style={{ fontFamily: "'Poppins', sans-serif", fontSize: 14, color: isAuction ? '#B81365' : 'var(--color-text)' }}
           >
             {formatPrice(isAuction ? (listing.current_bid || listing.starting_bid || listing.price) : listing.price)}
