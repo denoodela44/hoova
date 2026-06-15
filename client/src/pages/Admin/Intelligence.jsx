@@ -43,27 +43,42 @@ export default function Intelligence() {
 
       {/* Revenue snapshot */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl p-5 text-white" style={{ background: '#B81365' }}>
-          <Crown className="w-5 h-5 text-white/60 mb-3" />
-          <p className="text-2xl font-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+        <div className="rounded-2xl p-5" style={{ background: '#1a1a2e', border: '1px solid #2d2d44' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(184,19,101,0.25)' }}>
+              <Crown className="w-3.5 h-3.5" style={{ color: '#f472b6' }} />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6b7280' }}>Monthly Revenue</span>
+          </div>
+          <p className="text-2xl font-black text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
             GHS {(proRevenue + bizRevenue).toLocaleString()}
           </p>
-          <p className="text-pink-200 text-xs mt-0.5">Est. monthly subscription revenue</p>
+          <p className="text-xs mt-1" style={{ color: '#6b7280' }}>Est. subscription revenue</p>
         </div>
         <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
-          <Target className="w-5 h-5 text-amber-500 mb-3" />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#fefce8' }}>
+              <Target className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Upsell Ready</span>
+          </div>
           <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
             {data.upsell_targets.length}
           </p>
-          <p className="text-gray-500 text-xs mt-0.5">Free sellers ripe for upgrade</p>
+          <p className="text-gray-400 text-xs mt-1">Free sellers ripe for upgrade</p>
         </div>
         <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
-          <Zap className="w-5 h-5 text-purple-500 mb-3" />
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#f5f3ff' }}>
+              <Zap className="w-3.5 h-3.5 text-purple-500" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Paid Users</span>
+          </div>
           <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
             {((data.tier_breakdown.find((t) => t.tier === 'pro')?.count || 0) +
                (data.tier_breakdown.find((t) => t.tier === 'business')?.count || 0)).toLocaleString()}
           </p>
-          <p className="text-gray-500 text-xs mt-0.5">Paid subscribers total</p>
+          <p className="text-gray-400 text-xs mt-1">Paid subscribers total</p>
         </div>
       </div>
 
@@ -215,34 +230,48 @@ export default function Intelligence() {
       </div>
 
       {/* Upsell targets */}
-      <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
-        <div className="flex items-center gap-2 mb-1">
-          <Target className="w-4 h-4 text-amber-500" />
-          <p className="text-sm font-bold text-gray-800">Upsell Targets</p>
+      <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #f0eeeb' }}>
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-amber-500" />
+            <p className="text-sm font-bold text-gray-800">Upsell Targets</p>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#fefce8', color: '#92400e' }}>
+              {data.upsell_targets.length} free sellers
+            </span>
+          </div>
+          <p className="text-[10px] text-gray-400 hidden sm:block">Most listings on free plan — likely to convert to Pro</p>
         </div>
-        <p className="text-xs text-gray-400 mb-4">Free users with the most listings — most likely to convert to Pro.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {data.upsell_targets.map((u) => (
-            <div
-              key={u.id}
-              className="rounded-xl p-4"
-              style={{ background: '#ECEAE6' }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <div
-                  className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white"
-                  style={{ background: '#9ca3af' }}
-                >
+        {/* Column headers */}
+        <div className="grid px-5 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400"
+          style={{ gridTemplateColumns: '1fr 2fr 80px 80px', borderBottom: '1px solid #f9f8f7' }}>
+          <span>User</span>
+          <span>Email</span>
+          <span className="text-right">Listings</span>
+          <span className="text-right">Action</span>
+        </div>
+
+        <div className="divide-y" style={{ divideColor: '#f9f8f7' }}>
+          {data.upsell_targets.map((u, i) => (
+            <div key={u.id}
+              className="grid items-center px-5 py-2.5 hover:bg-gray-50 transition-colors"
+              style={{ gridTemplateColumns: '1fr 2fr 80px 80px' }}>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ background: i < 3 ? '#B81365' : '#9ca3af' }}>
                   {u.name?.[0]}
                 </div>
-                <p className="text-xs font-bold text-gray-800 truncate">{u.name}</p>
+                <span className="text-xs font-semibold text-gray-800 truncate">{u.name}</span>
               </div>
-              <p className="text-lg font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              <span className="text-xs text-gray-400 truncate pr-4">{u.email}</span>
+              <span className="text-xs font-black text-right" style={{ fontFamily: "'Poppins', sans-serif", color: i < 3 ? '#B81365' : '#374151' }}>
                 {u.listing_count}
-              </p>
-              <p className="text-[10px] text-gray-500">listings on free plan</p>
-              <p className="text-[10px] text-gray-400 mt-1 truncate">{u.email}</p>
+              </span>
+              <div className="flex justify-end">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: '#fdf2f5', color: '#B81365' }}>
+                  Upgrade
+                </span>
+              </div>
             </div>
           ))}
         </div>
