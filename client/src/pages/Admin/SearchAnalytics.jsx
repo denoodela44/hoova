@@ -119,6 +119,12 @@ const RANGE_OPTIONS = [
 
 const fmtDateInput = (d) => d.toISOString().slice(0, 10)
 
+const fmtVolume = (n) => {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M+`
+  if (n >= 1_000)     return `${Math.round(n / 1_000)}K+`
+  return n.toLocaleString()
+}
+
 const OPP_COLOR = (score) => {
   if (score >= 85) return { color: '#15803d', bg: '#dcfce7', label: 'Excellent' }
   if (score >= 70) return { color: '#B81365', bg: '#fdf2f5', label: 'Good' }
@@ -915,7 +921,7 @@ export default function SearchAnalytics() {
               <div className="flex-1">
                 <p className="text-sm font-bold" style={{ color: '#B81365' }}>Real Market Demand Intelligence — Ghana (Jiji)</p>
                 <p className="text-xs text-gray-600 mt-0.5">
-                  {DEMAND_SIGNALS.unique_terms.toLocaleString()} unique buyer queries · {(DEMAND_SIGNALS.total / 1000).toFixed(0)}K+ monthly searches · {DEMAND_SIGNALS.by_category.length} product categories · {DEMAND_SIGNALS.zero_result_pct}% have no sellers yet
+                  {DEMAND_SIGNALS.unique_terms.toLocaleString()} unique buyer queries · {fmtVolume(DEMAND_SIGNALS.total)} monthly searches · {DEMAND_SIGNALS.by_category.length} product categories · {DEMAND_SIGNALS.zero_result_pct}% have no sellers yet
                 </p>
               </div>
               <div className="shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#B81365', color: 'white' }}>
@@ -926,7 +932,7 @@ export default function SearchAnalytics() {
             {/* KPI cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { label: 'Monthly Search Volume',  value: `${(DEMAND_SIGNALS.total/1000).toFixed(0)}K+`,  icon: Search,     color: '#B81365', bg: '#fdf2f5', sub: 'buyer searches tracked' },
+                { label: 'Monthly Search Volume',  value: fmtVolume(DEMAND_SIGNALS.total),  icon: Search,     color: '#B81365', bg: '#fdf2f5', sub: 'buyer searches tracked' },
                 { label: 'Unique Buyer Queries',   value: DEMAND_SIGNALS.unique_terms.toLocaleString(),   icon: Hash,       color: '#1d4ed8', bg: '#eff6ff', sub: 'distinct search terms' },
                 { label: 'Unmet Demand Gaps',      value: `${DEMAND_SIGNALS.zero_result_pct}%`,           icon: AlertCircle,color: '#dc2626', bg: '#fef2f2', sub: `${DEMAND_SIGNALS.zero_results.length} zero-competition niches` },
                 { label: 'Top Opportunity Score',  value: '100',                                          icon: Target,     color: '#15803d', bg: '#dcfce7', sub: 'perfect demand/supply ratio' },
