@@ -202,29 +202,27 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── CATEGORY GRID ─────────────────────────────────────────── */}
-      <section className="py-3" style={{ background: '#ECEAE6' }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {TOP_CATEGORIES.map((cat) => {
-              const style = getCategoryStyle(cat.slug)
-              return (
-                <Link
-                  key={cat.slug}
-                  to={`/browse?category=${cat.slug}`}
-                  className="flex flex-col items-center gap-1.5 shrink-0 rounded-xl bg-white p-2.5 text-center transition-all hover:shadow-sm"
-                  style={{ minWidth: 68, border: '1px solid rgba(0,0,0,0.06)' }}
-                >
-                  <span style={{ width: 32, height: 32, borderRadius: 8, background: style.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className={`ti ti-${style.icon}`} style={{ color: style.color, fontSize: 16 }} />
-                  </span>
-                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide leading-tight">
-                    {cat.label}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
+      {/* ── CATEGORY MARQUEE ──────────────────────────────────────── */}
+      <section className="py-3 overflow-hidden" style={{ background: '#ECEAE6' }}>
+        <div className="marquee-track flex gap-3" style={{ width: 'max-content' }}>
+          {[...TOP_CATEGORIES, ...TOP_CATEGORIES].map((cat, i) => {
+            const style = getCategoryStyle(cat.slug)
+            return (
+              <Link
+                key={`${cat.slug}-${i}`}
+                to={`/browse?category=${cat.slug}`}
+                className="flex flex-col items-center gap-1.5 shrink-0 rounded-xl bg-white p-2.5 text-center hover:shadow-sm transition-shadow"
+                style={{ minWidth: 72, border: '1px solid rgba(0,0,0,0.06)' }}
+              >
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: style.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <i className={`ti ti-${style.icon}`} style={{ color: style.color, fontSize: 16 }} />
+                </span>
+                <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide leading-tight">
+                  {cat.label}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </section>
 
