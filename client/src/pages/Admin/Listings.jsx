@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import {
   Package, Search, Trash2, Eye, CheckCircle,
   XCircle, Clock, Zap, ExternalLink, ChevronLeft, ChevronRight,
-  AlertTriangle, TrendingUp, BarChart2, ArrowUpDown, Tag,
+  AlertTriangle, TrendingUp, BarChart2, Tag, SlidersHorizontal, X,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -37,6 +37,13 @@ const SORT_OPTIONS   = [
   { value: 'price_asc',  label: 'Price ↑' },
 ]
 
+const TIER_OPTIONS = [
+  { value: '', label: 'All Tiers' },
+  { value: 'free', label: 'Free' },
+  { value: 'pro', label: 'Pro' },
+  { value: 'business', label: 'Business' },
+]
+
 export default function AdminListings() {
   const qc = useQueryClient()
   const [page, setPage]         = useState(1)
@@ -47,15 +54,41 @@ export default function AdminListings() {
   const [sort, setSort]         = useState('newest')
   const [category, setCategory] = useState('')
   const [showAnalytics, setShowAnalytics] = useState(true)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Advanced filter state
+  const [tier, setTier]           = useState('')
+  const [minPrice, setMinPrice]   = useState('')
+  const [maxPrice, setMaxPrice]   = useState('')
+  const [dateFrom, setDateFrom]   = useState('')
+  const [dateTo, setDateTo]       = useState('')
+  const [verified, setVerified]   = useState(false)
+  const [boosted, setBoosted]     = useState(false)
+  const [minViews, setMinViews]   = useState('')
+
+  const hasAdvanced = tier || minPrice || maxPrice || dateFrom || dateTo || verified || boosted || minViews
+
+  function clearAdvanced() {
+    setTier(''); setMinPrice(''); setMaxPrice(''); setDateFrom(''); setDateTo('')
+    setVerified(false); setBoosted(false); setMinViews(''); setPage(1)
+  }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'listings', page, status, search, sort, category],
+    queryKey: ['admin', 'listings', page, status, search, sort, category, tier, minPrice, maxPrice, dateFrom, dateTo, verified, boosted, minViews],
     queryFn: () => {
       const params = new URLSearchParams({ page, limit: 20, sort })
       if (status !== 'all') params.set('status', status === 'flagged' ? 'all' : status)
       if (status === 'flagged') params.set('flagged', 'true')
-      if (search) params.set('q', search)
+      if (search)   params.set('q', search)
       if (category) params.set('category', category)
+      if (tier)     params.set('tier', tier)
+      if (minPrice) params.set('min_price', minPrice)
+      if (maxPrice) params.set('max_price', maxPrice)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo)   params.set('date_to', dateTo)
+      if (verified) params.set('verified', 'true')
+      if (boosted)  params.set('boosted', 'true')
+      if (minViews) params.set('min_views', minViews)
       return api.get(`/admin/listings?${params}`).then((r) => r.data.data)
     },
     keepPreviousData: true,
@@ -226,8 +259,90 @@ export default function AdminListings() {
               style={{ border: '1px solid #e5e7eb', color: '#374151' }}>
               {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+
+            <button
+              onClick={() => setShowAdvanced((s) => !s)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              style={showAdvanced || hasAdvanced ? { background: '#B81365', color: 'white' } : { background: '#ECEAE6', color: '#6b7280' }}>
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Filters{hasAdvanced ? ' •' : ''}
+            </button>
           </div>
         </div>
+
+        {/* Advanced filter panel */}
+        {showAdvanced && (
+          <div className="rounded-2xl p-4 space-y-4" style={{ background: '#fafaf9', border: '1px solid #f0eeeb' }}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Advanced Filters</span>
+              {hasAdvanced && (
+                <button onClick={clearAdvanced} className="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700">
+                  <X className="w-3 h-3" /> Clear all
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* Seller tier */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Seller Tier</label>
+                <select value={tier} onChange={(e) => { setTier(e.target.value); setPage(1) }}
+                  className="w-full px-3 py-2 rounded-xl text-xs font-semibold border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb', color: '#374151' }}>
+                  {TIER_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              {/* Min views */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Min Views</label>
+                <input type="number" min="0" value={minViews} onChange={(e) => { setMinViews(e.target.value); setPage(1) }}
+                  placeholder="e.g. 100"
+                  className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb' }} />
+              </div>
+              {/* Price range */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Min Price (GHS)</label>
+                <input type="number" min="0" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(1) }}
+                  placeholder="0"
+                  className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb' }} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Max Price (GHS)</label>
+                <input type="number" min="0" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(1) }}
+                  placeholder="∞"
+                  className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb' }} />
+              </div>
+              {/* Date range */}
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Posted From</label>
+                <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
+                  className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb' }} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1">Posted To</label>
+                <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
+                  className="w-full px-3 py-2 rounded-xl text-xs border focus:outline-none"
+                  style={{ border: '1px solid #e5e7eb' }} />
+              </div>
+              {/* Toggles */}
+              <div className="flex flex-col gap-2 justify-end">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={verified} onChange={(e) => { setVerified(e.target.checked); setPage(1) }}
+                    className="w-3.5 h-3.5 accent-pink-600" />
+                  <span className="text-xs font-semibold text-gray-700">ID Verified only</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={boosted} onChange={(e) => { setBoosted(e.target.checked); setPage(1) }}
+                    className="w-3.5 h-3.5 accent-pink-600" />
+                  <span className="text-xs font-semibold text-gray-700">Boosted only</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-1 flex-wrap">
           {STATUS_OPTIONS.map((s) => (
@@ -325,7 +440,7 @@ export default function AdminListings() {
                         {(l.views_count || 0).toLocaleString()}
                       </div>
                       <p className="text-[10px] text-gray-400 mt-0.5">
-                        {l.saves_count || 0} saves · {l.inquiries_count || 0} chats
+                        {(l.saves_count || l.saves || 0)} saves · {(l.inquiries_count || l.inquiries || 0)} chats
                       </p>
                       {/* Engagement bar */}
                       <div className="mt-1 h-1 rounded-full overflow-hidden w-20" style={{ background: '#ECEAE6' }}>

@@ -37,21 +37,43 @@ router.use(requireAdminToken)
 // GET /api/admin/listings
 router.get('/listings', async (req, res, next) => {
   try {
-    const page    = Math.max(1, parseInt(req.query.page)  || 1)
-    const limit   = Math.min(50, parseInt(req.query.limit) || 20)
-    const skip    = (page - 1) * limit
-    const { status, category, q, sort } = req.query
+    const page  = Math.max(1, parseInt(req.query.page)  || 1)
+    const limit = Math.min(50, parseInt(req.query.limit) || 20)
+    const skip  = (page - 1) * limit
+    const { status, category, q, sort, tier, min_price, max_price, date_from, date_to, verified, boosted, min_views } = req.query
 
-    const where = {}
-    if (status)   where.status = status
-    if (category) where.category = { slug: category }
-    if (q) {
-      where.OR = [
-        { title:           { contains: q, mode: 'insensitive' } },
-        { seller: { name: { contains: q, mode: 'insensitive' } } },
-        { seller: { email:{ contains: q, mode: 'insensitive' } } },
-      ]
+    const conditions = []
+    if (status)            conditions.push({ status })
+    if (category)          conditions.push({ category: { slug: category } })
+    if (boosted === 'true') conditions.push({ boost_tier: { not: null } })
+    if (min_views)         conditions.push({ views_count: { gte: parseInt(min_views) } })
+    if (min_price || max_price) {
+      const pf = {}
+      if (min_price) pf.gte = parseFloat(min_price)
+      if (max_price) pf.lte = parseFloat(max_price)
+      conditions.push({ price: pf })
     }
+    if (date_from || date_to) {
+      const df = {}
+      if (date_from) df.gte = new Date(date_from + 'T00:00:00Z')
+      if (date_to)   df.lte = new Date(date_to   + 'T23:59:59Z')
+      conditions.push({ created_at: df })
+    }
+    const sellerFilter = {}
+    if (tier)              sellerFilter.subscription_tier = tier
+    if (verified === 'true') sellerFilter.id_verified = true
+    if (Object.keys(sellerFilter).length) conditions.push({ seller: sellerFilter })
+    if (q) {
+      conditions.push({
+        OR: [
+          { title:           { contains: q, mode: 'insensitive' } },
+          { seller: { name:  { contains: q, mode: 'insensitive' } } },
+          { seller: { email: { contains: q, mode: 'insensitive' } } },
+        ],
+      })
+    }
+
+    const where = conditions.length ? { AND: conditions } : {}
 
     const ORDER = {
       newest:     { created_at: 'desc' },
@@ -66,7 +88,7 @@ router.get('/listings', async (req, res, next) => {
       prisma.listing.findMany({
         where,
         include: {
-          seller:   { select: { id: true, name: true, email: true, avatar: true, subscription_tier: true } },
+          seller:   { select: { id: true, name: true, email: true, avatar: true, subscription_tier: true, id_verified: true } },
           category: { select: { id: true, name: true, slug: true } },
           images:   { take: 1, orderBy: { order: 'asc' }, select: { url: true } },
           _count:   { select: { saves: true, conversations: true } },
@@ -78,36 +100,46 @@ router.get('/listings', async (req, res, next) => {
       prisma.listing.count({ where }),
     ])
 
-    // Summary stats (ignoring filters for totals)
-    const [totalCount, activeCount, pendingCount, soldCount] = await Promise.all([
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const [totalCount, activeCount, pendingCount, soldCount, flaggedCount, newToday, priceAgg, viewsAgg] = await Promise.all([
       prisma.listing.count(),
       prisma.listing.count({ where: { status: 'active' } }),
       prisma.listing.count({ where: { status: 'pending' } }),
       prisma.listing.count({ where: { status: 'sold' } }),
+      prisma.listing.count({ where: { is_flagged: true } }),
+      prisma.listing.count({ where: { created_at: { gte: today } } }),
+      prisma.listing.aggregate({ _avg: { price: true } }),
+      prisma.listing.aggregate({ _sum: { views_count: true } }),
     ])
 
     res.json({
       success: true,
       data: {
         listings: listings.map((l) => ({
-          id:           l.id,
-          title:        l.title,
-          price:        l.price,
-          currency:     l.currency,
-          status:       l.status,
-          boost_tier:   l.boost_tier,
-          views_count:  l.views_count,
-          saves:        l._count.saves,
-          inquiries:    l._count.conversations,
-          created_at:   l.created_at,
-          image:        l.images[0]?.url || null,
-          category:     l.category,
-          seller:       l.seller,
+          id:             l.id,
+          title:          l.title,
+          price:          l.price,
+          currency:       l.currency,
+          status:         l.status,
+          is_flagged:     l.is_flagged,
+          boost_tier:     l.boost_tier,
+          views_count:    l.views_count,
+          saves_count:    l._count.saves,
+          inquiries_count: l._count.conversations,
+          created_at:     l.created_at,
+          image:          l.images[0]?.url || null,
+          category:       l.category,
+          seller:         l.seller,
         })),
         total,
         page,
         totalPages: Math.ceil(total / limit),
-        stats: { total: totalCount, active: activeCount, pending: pendingCount, sold: soldCount },
+        stats: {
+          total: totalCount, active: activeCount, pending: pendingCount,
+          sold: soldCount, flagged: flaggedCount, new_today: newToday,
+          avg_price: Math.round(priceAgg._avg.price || 0),
+          views_total: viewsAgg._sum.views_count || 0,
+        },
       },
     })
   } catch (err) { next(err) }

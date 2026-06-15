@@ -4,13 +4,14 @@ import api from '../../services/api'
 import {
   LayoutDashboard, Search, Users, Package,
   TrendingUp, ShieldCheck, LogOut, Settings2, ShieldAlert,
-  DollarSign, Flag, Zap, Tag, Megaphone,
+  DollarSign, Flag, Zap, Tag, Megaphone, Cpu,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore'
 import Logo from '../../components/layout/Logo'
 
 const NAV = [
   { to: '/admin',              label: 'Dashboard',        icon: LayoutDashboard, end: true },
+  { to: '/admin/command',      label: 'Command Center',   icon: Cpu },
   { to: '/admin/moderation',   label: 'Moderation',       icon: ShieldAlert, badge: 'moderation' },
   { to: '/admin/listings',     label: 'Listings',         icon: Package },
   { to: '/admin/users',        label: 'Users',            icon: Users },

@@ -22,6 +22,7 @@ import AdminReports from './pages/Admin/Reports'
 import AdminBoosts from './pages/Admin/Boosts'
 import AdminCategories from './pages/Admin/Categories'
 import AdminAnnouncements from './pages/Admin/Announcements'
+import CommandCenter from './pages/Admin/CommandCenter'
 import MarketIntelligence from './pages/MarketIntelligence'
 import CategoryCityLanding from './pages/Seo/CategoryCityLanding'
 import SellerStore from './pages/SellerStore'
@@ -77,6 +78,7 @@ export default function App() {
             <Route path="boosts" element={<AdminBoosts />} />
             <Route path="categories" element={<AdminCategories />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
+            <Route path="command" element={<CommandCenter />} />
           </Route>
 
           {/* Legal / info pages — required for Google Ads */}

@@ -261,6 +261,32 @@ router.get('/searches/export', requireAdminToken, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
+// GET /api/analytics/admin/trend?type=users|listings&days=7&from=&to=
+router.get('/admin/trend', requireAdminToken, async (req, res, next) => {
+  try {
+    const { type = 'users', days = 7, from, to } = req.query
+    const d = Math.max(1, Math.min(366, Number(days)))
+    const since = from ? new Date(from + 'T00:00:00Z') : (() => { const s = new Date(); s.setDate(s.getDate() - (d - 1)); s.setHours(0, 0, 0, 0); return s })()
+    const until = to ? new Date(to + 'T23:59:59Z') : new Date()
+
+    if (type === 'users') {
+      const [trend, total] = await Promise.all([
+        prisma.$queryRaw`SELECT DATE(created_at)::text AS day, COUNT(*)::int AS count FROM users WHERE created_at >= ${since} AND created_at <= ${until} GROUP BY day ORDER BY day ASC`,
+        prisma.user.count({ where: { created_at: { gte: since, lte: until } } }),
+      ])
+      return res.json({ success: true, data: { trend, total } })
+    }
+    if (type === 'listings') {
+      const [trend, total] = await Promise.all([
+        prisma.$queryRaw`SELECT DATE(created_at)::text AS day, COUNT(*)::int AS count FROM listings WHERE created_at >= ${since} AND created_at <= ${until} GROUP BY day ORDER BY day ASC`,
+        prisma.listing.count({ where: { created_at: { gte: since, lte: until } } }),
+      ])
+      return res.json({ success: true, data: { trend, total } })
+    }
+    res.status(400).json({ success: false, message: 'type must be users or listings' })
+  } catch (err) { next(err) }
+})
+
 // GET /api/analytics/admin/dashboard — platform overview stats
 router.get('/admin/dashboard', requireAdminToken, async (req, res, next) => {
   try {

@@ -1,12 +1,22 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Users, Package, Search, TrendingUp,
   ArrowUpRight, AlertCircle, UserCheck, Zap,
-  Clock, ExternalLink, CheckCircle,
+  Clock, ExternalLink, CheckCircle, ChevronDown,
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import api from '../../services/api'
+
+const RANGES = [
+  { label: '1D',  days: 1 },
+  { label: '7D',  days: 7 },
+  { label: '30D', days: 30 },
+  { label: '90D', days: 90 },
+  { label: '1Y',  days: 365 },
+]
+const fmtDate = (d) => d.toISOString().slice(0, 10)
 
 const MOCK = {
   users:    { total: 4821, today: 12, week: 84, verified: 1340, trend: [] },
@@ -79,40 +89,8 @@ export default function Dashboard() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* New users trend */}
-        <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-bold text-gray-800">New Users</p>
-              <p className="text-xs text-gray-400">Last 7 days</p>
-            </div>
-            <span
-              className="text-xs font-bold px-2 py-1 rounded-full"
-              style={{ background: '#fdf2f5', color: '#B81365' }}
-            >
-              +{data.users.week} this week
-            </span>
-          </div>
-          <MiniChart data={data.users.trend} color="#B81365" />
-        </div>
-
-        {/* New listings trend */}
-        <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-sm font-bold text-gray-800">New Listings</p>
-              <p className="text-xs text-gray-400">Last 7 days</p>
-            </div>
-            <span
-              className="text-xs font-bold px-2 py-1 rounded-full"
-              style={{ background: '#eff6ff', color: '#1d4ed8' }}
-            >
-              +{data.listings.week} this week
-            </span>
-          </div>
-          <MiniChart data={data.listings.trend} color="#3b82f6" />
-        </div>
+        <TrendCard title="New Users"    type="users"    color="#B81365" badgeBg="#fdf2f5" badgeColor="#B81365" />
+        <TrendCard title="New Listings" type="listings" color="#3b82f6" badgeBg="#eff6ff" badgeColor="#1d4ed8" />
       </div>
 
       {/* Recent activity row */}
@@ -294,26 +272,107 @@ function KpiCard({ icon, label, value, delta, deltaColor = 'gray' }) {
   )
 }
 
-function MiniChart({ data = [], color }) {
-  const chartData = data.length
-    ? data.map((d) => ({ day: d.day?.slice(5), count: d.count }))
-    : Array.from({ length: 7 }, (_, i) => ({
-        day: new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { month: 'numeric', day: 'numeric' }),
-        count: Math.floor(Math.random() * 40 + 10),
-      }))
+function TrendCard({ title, type, color, badgeBg, badgeColor }) {
+  const [days, setDays]         = useState(7)
+  const [showCustom, setShowCustom] = useState(false)
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo]     = useState('')
+  const [useCustom, setUseCustom]   = useState(false)
+
+  const { data, isFetching } = useQuery({
+    queryKey: ['admin', 'trend', type, useCustom ? 'custom' : days, customFrom, customTo],
+    queryFn: () => {
+      const params = new URLSearchParams({ type })
+      if (useCustom && customFrom && customTo) {
+        params.set('from', customFrom)
+        params.set('to', customTo)
+      } else {
+        params.set('days', days)
+      }
+      return api.get(`/analytics/admin/trend?${params}`).then((r) => r.data.data)
+    },
+  })
+
+  const chartData = (data?.trend || []).map((d) => ({ day: d.day?.slice(5), count: d.count }))
+  const total = data?.total ?? 0
+  const rangeLabel = useCustom ? `${customFrom} → ${customTo}` : `Last ${days === 1 ? 'day' : `${days}d`}`
+
+  function applyCustom() {
+    if (customFrom && customTo) { setUseCustom(true); setShowCustom(false) }
+  }
+  function pickRange(d) {
+    setDays(d); setUseCustom(false); setShowCustom(false)
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={100}>
-      <BarChart data={chartData} barSize={10}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" vertical={false} />
-        <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
-        <YAxis hide />
-        <Tooltip
-          contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.08)', fontSize: 11 }}
-          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-        />
-        <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-sm font-bold text-gray-800">{title}</p>
+          <p className="text-xs text-gray-400">{rangeLabel}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {isFetching && <div className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: color, borderTopColor: 'transparent' }} />}
+          <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: badgeBg, color: badgeColor }}>
+            +{total.toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      {/* Range buttons */}
+      <div className="flex items-center gap-1 mb-3">
+        {RANGES.map((r) => (
+          <button key={r.days} onClick={() => pickRange(r.days)}
+            className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+            style={!useCustom && days === r.days ? { background: color, color: 'white' } : { background: '#f3f4f6', color: '#6b7280' }}>
+            {r.label}
+          </button>
+        ))}
+        <div className="relative">
+          <button onClick={() => setShowCustom((s) => !s)}
+            className="flex items-center gap-0.5 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all"
+            style={useCustom ? { background: color, color: 'white' } : { background: '#f3f4f6', color: '#6b7280' }}>
+            Custom <ChevronDown className="w-3 h-3" />
+          </button>
+          {showCustom && (
+            <div className="absolute right-0 top-8 z-20 rounded-xl shadow-xl p-3 bg-white space-y-2" style={{ border: '1px solid #e5e7eb', minWidth: 220 }}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="text-[10px] text-gray-400 font-bold block mb-1">From</label>
+                  <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)}
+                    className="w-full text-xs px-2 py-1.5 rounded-lg border focus:outline-none" style={{ border: '1px solid #e5e7eb' }} />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] text-gray-400 font-bold block mb-1">To</label>
+                  <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)}
+                    className="w-full text-xs px-2 py-1.5 rounded-lg border focus:outline-none" style={{ border: '1px solid #e5e7eb' }} />
+                </div>
+              </div>
+              <button onClick={applyCustom}
+                disabled={!customFrom || !customTo}
+                className="w-full py-1.5 rounded-lg text-xs font-bold text-white disabled:opacity-40"
+                style={{ background: color }}>
+                Apply
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {chartData.length === 0 ? (
+        <div className="h-24 flex items-center justify-center text-xs text-gray-400">No data for this period</div>
+      ) : (
+        <ResponsiveContainer width="100%" height={100}>
+          <BarChart data={chartData} barSize={Math.max(4, Math.min(16, Math.floor(300 / chartData.length)))}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false}
+              interval={chartData.length > 30 ? Math.floor(chartData.length / 10) : 0} />
+            <YAxis hide />
+            <Tooltip contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.08)', fontSize: 11 }} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+            <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   )
 }
