@@ -197,43 +197,24 @@ export default function Home() {
       </div>
 
       {/* ── CATEGORY GRID ─────────────────────────────────────────── */}
-      <section className="py-6 sm:py-10" style={{ background: '#ECEAE6' }}>
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
-            What you shopping for?
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+      <section className="py-3" style={{ background: '#ECEAE6' }}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {TOP_CATEGORIES.map((cat) => {
-              const count = MOCK_CATEGORIES.find((c) => c.slug === cat.slug)?.listing_count
+              const style = getCategoryStyle(cat.slug)
               return (
                 <Link
                   key={cat.slug}
                   to={`/browse?category=${cat.slug}`}
-                  className="hoova-cat-tile flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border border-gray-200 bg-white text-center transition-all duration-150 cursor-pointer"
+                  className="flex flex-col items-center gap-1.5 shrink-0 rounded-xl bg-white p-2.5 text-center transition-all hover:shadow-sm"
+                  style={{ minWidth: 68, border: '1px solid rgba(0,0,0,0.06)' }}
                 >
-                  <span
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 10,
-                      background: getCategoryStyle(cat.slug).bg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <i
-                      className={`ti ti-${getCategoryStyle(cat.slug).icon}`}
-                      style={{ color: getCategoryStyle(cat.slug).color, fontSize: 20 }}
-                    />
+                  <span style={{ width: 32, height: 32, borderRadius: 8, background: style.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <i className={`ti ti-${style.icon}`} style={{ color: style.color, fontSize: 16 }} />
                   </span>
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide leading-tight">
+                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide leading-tight">
                     {cat.label}
                   </span>
-                  {count && (
-                    <span className="text-sm font-bold hidden sm:block" style={{ color: '#B81365' }}>{count.toLocaleString()}</span>
-                  )}
                 </Link>
               )
             })}
