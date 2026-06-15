@@ -6,7 +6,7 @@ import {
   ArrowUpRight, AlertCircle, UserCheck, Zap,
   Clock, ExternalLink, CheckCircle, ChevronDown,
 } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import api from '../../services/api'
 
 const RANGES = [
@@ -17,6 +17,14 @@ const RANGES = [
   { label: '1Y',  days: 365 },
 ]
 const fmtDate = (d) => d.toISOString().slice(0, 10)
+
+function fmtCompact(n) {
+  const num = typeof n === 'string' ? Number(n.replace(/,/g, '')) : Number(n)
+  if (isNaN(num)) return n
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(num >= 10_000_000 ? 0 : 1)}M`
+  if (num >= 1_000)     return `${(num / 1_000).toFixed(num >= 10_000 ? 0 : 1)}K`
+  return num.toLocaleString()
+}
 
 const MOCK = {
   users:    { total: 4821, today: 12, week: 84, verified: 1340, trend: [] },
@@ -57,34 +65,36 @@ export default function Dashboard() {
         <p className="text-sm text-gray-500 mt-0.5">Live snapshot of everything happening on HOOVA.</p>
       </div>
 
-      {/* KPI row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          icon={<Users className="w-5 h-5" style={{ color: '#B81365' }} />}
-          label="Total Users"
-          value={data.users.total?.toLocaleString()}
-          delta={`+${data.users.today} today`}
-          deltaColor="green"
-        />
-        <KpiCard
-          icon={<UserCheck className="w-5 h-5 text-green-500" />}
-          label="Verified Sellers"
-          value={data.users.verified?.toLocaleString()}
-          delta={`${((data.users.verified / data.users.total) * 100).toFixed(0)}% of users`}
-        />
-        <KpiCard
-          icon={<Package className="w-5 h-5 text-blue-500" />}
-          label="Active Listings"
-          value={data.listings.active?.toLocaleString()}
-          delta={`+${data.listings.today} today`}
-          deltaColor="green"
-        />
-        <KpiCard
-          icon={<Search className="w-5 h-5 text-purple-500" />}
-          label="Searches (30d)"
-          value={data.searches.month?.toLocaleString()}
-          delta={`${data.searches.today} today`}
-        />
+      {/* KPI row — joined bar */}
+      <div className="rounded-2xl bg-white overflow-hidden" style={{ border: '1px solid #f0eeeb' }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0" style={{ '--tw-divide-opacity': 1, borderColor: '#f0eeeb' }}>
+          <KpiCard
+            icon={<Users className="w-4 h-4" style={{ color: '#B81365' }} />}
+            label="Total Users"
+            value={data.users.total}
+            delta={`+${fmtCompact(data.users.today)} today`}
+            deltaColor="green"
+          />
+          <KpiCard
+            icon={<UserCheck className="w-4 h-4 text-green-500" />}
+            label="Verified Sellers"
+            value={data.users.verified}
+            delta={`${((data.users.verified / data.users.total) * 100).toFixed(0)}% of users`}
+          />
+          <KpiCard
+            icon={<Package className="w-4 h-4 text-blue-500" />}
+            label="Active Listings"
+            value={data.listings.active}
+            delta={`+${fmtCompact(data.listings.today)} today`}
+            deltaColor="green"
+          />
+          <KpiCard
+            icon={<Search className="w-4 h-4 text-purple-500" />}
+            label="Searches (30d)"
+            value={data.searches.month}
+            delta={`${fmtCompact(data.searches.today)} today`}
+          />
+        </div>
       </div>
 
       {/* Charts row */}
@@ -253,18 +263,18 @@ export default function Dashboard() {
 function KpiCard({ icon, label, value, delta, deltaColor = 'gray' }) {
   const colors = { green: '#15803d', gray: '#9ca3af', red: '#dc2626' }
   return (
-    <div className="rounded-2xl p-5 bg-white" style={{ border: '1px solid #f0eeeb' }}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#ECEAE6' }}>
+    <div className="p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#ECEAE6' }}>
           {icon}
         </div>
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-[11px] text-gray-500 font-medium leading-tight">{label}</span>
       </div>
-      <p className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
-        {value}
+      <p className="text-xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+        {fmtCompact(value)}
       </p>
       {delta && (
-        <p className="text-xs mt-0.5 font-medium" style={{ color: colors[deltaColor] }}>
+        <p className="text-[11px] mt-0.5 font-medium" style={{ color: colors[deltaColor] }}>
           {delta}
         </p>
       )}
@@ -365,15 +375,28 @@ function TrendCard({ title, type, unit, color, badgeBg, badgeColor }) {
       {chartData.length === 0 ? (
         <div className="h-24 flex items-center justify-center text-xs text-gray-400">No data for this period</div>
       ) : (
-        <ResponsiveContainer width="100%" height={100}>
-          <BarChart data={chartData} barSize={Math.max(4, Math.min(16, Math.floor(300 / chartData.length)))}>
+        <ResponsiveContainer width="100%" height={110}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`grad-${type}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="10%" stopColor={color} stopOpacity={0.18} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" vertical={false} />
             <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false}
               interval={chartData.length > 30 ? Math.floor(chartData.length / 10) : 0} />
             <YAxis hide />
-            <Tooltip contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.08)', fontSize: 11 }} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
-            <Bar dataKey="count" fill={color} radius={[4, 4, 0, 0]} />
-          </BarChart>
+            <Tooltip
+              contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.08)', fontSize: 11 }}
+              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '4 2' }}
+            />
+            <Area
+              type="monotone" dataKey="count" stroke={color} strokeWidth={2}
+              fill={`url(#grad-${type})`} dot={false}
+              activeDot={{ r: 4, fill: color, stroke: 'white', strokeWidth: 2 }}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       )}
     </div>
