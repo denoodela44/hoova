@@ -87,6 +87,12 @@ export default function Home() {
       () => filterMockListings({ sort: 'newest', limit: 8 }).data.filter((l) => l.price_dropped)),
   })
 
+  const { data: popular, isLoading: popularLoading } = useQuery({
+    queryKey: ['listings', 'popular'],
+    queryFn: () => fetchOrMock('/listings?sort=popular&limit=8',
+      () => filterMockListings({ sort: 'newest', limit: 8 }).data),
+  })
+
   return (
     <div style={{ background: '#fff' }}>
       <SEO
@@ -280,6 +286,18 @@ export default function Home() {
                 </Link>
               </div>
             </section>
+
+            {/* ── TRENDING NOW ──────────────────────────────────── */}
+            {(popularLoading || (popular && popular.length > 0)) && (
+              <section>
+                <SectionHeader title="Trending Now" link="/browse?sort=popular" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+                  {popularLoading
+                    ? Array.from({ length: 4 }).map((_, i) => <ListingCardSkeleton key={i} />)
+                    : popular?.map((l) => <ListingCard key={l.id} listing={l} />)}
+                </div>
+              </section>
+            )}
 
             {/* ── POST AD BANNER ────────────────────────────────── */}
             <section className="rounded-2xl overflow-hidden" style={{ background: '#B81365' }}>

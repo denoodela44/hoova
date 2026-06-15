@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Heart, Share2, MapPin, Eye, Clock, BadgeCheck, Star,
@@ -33,6 +33,7 @@ function daysSince(dateStr) {
 export default function ListingDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, isLoggedIn } = useAuthStore()
   const queryClient = useQueryClient()
   const [imgIndex, setImgIndex] = useState(0)
@@ -94,7 +95,7 @@ export default function ListingDetail() {
   }
 
   const handleContact = async () => {
-    if (!isLoggedIn()) { navigate('/login'); return }
+    if (!isLoggedIn()) { navigate('/login', { state: { from: location.pathname } }); return }
     try {
       const res = await api.post('/conversations', { listing_id: id })
       navigate(`/messages/${res.data.data.id}`)
@@ -102,7 +103,7 @@ export default function ListingDetail() {
   }
 
   const handleRevealContact = async () => {
-    if (!isLoggedIn()) { navigate('/login'); return }
+    if (!isLoggedIn()) { navigate('/login', { state: { from: location.pathname } }); return }
     setContactState('loading')
     try {
       const res = await api.get(`/listings/${id}/contact`)
@@ -357,7 +358,7 @@ export default function ListingDetail() {
           {sellerListings?.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-base">More from {listing.seller?.name}</h3>
+                <h3 className="font-bold text-base">More ads from {listing.seller?.name}</h3>
                 <Link
                   to={`/seller/${listing.seller?.id}`}
                   className="text-xs font-semibold hover:underline"
@@ -488,7 +489,7 @@ export default function ListingDetail() {
                         ) : (
                           <EyeOff className="w-4 h-4" />
                         )}
-                        {contactState === 'loading' ? 'Fetching…' : isLoggedIn() ? 'Show Contact' : 'Login to see contact'}
+                        {contactState === 'loading' ? 'Fetching…' : 'View Contact'}
                       </button>
                     ) : (
                       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #e5e7eb' }}>
