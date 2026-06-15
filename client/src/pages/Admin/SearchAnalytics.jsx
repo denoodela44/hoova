@@ -298,7 +298,7 @@ export default function SearchAnalytics() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0.5 border-b" style={{ borderColor: '#e9e6e0' }}>
+      <div className="flex gap-0.5 border-b overflow-x-auto" style={{ borderColor: '#e9e6e0' }}>
         {TABS.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all -mb-px whitespace-nowrap"
@@ -1035,29 +1035,30 @@ export default function SearchAnalytics() {
             </div>
 
             {/* Category demand breakdown */}
-            <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
-              <p className="text-sm font-bold text-gray-800 mb-1">Market Demand by Category</p>
-              <p className="text-[10px] text-gray-400 mb-4">Total monthly search volume per product category — click a bar to filter the table below</p>
-              <div className="space-y-3">
+            <div className="rounded-2xl bg-white p-4" style={{ border: '1px solid #f0eeeb' }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-bold text-gray-800">Market Demand by Category</p>
+                {sigCatFilter !== 'all' && (
+                  <button onClick={() => setSigCatFilter('all')} className="text-[10px] font-bold px-2 py-1 rounded-lg" style={{ background: '#fdf2f5', color: '#B81365' }}>
+                    Clear filter ×
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                 {DEMAND_SIGNALS.by_category.map((c) => {
-                  const demandRatio = c.supply > 0 ? ((c.count / c.supply) * 100).toFixed(0) : '∞'
                   const maxCat = DEMAND_SIGNALS.by_category[0].count
                   const isActive = sigCatFilter === c.name
                   return (
-                    <button key={c.name} className="w-full text-left" onClick={() => setSigCatFilter(isActive ? 'all' : c.name)}>
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-semibold" style={{ color: isActive ? c.color : '#374151' }}>{c.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-400">{c.count.toLocaleString()} searches/mo</span>
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                            style={{ background: parseFloat(demandRatio) > 120 ? '#fdf2f5' : '#f3f4f6', color: parseFloat(demandRatio) > 120 ? '#B81365' : '#9ca3af' }}>
-                            {demandRatio}% demand ratio
-                          </span>
-                          {isActive && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: c.color, color: 'white' }}>filtered</span>}
-                        </div>
+                    <button key={c.name}
+                      className="rounded-xl p-2.5 text-left transition-all"
+                      style={{ background: isActive ? '#fdf2f5' : '#fafaf9', border: `1px solid ${isActive ? c.color : '#f0eeeb'}` }}
+                      onClick={() => setSigCatFilter(isActive ? 'all' : c.name)}>
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="text-[11px] font-semibold truncate" style={{ color: isActive ? c.color : '#374151' }}>{c.name}</span>
+                        <span className="text-[10px] text-gray-400 shrink-0">{fmtVolume(c.count)}</span>
                       </div>
-                      <div className="h-2 rounded-full overflow-hidden" style={{ background: '#ECEAE6' }}>
-                        <div className="h-full rounded-full transition-all" style={{ width: `${(c.count / maxCat) * 100}%`, background: c.color, opacity: isActive || sigCatFilter === 'all' ? 1 : 0.35 }} />
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#ECEAE6' }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${(c.count / maxCat) * 100}%`, background: c.color, opacity: isActive || sigCatFilter === 'all' ? 1 : 0.4 }} />
                       </div>
                     </button>
                   )

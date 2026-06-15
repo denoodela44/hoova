@@ -44,7 +44,7 @@ export default function AdminLayout() {
   const reportsBadge = 0
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#f5f4f1' }}>
+    <div className="flex min-h-screen overflow-x-hidden" style={{ background: '#f5f4f1' }}>
 
       {/* ── Sidebar ────────────────────────────────────────────── */}
       <aside
