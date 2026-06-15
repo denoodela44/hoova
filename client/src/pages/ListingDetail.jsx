@@ -120,11 +120,30 @@ export default function ListingDetail() {
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank')
   }
 
+  const shareUrl = () => {
+    const base = `${window.location.origin}/listing/${listing.id}`
+    return `${base}?utm_source=share&utm_medium=listing`
+  }
+
+  const handleShareWhatsApp = () => {
+    const price = formatPrice(listing.price)
+    const city = listing.location?.city || 'Ghana'
+    const text = `Check out this listing on Hoova Ghana 👀\n\n*${listing.title}* · ${price} in ${city}\n${shareUrl()}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const [copied, setCopied] = useState(false)
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({ title: listing.title, url: window.location.href })
+      navigator.share({ title: listing.title, url: shareUrl() })
     } else {
-      navigator.clipboard.writeText(window.location.href)
+      handleCopyLink()
     }
   }
 
@@ -280,8 +299,22 @@ export default function ListingDetail() {
                 <button onClick={handleSave} className={`btn-secondary p-2.5 ${saved ? 'text-red-500 border-red-200' : ''}`}>
                   <Heart className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleShare} className="btn-secondary p-2.5">
-                  <Share2 className="w-4 h-4" />
+                <button
+                  onClick={handleShareWhatsApp}
+                  title="Share on WhatsApp"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold transition-all active:scale-95"
+                  style={{ background: '#25D366' }}
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  title="Copy link"
+                  className="btn-secondary px-3 py-2 text-xs font-semibold"
+                  style={{ minWidth: 64 }}
+                >
+                  {copied ? '✓ Copied' : 'Copy link'}
                 </button>
               </div>
             </div>

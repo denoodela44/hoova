@@ -415,6 +415,21 @@ function ListingsTab() {
                       Sold
                     </button>
                   )}
+                  {l.status === 'active' && !l.boost_tier && (
+                    <button title="Boost listing"
+                      onClick={() => setBoostListing(l)}
+                      className="flex-1 flex items-center justify-center gap-0.5 py-2 text-[10px] font-bold transition-colors hover:bg-yellow-50"
+                      style={{ color: '#b45309' }}>
+                      <Zap className="w-3 h-3" />Boost
+                    </button>
+                  )}
+                  {l.status === 'active' && (
+                    <button title="Pause"
+                      onClick={() => toggleMutation.mutate({ id: l.id, status: 'expired' })}
+                      className="px-2.5 py-2 text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-colors">
+                      <ToggleRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {l.status === 'sold' && (
                     <span className="flex-1 py-2 text-[10px] text-center font-semibold" style={{ color: '#7e22ce' }}>Sold</span>
                   )}
@@ -428,24 +443,9 @@ function ListingsTab() {
                   {(l.status === 'pending' || l.status === 'soft_live') && (
                     <span className="flex-1 py-2 text-[10px] text-center text-gray-300">In review</span>
                   )}
-                  {l.status === 'active' && !l.boost_tier && (
-                    <button title="Boost"
-                      onClick={() => setBoostListing(l)}
-                      className="px-3 py-2 hover:bg-yellow-50 transition-colors"
-                      style={{ color: '#854d0e' }}>
-                      <Zap className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                  {l.status === 'active' && (
-                    <button title="Pause"
-                      onClick={() => toggleMutation.mutate({ id: l.id, status: 'expired' })}
-                      className="px-3 py-2 text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-colors">
-                      <ToggleRight className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                   <button title="Delete"
                     onClick={() => { if (confirm('Delete this listing? This cannot be undone.')) deleteMutation.mutate(l.id) }}
-                    className="px-3 py-2 text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors">
+                    className="px-2.5 py-2 text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>

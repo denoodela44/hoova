@@ -23,7 +23,7 @@ function escape(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-function shell({ title, description, canonical, image, ldJson = [] }) {
+function shell({ title, description, canonical, image, type = 'website', ldJson = [] }) {
   const ld = ldJson.map((obj) => `<script type="application/ld+json">${JSON.stringify(obj)}</script>`).join('\n')
   return `<!DOCTYPE html>
 <html lang="en">
@@ -33,11 +33,19 @@ function shell({ title, description, canonical, image, ldJson = [] }) {
   <title>${escape(title)}</title>
   <meta name="description" content="${escape(description)}"/>
   <link rel="canonical" href="${escape(canonical)}"/>
+  <meta property="og:site_name" content="Hoova Ghana"/>
+  <meta property="og:type" content="${escape(type)}"/>
   <meta property="og:title" content="${escape(title)}"/>
   <meta property="og:description" content="${escape(description)}"/>
   <meta property="og:url" content="${escape(canonical)}"/>
-  <meta property="og:type" content="website"/>
-  ${image ? `<meta property="og:image" content="${escape(image)}"/>` : ''}
+  ${image ? `<meta property="og:image" content="${escape(image)}"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>` : ''}
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:site" content="@HoovaGhana"/>
+  <meta name="twitter:title" content="${escape(title)}"/>
+  <meta name="twitter:description" content="${escape(description)}"/>
+  ${image ? `<meta name="twitter:image" content="${escape(image)}"/>` : ''}
   <meta name="robots" content="index,follow"/>
   ${ld}
 </head>
@@ -60,8 +68,12 @@ async function renderListing(id) {
   })
   if (!listing) return null
 
-  const title = `${listing.title} — GHS ${Number(listing.price).toLocaleString()} | HOOVA Ghana`
-  const description = `${listing.title} for sale in ${listing.location?.city || 'Ghana'}. Price: GHS ${Number(listing.price).toLocaleString()}. ${(listing.description || '').slice(0, 120)}`
+  const city  = listing.location?.city || 'Ghana'
+  const price = `GHS ${Number(listing.price).toLocaleString()}`
+  const cond  = listing.condition === 'new' ? 'Brand new' : 'Used'
+  const title = `${listing.title} · ${price} in ${city} | Hoova Ghana`
+  const snippet = (listing.description || '').replace(/\s+/g, ' ').slice(0, 100).trim()
+  const description = `${cond} ${listing.title} for ${price} in ${city}${snippet ? ' — ' + snippet : ''}. Find great deals from verified sellers across Ghana on Hoova.`
   const image = listing.images?.[0]?.url || null
   const url = `${BASE_URL}/listing/${listing.id}`
 
@@ -104,7 +116,7 @@ async function renderListing(id) {
     },
   ]
 
-  return shell({ title, description, canonical: url, image, ldJson })
+  return shell({ title, description, canonical: url, image, type: 'product', ldJson })
 }
 
 async function renderSeller(id) {
