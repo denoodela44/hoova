@@ -38,7 +38,6 @@ export default function ListingDetail() {
   const queryClient = useQueryClient()
   const [imgIndex, setImgIndex] = useState(0)
   const [saved, setSaved] = useState(false)
-  const [bannerDismissed, setBannerDismissed] = useState(false)
   const [showOffer, setShowOffer] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [reportReason, setReportReason] = useState('')
@@ -168,28 +167,29 @@ export default function ListingDetail() {
       </button>
 
       {/* ── Safety Banner ─────────────────────────────────── */}
-      {!bannerDismissed && (
-        <div
-          className="flex items-start gap-3 mb-5 px-4 py-3 rounded-xl"
-          style={{ background: '#fdf2f5', border: '1px solid #F8C0C8' }}
-        >
-          <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#B81365' }} />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold mb-1" style={{ color: '#B81365' }}>Stay safe on HOOVA</p>
-            <ul className="text-xs text-gray-600 space-y-0.5">
-              <li>Never send mobile money or cash to "hold" an item before you've seen it.</li>
-              <li>Meet in a public place — a mall, bank, or police station forecourt works well.</li>
-              <li>If a deal feels too good to be true, it almost certainly is.</li>
-            </ul>
-          </div>
-          <button
-            onClick={() => setBannerDismissed(true)}
-            className="text-gray-300 hover:text-gray-500 transition-colors shrink-0 mt-0.5"
-          >
-            <X className="w-4 h-4" />
-          </button>
+      <div
+        className="mb-5 rounded-xl overflow-hidden"
+        style={{ border: '1px solid #fcd34d', boxShadow: '0 1px 4px rgba(251,191,36,0.15)' }}
+      >
+        <div className="flex items-center gap-2.5 px-4 py-2.5" style={{ background: '#f59e0b' }}>
+          <ShieldCheck className="w-4 h-4 text-white shrink-0" />
+          <p className="text-sm font-bold text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            Buy smart on Hoova
+          </p>
         </div>
-      )}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-amber-100" style={{ background: '#fffbeb' }}>
+          {[
+            'Meet sellers in a public place — mall, bank, or police station forecourt.',
+            'Inspect and test the item yourself before handing over any money.',
+            'Never send MoMo or cash upfront to "reserve" or "hold" an item.',
+          ].map((tip) => (
+            <div key={tip} className="flex items-start gap-2 px-4 py-2.5">
+              <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: '#d97706' }} />
+              <p className="text-xs leading-relaxed" style={{ color: '#78350f' }}>{tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Caution Alert (auto-flag) ──────────────────────── */}
       {showCautionAlert && (
@@ -515,31 +515,6 @@ export default function ListingDetail() {
             />
           )}
 
-          {/* Safety card */}
-          <div className="card p-4" style={{ borderLeft: '3px solid #B81365' }}>
-            <div className="flex items-center gap-2 mb-2.5">
-              <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: '#B81365' }} />
-              <h4 className="font-bold text-xs text-gray-800">Safety Tips</h4>
-            </div>
-            <ul className="space-y-1.5 text-xs text-gray-500">
-              <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-gray-300">—</span>
-                Meet in a public place: mall, bank, or police station.
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-gray-300">—</span>
-                Inspect and test the item before you pay.
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-gray-300">—</span>
-                Never send MoMo or cash to "reserve" an item.
-              </li>
-              <li className="flex items-start gap-1.5">
-                <span className="mt-0.5 text-gray-300">—</span>
-                Deals far below market price are a red flag.
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
 
