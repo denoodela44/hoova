@@ -15,6 +15,8 @@ setInterval(() => {
 
 // ── Category auto-detection ────────────────────────────────────
 const CATEGORY_MAP = {
+  // Adults MUST come first — keywords like 'toy', 'lube', 'intimate' also appear in other categories
+  adults:                  ['sex toy', 'adult toy', 'rose toy', 'vibrator', 'dildo', 'womanizer', 'fleshlight', 'lingerie', 'butt plug', 'handcuff', 'bondage', 'lubricant', 'lube', 'condom', 'intimate', 'bdsm'],
   vehicles:                ['car', 'toyota', 'honda', 'nissan', 'hyundai', 'kia', 'ford', 'mercedes', 'bmw', 'lexus', 'truck', 'suv', 'pickup', 'bus', 'motorbike', 'motorcycle', 'bike', 'tyre', 'engine', 'vehicle', 'corolla', 'highlander', 'prado', 'rav4', 'fortuner', 'tricycle'],
   'phones-tablets':        ['iphone', 'samsung', 'phone', 'mobile', 'tablet', 'ipad', 'android', 'xiaomi', 'tecno', 'infinix', 'itel', 'oppo', 'airtime', 'data bundle', 'sim card'],
   electronics:             ['laptop', 'tv', 'television', 'macbook', 'computer', 'desktop', 'ps5', 'playstation', 'xbox', 'gaming', 'headphone', 'speaker', 'camera', 'printer', 'router', 'drone', 'monitor', 'projector'],

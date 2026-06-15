@@ -110,10 +110,14 @@ const TABS = [
 ]
 
 const RANGE_OPTIONS = [
-  { label: '7d',  value: 7  },
-  { label: '30d', value: 30 },
-  { label: '90d', value: 90 },
+  { label: 'Today', value: 1   },
+  { label: '7d',    value: 7   },
+  { label: '30d',   value: 30  },
+  { label: '90d',   value: 90  },
+  { label: '1Y',    value: 365 },
 ]
+
+const fmtDateInput = (d) => d.toISOString().slice(0, 10)
 
 const OPP_COLOR = (score) => {
   if (score >= 85) return { color: '#15803d', bg: '#dcfce7', label: 'Excellent' }
@@ -150,8 +154,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function SearchAnalytics() {
-  const [days, setDays]   = useState(30)
-  const [tab, setTab]     = useState('live')
+  const [days, setDays]       = useState(30)
+  const [showCustom, setShowCustom] = useState(false)
+  const [customFrom, setCustomFrom] = useState(fmtDateInput(new Date(Date.now() - 30 * 86400000)))
+  const [customTo,   setCustomTo]   = useState(fmtDateInput(new Date()))
+  const [useCustom,  setUseCustom]  = useState(false)
+  const [tab, setTab]         = useState('live')
   const [liveSearch, setLiveSearch] = useState('')
   const [liveCat, setLiveCat]       = useState('all')
   const [catFilter, setCatFilter] = useState('all')
@@ -199,8 +207,13 @@ export default function SearchAnalytics() {
 
   // Live stats from the DB — real searches users made on the platform
   const { data: liveData } = useQuery({
-    queryKey: ['admin', 'search-live', days],
-    queryFn: () => api.get(`/analytics/searches?days=${days}`).then((r) => r.data.data),
+    queryKey: ['admin', 'search-live', useCustom ? `${customFrom}|${customTo}` : days],
+    queryFn: () => {
+      const params = useCustom
+        ? `from=${customFrom}&to=${customTo}`
+        : `days=${days}`
+      return api.get(`/analytics/searches?${params}`).then((r) => r.data.data)
+    },
   })
 
   // Market intelligence from static dataset (Ghana market research)
@@ -226,21 +239,52 @@ export default function SearchAnalytics() {
     <div className="space-y-5 max-w-6xl">
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>
             Search Analytics
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">Real buyer intent data — last {days} days · helps sellers list smarter</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {useCustom
+              ? `Showing ${customFrom} → ${customTo}`
+              : `Real buyer intent data — last ${days === 1 ? 'today' : `${days} days`} · helps sellers list smarter`}
+          </p>
         </div>
-        <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
-          {RANGE_OPTIONS.map((o) => (
-            <button key={o.value} onClick={() => setDays(o.value)}
-              className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
-              style={days === o.value ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
-              {o.label}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
+            {RANGE_OPTIONS.map((o) => (
+              <button key={o.value} onClick={() => { setDays(o.value); setUseCustom(false); setShowCustom(false) }}
+                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                style={!useCustom && days === o.value ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                {o.label}
+              </button>
+            ))}
+            <button onClick={() => setShowCustom((v) => !v)}
+              className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+              style={useCustom ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+              Custom
             </button>
-          ))}
+          </div>
+
+          {/* Custom date range picker */}
+          {showCustom && (
+            <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: '#ECEAE6' }}>
+              <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)}
+                max={customTo}
+                className="px-3 py-1.5 rounded-xl text-xs border bg-white focus:outline-none"
+                style={{ border: '1px solid #e5e7eb' }} />
+              <span className="text-xs text-gray-400 font-medium">→</span>
+              <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)}
+                min={customFrom} max={fmtDateInput(new Date())}
+                className="px-3 py-1.5 rounded-xl text-xs border bg-white focus:outline-none"
+                style={{ border: '1px solid #e5e7eb' }} />
+              <button onClick={() => { setUseCustom(true); setShowCustom(false) }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white"
+                style={{ background: '#B81365' }}>
+                Apply
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -22,11 +22,17 @@ const CATEGORIES = [
     { name: 'Gadgets & Accessories', slug: 'gadgets-accessories' },
   ]},
   { name: 'Home & Appliances', slug: 'home-appliances', children: [
-    { name: 'Furniture', slug: 'furniture' },
     { name: 'Kitchen Appliances', slug: 'kitchen-appliances' },
     { name: 'Generators, Solar & Inverters', slug: 'generators-solar' },
     { name: 'Air Conditioners & Fans', slug: 'ac-fans' },
     { name: 'Home Decor', slug: 'home-decor' },
+  ]},
+  { name: 'Furniture', slug: 'furniture', children: [
+    { name: 'Living Room', slug: 'furniture-living-room' },
+    { name: 'Bedroom', slug: 'furniture-bedroom' },
+    { name: 'Office', slug: 'furniture-office' },
+    { name: 'Kitchen & Dining', slug: 'furniture-kitchen-dining' },
+    { name: 'Outdoor & Garden', slug: 'furniture-outdoor' },
   ]},
   { name: 'Real Estate', slug: 'real-estate', children: [
     { name: 'Houses for Sale', slug: 'houses-sale' },
@@ -95,6 +101,10 @@ const CATEGORIES = [
     { name: 'Packaged Food', slug: 'packaged-food' },
     { name: 'Fresh & Local Produce', slug: 'fresh-produce' },
     { name: 'Drinks & Beverages', slug: 'drinks' },
+  ]},
+  { name: 'Adults', slug: 'adults', children: [
+    { name: 'Adult Toys & Accessories', slug: 'adult-toys' },
+    { name: 'Lingerie & Intimates', slug: 'lingerie' },
   ]},
   { name: 'Other', slug: 'other' },
 ]

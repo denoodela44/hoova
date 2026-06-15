@@ -42,11 +42,12 @@ router.post('/search', async (req, res) => {
 // GET /api/analytics/searches — search analytics (admin)
 router.get('/searches', requireAdminToken, async (req, res, next) => {
   try {
-    const { days = 30, category } = req.query
-    const since = new Date(Date.now() - Number(days) * 86400000)
+    const { days = 30, category, from, to } = req.query
+    const since = from ? new Date(from) : new Date(Date.now() - Number(days) * 86400000)
+    const until = to   ? new Date(to)   : new Date()
 
     const where = {
-      last_searched_at: { gte: since },
+      last_searched_at: { gte: since, lte: until },
       ...(category ? { category_slug: category } : {}),
     }
 
@@ -69,7 +70,7 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
       }),
 
       // Total raw search count in period
-      prisma.searchLog.count({ where: { created_at: { gte: since } } }),
+      prisma.searchLog.count({ where: { created_at: { gte: since, lte: until } } }),
 
       // Unique normalised queries
       prisma.searchTrend.count({ where }),
@@ -78,7 +79,7 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
       prisma.$queryRaw`
         SELECT DATE(created_at)::text AS day, COUNT(*)::int AS count
         FROM search_logs
-        WHERE created_at >= ${since}
+        WHERE created_at >= ${since} AND created_at <= ${until}
         GROUP BY day
         ORDER BY day ASC
       `,
@@ -87,7 +88,7 @@ router.get('/searches', requireAdminToken, async (req, res, next) => {
       prisma.$queryRaw`
         SELECT category_slug, COUNT(*)::int AS count
         FROM search_logs
-        WHERE created_at >= ${since} AND category_slug IS NOT NULL
+        WHERE created_at >= ${since} AND created_at <= ${until} AND category_slug IS NOT NULL
         GROUP BY category_slug
         ORDER BY count DESC
       `,
@@ -132,7 +133,7 @@ router.post('/searches/recategorize', requireAdminToken, async (req, res, next) 
       'vehicles', 'phones-tablets', 'electronics', 'home-appliances',
       'real-estate', 'fashion', 'health-beauty', 'babies-kids',
       'building-construction', 'agriculture', 'services', 'jobs',
-      'sports', 'pets', 'food', 'other',
+      'sports', 'pets', 'food', 'adults', 'other',
     ]
 
     // Fetch uncategorized terms, highest volume first
@@ -179,6 +180,7 @@ jobs — employment, vacancies, hiring, internships, freelance, CVs, part-time
 sports — sports equipment, musical instruments, hobbies, arts and crafts, bicycles
 pets — dogs, cats, birds, fish tanks, pet food, pet accessories
 food — packaged food, fresh produce, drinks, beverages, snacks, cooking ingredients
+adults — sex toys, vibrators, dildos, lingerie, adult novelty items, intimate accessories
 other — anything that does not fit the above
 
 Search terms (one per line):

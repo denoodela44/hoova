@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Tag, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Save, X } from 'lucide-react'
+import { Tag, Plus, Edit2, Trash2, ChevronDown, ChevronRight, Save, X, XCircle } from 'lucide-react'
 import api from '../../services/api'
 import ConfirmModal from '../../components/ui/ConfirmModal'
 
@@ -29,27 +29,40 @@ export default function AdminCategories() {
   const [adding, setAdding]     = useState(null)
   const [form, setForm]         = useState({ name: '', slug: '', icon_name: '' })
   const [confirmState, setConfirmState] = useState(null)
+  const [saveError, setSaveError] = useState(null)
 
-  const { data: categories = MOCK_CATS } = useQuery({
+  const { data: categories = MOCK_CATS, isError: queryFailed } = useQuery({
     queryKey: ['admin', 'categories'],
     queryFn: async () => {
       try { return await api.get('/admin/categories').then((r) => r.data.data) } catch { return MOCK_CATS }
     },
   })
 
-  const { mutate: createCat } = useMutation({
+  const { mutate: createCat, isPending: creating } = useMutation({
     mutationFn: (data) => api.post('/admin/categories', data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'categories'] }); setAdding(null); setForm({ name: '', slug: '', icon_name: '' }) },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'categories'] })
+      setAdding(null)
+      setForm({ name: '', slug: '', icon_name: '' })
+      setSaveError(null)
+    },
+    onError: (err) => setSaveError(err.response?.data?.message || 'Failed to save — check slug is unique'),
   })
 
-  const { mutate: updateCat } = useMutation({
+  const { mutate: updateCat, isPending: updating } = useMutation({
     mutationFn: ({ id, ...data }) => api.patch(`/admin/categories/${id}`, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'categories'] }); setEditing(null) },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'categories'] })
+      setEditing(null)
+      setSaveError(null)
+    },
+    onError: (err) => setSaveError(err.response?.data?.message || 'Failed to update category'),
   })
 
   const { mutate: deleteCat } = useMutation({
     mutationFn: (id) => api.delete(`/admin/categories/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'categories'] }),
+    onError: (err) => setSaveError(err.response?.data?.message || 'Failed to delete category'),
   })
 
   const autoSlug = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -63,20 +76,29 @@ export default function AdminCategories() {
           <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: '-0.02em' }}>Categories</h1>
           <p className="text-sm text-gray-500 mt-0.5">{categories.length} parent categories · {totalListings.toLocaleString()} total listings</p>
         </div>
-        <button onClick={() => { setAdding('root'); setForm({ name: '', slug: '', icon_name: '' }) }}
+        <button onClick={() => { setAdding('root'); setForm({ name: '', slug: '', icon_name: '' }); setSaveError(null) }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white"
           style={{ background: '#B81365' }}>
           <Plus className="w-4 h-4" /> Add Category
         </button>
       </div>
 
+      {saveError && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-red-700" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+          <XCircle className="w-4 h-4 shrink-0" />
+          {saveError}
+          <button onClick={() => setSaveError(null)} className="ml-auto text-red-400 hover:text-red-600"><X className="w-3.5 h-3.5" /></button>
+        </div>
+      )}
+
       {/* Add root category form */}
       {adding === 'root' && (
         <CategoryForm
           form={form} setForm={setForm} autoSlug={autoSlug}
           label="New Category"
+          loading={creating}
           onSave={() => createCat({ ...form, parent_id: null })}
-          onCancel={() => setAdding(null)}
+          onCancel={() => { setAdding(null); setSaveError(null) }}
         />
       )}
 
@@ -90,8 +112,9 @@ export default function AdminCategories() {
                 <CategoryForm
                   form={editing} setForm={setEditing} autoSlug={autoSlug}
                   label="Edit Category"
+                  loading={updating}
                   onSave={() => updateCat({ id: cat.id, name: editing.name, slug: editing.slug, icon_name: editing.icon_name })}
-                  onCancel={() => setEditing(null)}
+                  onCancel={() => { setEditing(null); setSaveError(null) }}
                 />
               </div>
             ) : (
@@ -133,8 +156,9 @@ export default function AdminCategories() {
                 <CategoryForm
                   form={form} setForm={setForm} autoSlug={autoSlug}
                   label={`Add subcategory to ${cat.name}`}
+                  loading={creating}
                   onSave={() => createCat({ ...form, parent_id: cat.id })}
-                  onCancel={() => setAdding(null)}
+                  onCancel={() => { setAdding(null); setSaveError(null) }}
                 />
               </div>
             )}
@@ -147,8 +171,9 @@ export default function AdminCategories() {
                     <CategoryForm
                       form={editing} setForm={setEditing} autoSlug={autoSlug}
                       label="Edit Subcategory"
+                      loading={updating}
                       onSave={() => updateCat({ id: sub.id, name: editing.name, slug: editing.slug })}
-                      onCancel={() => setEditing(null)}
+                      onCancel={() => { setEditing(null); setSaveError(null) }}
                     />
                   </div>
                 ) : (
@@ -188,7 +213,7 @@ export default function AdminCategories() {
   )
 }
 
-function CategoryForm({ form, setForm, autoSlug, label, onSave, onCancel }) {
+function CategoryForm({ form, setForm, autoSlug, label, onSave, onCancel, loading }) {
   return (
     <div className="rounded-xl p-3 space-y-2" style={{ background: '#ECEAE6' }}>
       <p className="text-xs font-bold text-gray-600">{label}</p>
@@ -201,10 +226,10 @@ function CategoryForm({ form, setForm, autoSlug, label, onSave, onCancel }) {
           placeholder="Icon (emoji)" className="px-3 py-2 rounded-xl text-xs border focus:outline-none bg-white" style={{ border: '1px solid #e5e7eb' }} />
       </div>
       <div className="flex gap-2">
-        <button onClick={onSave} disabled={!form.name || !form.slug}
+        <button onClick={onSave} disabled={!form.name || !form.slug || loading}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white disabled:opacity-40"
           style={{ background: '#B81365' }}>
-          <Save className="w-3 h-3" /> Save
+          <Save className="w-3 h-3" /> {loading ? 'Saving…' : 'Save'}
         </button>
         <button onClick={onCancel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-500 hover:bg-white">
           <X className="w-3 h-3" /> Cancel
