@@ -416,11 +416,7 @@ function ListingsTab() {
                     </button>
                   )}
                   {l.status === 'sold' && (
-                    <button onClick={() => toggleMutation.mutate({ id: l.id, status: 'active' })}
-                      className="flex-1 py-2 text-[10px] font-bold transition-colors hover:bg-purple-50"
-                      style={{ color: '#7e22ce' }}>
-                      Relist
-                    </button>
+                    <span className="flex-1 py-2 text-[10px] text-center font-semibold" style={{ color: '#7e22ce' }}>Sold</span>
                   )}
                   {l.status === 'expired' && (
                     <button onClick={() => toggleMutation.mutate({ id: l.id, status: 'active' })}

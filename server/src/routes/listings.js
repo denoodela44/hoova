@@ -193,6 +193,8 @@ router.post('/impressions', async (req, res) => {
   res.json({ success: true })
 })
 
+const PLAN_LIMITS = { free: 5, pro: 50, business: -1 }
+
 // POST /api/listings
 router.post('/', requireAuth, [
   body('title').trim().isLength({ min: 5, max: 100 }),
@@ -202,6 +204,24 @@ router.post('/', requireAuth, [
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg })
+
+    // Enforce monthly listing quota — sold listings count toward the limit
+    const tier = req.user.subscription_tier || 'free'
+    const limit = PLAN_LIMITS[tier] ?? PLAN_LIMITS.free
+    if (limit !== -1) {
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      const monthCount = await prisma.listing.count({
+        where: { user_id: req.user.id, created_at: { gte: startOfMonth } },
+      })
+      if (monthCount >= limit) {
+        return res.status(403).json({
+          success: false,
+          message: `You've reached your ${limit}-listing limit for this month. Upgrade your plan to post more.`,
+        })
+      }
+    }
 
     const { title, description, price, category_id, subcategory_id, condition, negotiable, region, city, area, images = [] } = req.body
 
@@ -293,7 +313,12 @@ router.patch('/:id', requireAuth, async (req, res, next) => {
     if (title) updates.title = title
     if (description !== undefined) updates.description = description
     if (condition) updates.condition = condition
-    if (status) updates.status = status
+    if (status) {
+      if (listing.status === 'sold' && status === 'active') {
+        return res.status(400).json({ success: false, message: 'Sold listings cannot be reactivated.' })
+      }
+      updates.status = status
+    }
     if (region) updates.region = region
     if (city) updates.city = city
     if (area !== undefined) updates.area = area
