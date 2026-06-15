@@ -354,38 +354,6 @@ export default function ListingDetail() {
             </div>
           </div>
 
-          {/* More from this seller */}
-          {sellerListings?.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-base">More ads from {listing.seller?.name}</h3>
-                <Link
-                  to={`/seller/${listing.seller?.id}`}
-                  className="text-xs font-semibold hover:underline"
-                  style={{ color: '#B81365' }}
-                >
-                  View store →
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {sellerListings.slice(0, 6).map((l) => (
-                  <ListingThumb key={l.id} listing={l} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Similar from other sellers */}
-          {related?.length > 0 && (
-            <div>
-              <h3 className="font-bold text-base mb-3">Similar Listings</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {related.slice(0, 6).map((l) => (
-                  <ListingThumb key={l.id} listing={l} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* ── Right: seller card ─────────────────────────── */}
@@ -574,6 +542,38 @@ export default function ListingDetail() {
           </div>
         </div>
       </div>
+
+      {/* ── More from seller + Similar ─────────────────────── */}
+      {sellerListings?.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-base">More ads from {listing.seller?.name}</h3>
+            <Link
+              to={`/seller/${listing.seller?.id}`}
+              className="text-xs font-semibold hover:underline"
+              style={{ color: '#B81365' }}
+            >
+              View store →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {sellerListings.slice(0, 8).map((l) => (
+              <ListingThumb key={l.id} listing={l} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {related?.length > 0 && (
+        <div className="mt-6">
+          <h3 className="font-bold text-base mb-3">Similar Listings</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {related.slice(0, 8).map((l) => (
+              <ListingThumb key={l.id} listing={l} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Sticky mobile CTA ─────────────────────────────── */}
       {!isSeller && !isAuction && (
