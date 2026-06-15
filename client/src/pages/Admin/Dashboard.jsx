@@ -89,8 +89,8 @@ export default function Dashboard() {
 
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TrendCard title="New Users"    type="users"    color="#B81365" badgeBg="#fdf2f5" badgeColor="#B81365" />
-        <TrendCard title="New Listings" type="listings" color="#3b82f6" badgeBg="#eff6ff" badgeColor="#1d4ed8" />
+        <TrendCard title="New Users"    type="users"    unit="users joined"    color="#B81365" badgeBg="#fdf2f5" badgeColor="#B81365" />
+        <TrendCard title="New Listings" type="listings" unit="listings posted" color="#3b82f6" badgeBg="#eff6ff" badgeColor="#1d4ed8" />
       </div>
 
       {/* Recent activity row */}
@@ -272,7 +272,7 @@ function KpiCard({ icon, label, value, delta, deltaColor = 'gray' }) {
   )
 }
 
-function TrendCard({ title, type, color, badgeBg, badgeColor }) {
+function TrendCard({ title, type, unit, color, badgeBg, badgeColor }) {
   const [days, setDays]         = useState(7)
   const [showCustom, setShowCustom] = useState(false)
   const [customFrom, setCustomFrom] = useState('')
@@ -295,7 +295,10 @@ function TrendCard({ title, type, color, badgeBg, badgeColor }) {
 
   const chartData = (data?.trend || []).map((d) => ({ day: d.day?.slice(5), count: d.count }))
   const total = data?.total ?? 0
-  const rangeLabel = useCustom ? `${customFrom} → ${customTo}` : `Last ${days === 1 ? 'day' : `${days}d`}`
+
+  const periodLabel = useCustom
+    ? `${customFrom} → ${customTo}`
+    : days === 1 ? 'today' : `last ${days} days`
 
   function applyCustom() {
     if (customFrom && customTo) { setUseCustom(true); setShowCustom(false) }
@@ -309,12 +312,12 @@ function TrendCard({ title, type, color, badgeBg, badgeColor }) {
       <div className="flex items-center justify-between mb-3">
         <div>
           <p className="text-sm font-bold text-gray-800">{title}</p>
-          <p className="text-xs text-gray-400">{rangeLabel}</p>
+          <p className="text-xs text-gray-400">{periodLabel}</p>
         </div>
         <div className="flex items-center gap-2">
           {isFetching && <div className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: color, borderTopColor: 'transparent' }} />}
-          <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: badgeBg, color: badgeColor }}>
-            +{total.toLocaleString()}
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: badgeBg, color: badgeColor }}>
+            {total.toLocaleString()} {unit}
           </span>
         </div>
       </div>
