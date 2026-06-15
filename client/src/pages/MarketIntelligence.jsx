@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   TrendingUp, TrendingDown, Zap, Search, MapPin,
   Clock, Target, ArrowUpRight, Star, ChevronRight,
-  BarChart2, Package, Flame, RefreshCw,
+  BarChart2, Package, Flame, RefreshCw, Lock,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import api from '../services/api'
@@ -110,12 +110,121 @@ function ScoreRing({ score }) {
   )
 }
 
+function FreePlanGate() {
+  const navigate = useNavigate()
+  const PREVIEW_NICHES = [
+    { name: 'Phones',      icon: '📱', score: 9.1, demand: 'Very High', competition: 'Medium', blurred: false },
+    { name: 'Agriculture', icon: '🌾', score: 9.4, demand: 'High',      competition: 'Low',    blurred: false },
+    { name: 'Real Estate', icon: '🏠', score: 8.8, demand: 'Very High', competition: 'Low',    blurred: true  },
+    { name: 'Jobs',        icon: '💼', score: 8.5, demand: 'Very High', competition: 'Low',    blurred: true  },
+    { name: 'Vehicles',    icon: '🚗', score: 8.2, demand: 'Very High', competition: 'High',   blurred: true  },
+  ]
+  return (
+    <div className="min-h-screen" style={{ background: '#f5f4f1' }}>
+      {/* Header */}
+      <div className="bg-white border-b" style={{ borderColor: '#e9e6e0' }}>
+        <div className="max-w-6xl mx-auto px-4 py-5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#fdf2f5' }}>
+            <Target className="w-4 h-4" style={{ color: '#B81365' }} />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            Market Intelligence
+          </h1>
+          <span className="ml-2 flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#fef2f2', color: '#dc2626' }}>
+            <Lock className="w-3 h-3" /> Seller Feature
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+        {/* Lock banner */}
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #B81365 100%)' }}>
+          <div className="px-8 py-10 text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.12)' }}>
+              <Target className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              Real Buyer Demand Data
+            </h2>
+            <p className="text-white/70 text-sm max-w-md mx-auto leading-relaxed">
+              See exactly what buyers in Ghana are searching for, which categories have the least competition, the best time to post, and which regions have the highest demand — all in real time from the HOOVA platform.
+            </p>
+          </div>
+        </div>
+
+        {/* Blurred preview */}
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wide px-1">Niche Opportunity Scores — Preview</p>
+          {PREVIEW_NICHES.map((n) => (
+            <div key={n.name}
+              className="rounded-2xl bg-white p-4 flex items-center gap-4"
+              style={{ border: '1px solid #f0eeeb', filter: n.blurred ? 'blur(4px)' : 'none', userSelect: n.blurred ? 'none' : 'auto' }}>
+              <span className="text-2xl">{n.icon}</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-gray-900">{n.name}</p>
+                <p className="text-xs text-gray-400">Demand: <strong style={{ color: '#B81365' }}>{n.demand}</strong> · Competition: <strong>{n.competition}</strong></p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-xl font-black" style={{ color: n.score >= 8.5 ? '#15803d' : '#B81365', fontFamily: "'Poppins', sans-serif" }}>{n.score}</p>
+                <p className="text-[10px] text-gray-400">Niche Score</p>
+              </div>
+            </div>
+          ))}
+          <div className="text-center py-2">
+            <p className="text-xs text-gray-400">+ {'>'}8 more categories hidden</p>
+          </div>
+        </div>
+
+        {/* What's included */}
+        <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
+          <p className="text-sm font-bold text-gray-800 mb-4">What Seller accounts unlock</p>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: '🔥', label: 'Hot Searches',        desc: 'Top buyer queries updated daily' },
+              { icon: '📊', label: 'Category Scores',     desc: 'Demand vs competition for every niche' },
+              { icon: '📍', label: 'Regional Demand',     desc: 'Which regions have the most buyers' },
+              { icon: '⏰', label: 'Best Time to Post',   desc: 'Heatmap of when buyers are most active' },
+              { icon: '💡', label: 'Opportunity Alerts',  desc: 'High demand + low supply categories' },
+              { icon: '📈', label: 'Weekly Trends',       desc: '7-day search trend per category' },
+            ].map(({ icon, label, desc }) => (
+              <div key={label} className="flex items-start gap-2.5 p-3 rounded-xl" style={{ background: '#fafaf9' }}>
+                <span className="text-lg shrink-0">{icon}</span>
+                <div>
+                  <p className="text-xs font-bold text-gray-800">{label}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button onClick={() => navigate('/dashboard', { state: { openTab: 'subscription' } })}
+            className="flex-1 py-3 rounded-xl text-sm font-bold text-white text-center"
+            style={{ background: '#B81365' }}>
+            Upgrade to Seller — GHS 50/mo →
+          </button>
+          <button onClick={() => navigate('/dashboard', { state: { openTab: 'subscription' } })}
+            className="flex-1 py-3 rounded-xl text-sm font-bold text-center"
+            style={{ background: '#fff7ed', color: '#c2410c' }}>
+            Business Plan — GHS 150/mo →
+          </button>
+        </div>
+        <p className="text-xs text-center text-gray-400">Payments via Paystack · Cancel anytime</p>
+      </div>
+    </div>
+  )
+}
+
 export default function MarketIntelligence() {
   const { user } = useAuthStore()
   const [selectedNiche, setSelectedNiche] = useState(null)
   const [sortBy, setSortBy] = useState('score')
   const [filterOpp, setFilterOpp] = useState(false)
   const [searchQ, setSearchQ] = useState('')
+
+  const tier = user?.subscription_tier || 'free'
+  if (tier === 'free') return <FreePlanGate />
 
   const { data = MOCK, isRefetching, refetch } = useQuery({
     queryKey: ['market-intelligence'],

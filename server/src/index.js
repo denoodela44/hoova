@@ -24,6 +24,7 @@ const settingsRoutes = require('./routes/settings')
 const reportsRoutes = require('./routes/reports')
 const announcementsRoutes = require('./routes/announcements')
 const sitemapRoutes = require('./routes/sitemap')
+const marketIntelligenceRoutes = require('./routes/marketIntelligence')
 
 const chatHandler = require('./socket/chatHandler')
 const { expireListings } = require('./jobs/expireListings')
@@ -81,6 +82,7 @@ app.use('/api/subscriptions', subscriptionRoutes)
 app.use('/api/settings', settingsRoutes)
 app.use('/api/reports', reportsRoutes)
 app.use('/api/announcements', announcementsRoutes)
+app.use('/api/market-intelligence', marketIntelligenceRoutes)
 app.use('/', sitemapRoutes) // sitemap.xml + robots.txt at root
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }))

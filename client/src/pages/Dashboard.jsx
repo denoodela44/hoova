@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   LayoutDashboard, Package, TrendingUp, Store, Crown, Bell,
@@ -16,13 +16,12 @@ import useAuthStore from '../store/authStore'
 import { formatPrice, timeAgo } from '../utils/format'
 
 const TABS = [
-  { id: 'overview',      label: 'Overview',      icon: LayoutDashboard },
-  { id: 'listings',      label: 'My Listings',   icon: Package },
-  { id: 'analytics',     label: 'Analytics',     icon: TrendingUp },
-  { id: 'store',         label: 'Store',          icon: Store },
-  { id: 'subscription',  label: 'Subscription',  icon: Crown },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'account',       label: 'Account',        icon: UserCog },
+  { id: 'overview',      label: 'Overview',     icon: LayoutDashboard },
+  { id: 'listings',      label: 'My Listings',  icon: Package },
+  { id: 'analytics',     label: 'Analytics',    icon: TrendingUp },
+  { id: 'store',         label: 'Store',         icon: Store },
+  { id: 'subscription',  label: 'Subscription', icon: Crown },
+  { id: 'account',       label: 'Account',       icon: UserCog },
 ]
 
 const STATUS_STYLE = {
@@ -49,7 +48,8 @@ const PLANS = {
 export default function Dashboard() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
-  const [tab, setTab] = useState('overview')
+  const location = useLocation()
+  const [tab, setTab] = useState(location.state?.openTab || 'overview')
 
   if (!user) { navigate('/login'); return null }
 
@@ -120,9 +120,8 @@ export default function Dashboard() {
         {tab === 'overview'      && <OverviewTab user={user} tier={tier} setTab={setTab} />}
         {tab === 'listings'      && <ListingsTab />}
         {tab === 'analytics'     && <AnalyticsTab />}
-        {tab === 'store'         && <StoreTab user={user} />}
+        {tab === 'store'         && <StoreTab user={user} setTab={setTab} />}
         {tab === 'subscription'  && <SubscriptionTab tier={tier} />}
-        {tab === 'notifications' && <NotificationsTab />}
         {tab === 'account'       && <AccountTab user={user} />}
       </div>
     </div>
@@ -360,60 +359,83 @@ function ListingsTab() {
           {filter === 'all' && <Link to="/post" className="mt-2 inline-block text-sm font-bold" style={{ color: '#B81365' }}>Post your first ad →</Link>}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {filtered.map((l) => {
             const st = STATUS_STYLE[l.status] || STATUS_STYLE.expired
             const boost = l.boost_tier ? BOOST_STYLE[l.boost_tier] : null
             return (
-              <div key={l.id} className="rounded-2xl bg-white p-4 flex gap-4" style={{ border: '1px solid #f0eeeb' }}>
-                <Link to={`/listing/${l.id}`} className="shrink-0">
+              <div key={l.id} className="rounded-2xl bg-white overflow-hidden flex flex-col" style={{ border: '1px solid #f0eeeb' }}>
+                {/* Image */}
+                <Link to={`/listing/${l.id}`} className="block relative">
                   <img src={l.images?.[0]?.url || '/placeholder.jpg'} alt={l.title}
-                    className="w-20 h-20 rounded-xl object-cover" />
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 flex-wrap mb-1">
-                    <Link to={`/listing/${l.id}`} className="font-bold text-sm text-gray-900 hover:underline line-clamp-1 flex-1">{l.title}</Link>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: st.bg, color: st.color }}>{st.label}</span>
-                    {boost && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: boost.bg, color: boost.color }}><Zap className="w-2.5 h-2.5 inline mr-0.5" />{boost.label}</span>}
-                  </div>
-                  <p className="font-bold text-sm mb-1" style={{ color: '#B81365' }}>{formatPrice(l.price)}</p>
-                  {l.is_flagged && (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-red-500 mb-1">
-                      <AlertTriangle className="w-3 h-3" /> Flagged for review
-                    </div>
+                    className="w-full aspect-square object-cover" />
+                  <span className="absolute top-2 left-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: st.bg, color: st.color }}>{st.label}</span>
+                  {boost && (
+                    <span className="absolute top-2 right-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
+                      style={{ background: boost.bg, color: boost.color }}>
+                      <Zap className="w-2.5 h-2.5" />{boost.label}
+                    </span>
                   )}
-                  <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                  {l.is_flagged && (
+                    <span className="absolute bottom-2 left-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"
+                      style={{ background: '#fef2f2', color: '#dc2626' }}>
+                      <AlertTriangle className="w-2.5 h-2.5" /> Flagged
+                    </span>
+                  )}
+                </Link>
+
+                {/* Info */}
+                <div className="p-3 flex-1 flex flex-col">
+                  <Link to={`/listing/${l.id}`}
+                    className="text-xs font-bold text-gray-900 hover:underline line-clamp-2 leading-snug mb-1">{l.title}</Link>
+                  <p className="text-sm font-black mb-2" style={{ color: '#B81365', fontFamily: "'Poppins', sans-serif" }}>
+                    {formatPrice(l.price)}
+                  </p>
+                  <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-auto">
                     <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{l.views_count || 0}</span>
                     <span className="flex items-center gap-0.5"><Heart className="w-3 h-3" />{l.saves_count || 0}</span>
-                    <span className="flex items-center gap-0.5"><MessageSquare className="w-3 h-3" />{l.inquiries_count || 0}</span>
                     <span className="ml-auto">{timeAgo(l.created_at)}</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1.5 shrink-0">
-                  <Link to={`/listing/${l.id}`} target="_blank"
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                  {(l.status === 'active' || l.status === 'expired') && (
-                    <button onClick={() => toggleMutation.mutate({ id: l.id, status: l.status === 'active' ? 'expired' : 'active' })}
-                      className="p-1.5 rounded-lg hover:bg-gray-100"
-                      title={l.status === 'active' ? 'Deactivate' : 'Reactivate'}>
-                      {l.status === 'active'
-                        ? <ToggleRight className="w-3.5 h-3.5 text-green-500" />
-                        : <ToggleLeft className="w-3.5 h-3.5 text-gray-400" />}
+
+                {/* Actions */}
+                <div className="flex items-center border-t divide-x" style={{ borderColor: '#f5f4f2' }}>
+                  {l.status === 'active' && (
+                    <button title="Mark as Sold"
+                      onClick={() => { if (confirm('Mark this listing as sold?')) toggleMutation.mutate({ id: l.id, status: 'sold' }) }}
+                      className="flex-1 py-2 text-[10px] font-bold transition-colors hover:bg-green-50"
+                      style={{ color: '#15803d' }}>
+                      Sold
                     </button>
+                  )}
+                  {l.status === 'sold' && (
+                    <button onClick={() => toggleMutation.mutate({ id: l.id, status: 'active' })}
+                      className="flex-1 py-2 text-[10px] font-bold transition-colors hover:bg-purple-50"
+                      style={{ color: '#7e22ce' }}>
+                      Relist
+                    </button>
+                  )}
+                  {l.status === 'expired' && (
+                    <button onClick={() => toggleMutation.mutate({ id: l.id, status: 'active' })}
+                      className="flex-1 py-2 text-[10px] font-bold transition-colors hover:bg-green-50"
+                      style={{ color: '#15803d' }}>
+                      Activate
+                    </button>
+                  )}
+                  {(l.status === 'pending' || l.status === 'soft_live') && (
+                    <span className="flex-1 py-2 text-[10px] text-center text-gray-300">In review</span>
                   )}
                   {l.status === 'active' && (
-                    <button
-                      onClick={() => { if (confirm('Mark this listing as sold?')) toggleMutation.mutate({ id: l.id, status: 'sold' }) }}
-                      className="p-1.5 rounded-lg text-green-600 hover:bg-green-50"
-                      title="Mark as Sold"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" />
+                    <button title="Pause"
+                      onClick={() => toggleMutation.mutate({ id: l.id, status: 'expired' })}
+                      className="px-3 py-2 text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-colors">
+                      <ToggleRight className="w-3.5 h-3.5" />
                     </button>
                   )}
-                  <button onClick={() => { if (confirm('Delete this listing?')) deleteMutation.mutate(l.id) }}
-                    className="p-1.5 rounded-lg text-red-400 hover:bg-red-50">
+                  <button title="Delete"
+                    onClick={() => { if (confirm('Delete this listing? This cannot be undone.')) deleteMutation.mutate(l.id) }}
+                    className="px-3 py-2 text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -508,7 +530,102 @@ function AnalyticsTab() {
 }
 
 /* ─── Store ─────────────────────────────────────────────────────────────────── */
-function StoreTab({ user }) {
+function StoreTab({ user, setTab }) {
+  const tier = user.subscription_tier || 'free'
+
+  if (tier === 'free') {
+    const SELLER_FEATURES = [
+      { icon: Store,       label: 'Your own store page',         desc: '/store/your-name — share one link with all buyers' },
+      { icon: TrendingUp,  label: 'Analytics dashboard',         desc: 'Views, saves, inquiries per listing over time' },
+      { icon: Zap,         label: '3 featured boosts/month',     desc: 'Push your listings to the top of search results' },
+      { icon: BadgeCheck,  label: 'Verified seller badge',       desc: 'Shown on every listing — builds instant buyer trust' },
+      { icon: ArrowUpRight,label: 'Priority search placement',   desc: 'Your ads rank higher than free-plan listings' },
+      { icon: Package,     label: 'Up to 25 active listings',    desc: 'vs 5 on the free plan' },
+    ]
+
+    const PLANS_GATE = [
+      {
+        key: 'pro', label: 'Seller', price: 50, color: '#B81365', bg: '#fdf2f5',
+        perks: ['25 active listings', 'Store profile page', 'Analytics dashboard', '3 boosts/month', 'Verified badge', 'Priority search'],
+      },
+      {
+        key: 'business', label: 'Business', price: 150, color: '#c2410c', bg: '#fff7ed',
+        perks: ['Unlimited listings', 'Everything in Seller', '10 boosts/month', 'Top search placement', 'Custom store URL', 'Dedicated support'],
+      },
+    ]
+
+    return (
+      <div className="max-w-2xl space-y-5">
+        {/* Hero banner */}
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #B81365 100%)' }}>
+          <div className="px-8 py-10 text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.12)' }}>
+              <Store className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              Unlock Your Seller Account
+            </h2>
+            <p className="text-white/70 text-sm max-w-sm mx-auto leading-relaxed">
+              Get your own branded store page, analytics, featured boosts, and a Verified badge — everything a serious seller needs to stand out in Ghana.
+            </p>
+          </div>
+        </div>
+
+        {/* Feature grid */}
+        <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
+          <p className="text-sm font-bold text-gray-800 mb-4">What you unlock as a Seller</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {SELLER_FEATURES.map(({ icon: Icon, label, desc }) => (
+              <div key={label} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: '#fafaf9', border: '1px solid #f0eeeb' }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#fdf2f5' }}>
+                  <Icon className="w-4 h-4" style={{ color: '#B81365' }} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-800">{label}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {PLANS_GATE.map(({ key, label, price, color, bg, perks }) => (
+            <div key={key} className="rounded-2xl bg-white p-5 flex flex-col" style={{ border: `2px solid ${color}20` }}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-black" style={{ color }}>{label}</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: bg, color }}>
+                  {key === 'pro' ? 'Most Popular' : 'Best Value'}
+                </span>
+              </div>
+              <p className="text-3xl font-black text-gray-900 mb-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                GHS {price}<span className="text-sm font-medium text-gray-400">/mo</span>
+              </p>
+              <ul className="space-y-1.5 my-4 flex-1">
+                {perks.map((p) => (
+                  <li key={p} className="flex items-start gap-1.5 text-xs text-gray-600">
+                    <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color }} /> {p}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setTab('subscription')}
+                className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{ background: color }}>
+                Upgrade to {label} →
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs text-center text-gray-400">
+          Payments processed securely via Paystack · Cancel anytime
+        </p>
+      </div>
+    )
+  }
+
   const qc = useQueryClient()
   const [form, setForm] = useState({
     store_name:   user.store_name   || '',
@@ -676,11 +793,15 @@ function SubscriptionTab({ tier }) {
         </div>
       </div>
 
-      {/* Plan cards */}
+      {/* Plan cards — admin tier is never shown to users */}
+      {tier === 'admin' ? (
+        <div className="rounded-2xl p-5 text-center" style={{ background: '#f5f3ff', border: '2px solid #7c3aed30' }}>
+          <p className="text-sm font-bold" style={{ color: '#7c3aed' }}>You have full admin access — all features are unlocked.</p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {Object.entries(PLANS).map(([key, plan]) => {
+        {Object.entries(PLANS).filter(([key]) => key !== 'admin').map(([key, plan]) => {
           const isCurrent = key === tier
-          const isUpgrade = key === 'pro' && tier === 'free' || key === 'business' && tier !== 'business'
           return (
             <div key={key} className="rounded-2xl bg-white p-5 flex flex-col"
               style={{ border: isCurrent ? `2px solid ${plan.color}` : '1px solid #f0eeeb' }}>
@@ -716,10 +837,13 @@ function SubscriptionTab({ tier }) {
           )
         })}
       </div>
+      )}
 
-      <p className="text-xs text-gray-400 text-center">
-        Payments are processed securely via Paystack. Cancel anytime from your account.
-      </p>
+      {tier !== 'admin' && (
+        <p className="text-xs text-gray-400 text-center">
+          Payments are processed securely via Paystack. Cancel anytime from your account.
+        </p>
+      )}
     </div>
   )
 }

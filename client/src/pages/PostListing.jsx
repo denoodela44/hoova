@@ -1,10 +1,83 @@
 import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
-import { Upload, X, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Gavel, Tag, Sparkles, Loader2 } from 'lucide-react'
+import { Upload, X, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Gavel, Tag, Sparkles, Loader2, Package, Crown, Zap, TrendingUp } from 'lucide-react'
 import api from '../services/api'
 import useAuthStore from '../store/authStore'
+
+const PLAN_LIMITS = { free: 5, pro: 25, business: Infinity, admin: Infinity }
+const PLAN_LABEL  = { free: 'Free', pro: 'Seller', business: 'Business', admin: 'Admin' }
+
+function ListingLimitGate({ tier, limit, count }) {
+  const pct = Math.min(100, Math.round((count / limit) * 100))
+  const upgrades = [
+    {
+      key: 'pro', label: 'Seller', price: 50, color: '#B81365', bg: '#fdf2f5',
+      perks: ['25 active listings', 'Store profile page', 'Analytics', '3 boosts/month', 'Verified badge'],
+    },
+    {
+      key: 'business', label: 'Business', price: 150, color: '#c2410c', bg: '#fff7ed',
+      perks: ['Unlimited listings', 'Everything in Seller', '10 boosts/month', 'Top search placement'],
+    },
+  ]
+
+  return (
+    <div className="max-w-xl mx-auto px-4 py-10 space-y-6">
+      {/* Limit hit banner */}
+      <div className="rounded-2xl p-6 text-center" style={{ background: '#fff7ed', border: '2px solid #fed7aa' }}>
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: '#ffedd5' }}>
+          <Package className="w-7 h-7" style={{ color: '#c2410c' }} />
+        </div>
+        <h2 className="text-lg font-black text-gray-900 mb-1" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          You've reached your listing limit
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Your <strong>{PLAN_LABEL[tier]} plan</strong> allows up to <strong>{limit} active listings</strong>. You currently have {count}.
+        </p>
+        {/* Usage bar */}
+        <div className="h-2.5 rounded-full overflow-hidden mx-auto max-w-xs" style={{ background: '#e5e7eb' }}>
+          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: '#c2410c' }} />
+        </div>
+        <p className="text-xs text-gray-400 mt-1.5">{count} / {limit} listings used</p>
+      </div>
+
+      <p className="text-center text-sm font-semibold text-gray-600">Upgrade to post more listings</p>
+
+      {/* Plan upgrade cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {upgrades.map(({ key, label, price, color, bg, perks }) => (
+          <div key={key} className="rounded-2xl bg-white p-5 flex flex-col" style={{ border: `2px solid ${color}25` }}>
+            <p className="text-sm font-black mb-1" style={{ color }}>{label}</p>
+            <p className="text-2xl font-black text-gray-900 mb-3" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              GHS {price}<span className="text-xs font-medium text-gray-400">/mo</span>
+            </p>
+            <ul className="space-y-1.5 flex-1 mb-4">
+              {perks.map((p) => (
+                <li key={p} className="flex items-start gap-1.5 text-xs text-gray-600">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color }} /> {p}
+                </li>
+              ))}
+            </ul>
+            <Link to="/dashboard"
+              state={{ openTab: 'subscription' }}
+              className="block text-center py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: color }}>
+              Upgrade to {label} →
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center space-y-2">
+        <Link to="/dashboard" className="text-sm font-semibold" style={{ color: '#B81365' }}>
+          ← Manage my listings
+        </Link>
+        <p className="text-xs text-gray-400">You can also delete or mark old listings as sold to free up slots.</p>
+      </div>
+    </div>
+  )
+}
 
 const STEPS = ['Details', 'Category', 'Photos', 'Location', 'Review']
 
@@ -65,7 +138,7 @@ const GHANA_REGIONS = [
 
 export default function PostListing() {
   const navigate = useNavigate()
-  const { isLoggedIn } = useAuthStore()
+  const { isLoggedIn, user } = useAuthStore()
   const [step, setStep] = useState(0)
   const [images, setImages] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -128,9 +201,24 @@ export default function PostListing() {
     }
   }
 
+  const tier = user?.subscription_tier || 'free'
+  const limit = PLAN_LIMITS[tier] ?? 5
+
+  const { data: myListings = [], isLoading: listingsLoading } = useQuery({
+    queryKey: ['my-listings'],
+    queryFn: () => api.get('/listings/mine').then((r) => r.data.data),
+    enabled: isLoggedIn(),
+  })
+
+  const activeCount = myListings.filter((l) => ['active', 'pending', 'soft_live'].includes(l.status)).length
+
   if (!isLoggedIn()) {
     navigate('/login', { state: { from: '/post' } })
     return null
+  }
+
+  if (!listingsLoading && activeCount >= limit) {
+    return <ListingLimitGate tier={tier} limit={limit} count={activeCount} />
   }
 
   // Quality score 0-100

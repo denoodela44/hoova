@@ -204,6 +204,12 @@ Example: {"toyota corolla": "vehicles", "iphone 15 pro": "phones-tablets"}`,
             where: { query, category_slug: null },
             data: { category_slug: slug },
           })
+          if (result.count > 0) {
+            await prisma.searchLog.updateMany({
+              where: { query, category_slug: null },
+              data: { category_slug: slug },
+            })
+          }
           categorized += result.count
         }
       } catch (batchErr) {

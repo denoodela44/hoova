@@ -357,7 +357,7 @@ Generate a marketplace listing optimised for search. Reply with ONLY valid JSON,
   "title": "specific descriptive title under 80 chars — include brand, model, key spec if known",
   "description": "3 short paragraphs: (1) what the item is and key features, (2) current condition and what is included, (3) reason for selling and any extras. Use plain English, Ghana context.",
   "price_suggestion": estimated fair market price in Ghana Cedis as a plain number,
-  "category_slug": exactly one of: vehicles, electronics, real-estate, fashion, jobs, services, furniture, agriculture, sports, health, pets, food, other,
+  "category_slug": exactly one of: vehicles, phones-tablets, electronics, home-appliances, furniture, real-estate, fashion, health-beauty, babies-kids, building-construction, agriculture, services, jobs, sports, pets, food, adults, other,
   "condition": "new" or "used"
 }`,
       }],

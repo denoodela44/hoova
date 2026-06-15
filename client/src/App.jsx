@@ -28,6 +28,7 @@ import AdminMarketing from './pages/Admin/Marketing'
 import MarketIntelligence from './pages/MarketIntelligence'
 import CategoryCityLanding from './pages/Seo/CategoryCityLanding'
 import SellerStore from './pages/SellerStore'
+import Notifications from './pages/Notifications'
 import NotFound from './pages/NotFound'
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy'
 import TermsOfService from './pages/Legal/TermsOfService'
@@ -61,6 +62,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/post" element={<RequireAuth><PostListing /></RequireAuth>} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
           <Route path="/market" element={<RequireAuth><MarketIntelligence /></RequireAuth>} />
           <Route path="/seller/:id"    element={<SellerStore />} />
           <Route path="/store/:slug"  element={<SellerStore />} />

@@ -39,7 +39,7 @@ const SEGMENTS = [
   {
     id: 'unverified_sellers',
     label: 'Unverified Sellers',
-    desc: 'Have active listings but haven't verified their ID',
+    desc: "Have active listings but haven't verified their ID",
     icon: ShieldOff,
     color: '#7e22ce',
     bg: '#f5f3ff',

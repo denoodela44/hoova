@@ -15,23 +15,26 @@ setInterval(() => {
 
 // ── Category auto-detection ────────────────────────────────────
 const CATEGORY_MAP = {
-  // Adults MUST come first — keywords like 'toy', 'lube', 'intimate' also appear in other categories
+  // adults MUST be first — 'toy', 'lube', 'intimate' appear in other categories too
   adults:                  ['sex toy', 'adult toy', 'rose toy', 'vibrator', 'dildo', 'womanizer', 'fleshlight', 'lingerie', 'butt plug', 'handcuff', 'bondage', 'lubricant', 'lube', 'condom', 'intimate', 'bdsm'],
-  vehicles:                ['car', 'toyota', 'honda', 'nissan', 'hyundai', 'kia', 'ford', 'mercedes', 'bmw', 'lexus', 'truck', 'suv', 'pickup', 'bus', 'motorbike', 'motorcycle', 'bike', 'tyre', 'engine', 'vehicle', 'corolla', 'highlander', 'prado', 'rav4', 'fortuner', 'tricycle'],
-  'phones-tablets':        ['iphone', 'samsung', 'phone', 'mobile', 'tablet', 'ipad', 'android', 'xiaomi', 'tecno', 'infinix', 'itel', 'oppo', 'airtime', 'data bundle', 'sim card'],
-  electronics:             ['laptop', 'tv', 'television', 'macbook', 'computer', 'desktop', 'ps5', 'playstation', 'xbox', 'gaming', 'headphone', 'speaker', 'camera', 'printer', 'router', 'drone', 'monitor', 'projector'],
-  'home-appliances':       ['generator', 'inverter', 'solar', 'fridge', 'refrigerator', 'washing machine', 'ac', 'air condition', 'fan', 'blender', 'microwave', 'sofa', 'chair', 'table', 'bed', 'desk', 'wardrobe', 'shelf', 'cabinet', 'mattress', 'couch', 'furniture', 'home decor'],
-  'real-estate':           ['house', 'apartment', 'bedroom', 'land', 'plot', 'flat', 'room', 'office', 'shop', 'estate', 'bungalow', 'mansion', 'duplex', 'compound', 'rent', 'lease', 'property', 'storey', 'airbnb', 'short stay'],
-  fashion:                 ['dress', 'shoe', 'cloth', 'bag', 'shirt', 'trouser', 'jean', 'kente', 'fabric', 'sneaker', 'heel', 'sandal', 'hat', 'cap', 'jacket', 'suit', 'gown', 'skirt', 'blouse', 'bead', 'wax print', 'ankara'],
-  'health-beauty':         ['skincare', 'cream', 'lotion', 'wig', 'hair', 'weave', 'lace front', 'cosmetic', 'makeup', 'perfume', 'medical', 'wheelchair', 'crutch', 'pharmacy', 'supplement', 'vitamin', 'fitness', 'gym', 'treadmill'],
-  'babies-kids':           ['baby', 'toddler', 'kids', 'children', 'diaper', 'stroller', 'pram', 'toy', 'school bag', 'nursery'],
-  'building-construction': ['cement', 'sand', 'iron rod', 'roofing', 'tiles', 'paint', 'plumbing', 'electrical', 'drill', 'hammer', 'scaffolding', 'aluminum', 'glass', 'door', 'window', 'building material'],
-  agriculture:             ['farm', 'seed', 'tractor', 'cocoa', 'crop', 'fertilizer', 'cassava', 'maize', 'poultry', 'cattle', 'tilapia', 'fish', 'livestock', 'pepper', 'tomato', 'plantain', 'yam'],
-  services:                ['plumber', 'electrician', 'carpenter', 'painter', 'cleaner', 'cleaning', 'tutor', 'mechanic', 'welder', 'tailor', 'photographer', 'driver', 'delivery', 'catering', 'fumigation', 'event'],
-  jobs:                    ['job', 'vacancy', 'hiring', 'internship', 'employ', 'wanted', 'teacher', 'nurse', 'engineer', 'accountant', 'full time', 'part time', 'freelance'],
-  sports:                  ['football', 'jersey', 'gym equipment', 'dumbbell', 'bicycle', 'tennis', 'basketball', 'sport', 'guitar', 'keyboard instrument', 'drum', 'trumpet', 'musical'],
-  pets:                    ['dog', 'cat', 'puppy', 'kitten', 'parrot', 'rabbit', 'fish tank', 'pet', 'bird', 'aquarium'],
-  food:                    ['food', 'drink', 'beverage', 'snack', 'juice', 'wine', 'beer', 'packaged', 'grocery', 'bread', 'rice', 'cooking oil'],
+  // babies-kids before fashion/health to catch 'baby shoe', 'kids bag' etc.
+  'babies-kids':           ['baby', 'toddler', 'kids cloth', 'children cloth', 'diaper', 'stroller', 'pram', 'school bag', 'nursery', 'baby gear', 'kids shoe', 'kids toy', 'baby care'],
+  vehicles:                ['car', 'toyota', 'honda', 'nissan', 'hyundai', 'kia', 'ford', 'mercedes', 'bmw', 'lexus', 'truck', 'suv', 'pickup', 'bus', 'motorbike', 'motorcycle', 'tyre', 'engine', 'corolla', 'highlander', 'prado', 'rav4', 'fortuner', 'tricycle', 'auto part', 'spare part'],
+  'phones-tablets':        ['iphone', 'samsung galaxy', 'phone', 'mobile', 'tablet', 'ipad', 'android', 'xiaomi', 'tecno', 'infinix', 'itel', 'oppo', 'airtime', 'data bundle', 'sim card', 'smartphone'],
+  electronics:             ['laptop', 'macbook', 'computer', 'desktop', 'ps5', 'playstation', 'xbox', 'gaming', 'headphone', 'speaker', 'camera', 'printer', 'router', 'drone', 'monitor', 'projector', 'tv ', 'television', 'smart tv'],
+  // furniture MUST be before home-appliances to catch sofa/bed/wardrobe before 'furniture' keyword hits home-appliances
+  furniture:               ['sofa', 'couch', 'settee', 'chair', 'dining table', 'coffee table', 'bed frame', 'wardrobe', 'shelf', 'bookshelf', 'cabinet', 'mattress', 'office chair', 'desk', 'drawers', 'cupboard', 'furniture'],
+  'home-appliances':       ['generator', 'inverter', 'solar panel', 'fridge', 'refrigerator', 'washing machine', 'ac unit', 'air condition', 'standing fan', 'ceiling fan', 'blender', 'microwave', 'oven', 'water heater', 'home decor', 'curtain', 'bedsheet'],
+  'real-estate':           ['house', 'apartment', 'bedroom', 'land', 'plot', 'flat', 'room', 'office space', 'shop space', 'estate', 'bungalow', 'mansion', 'duplex', 'compound', 'rent', 'lease', 'property', 'storey', 'airbnb', 'short stay'],
+  fashion:                 ['dress', 'shoe', 'cloth', 'bag', 'shirt', 'trouser', 'jean', 'kente', 'fabric', 'sneaker', 'heel', 'sandal', 'hat', 'cap', 'jacket', 'suit', 'gown', 'skirt', 'blouse', 'bead', 'wax print', 'ankara', 'handbag', 'wristwatch', 'watch'],
+  'health-beauty':         ['skincare', 'cream', 'lotion', 'wig', 'hair extension', 'weave', 'lace front', 'cosmetic', 'makeup', 'perfume', 'medical equipment', 'wheelchair', 'crutch', 'pharmacy', 'supplement', 'vitamin', 'fitness equipment', 'treadmill'],
+  'building-construction': ['cement', 'sand', 'iron rod', 'roofing', 'tiles', 'paint', 'plumbing', 'electrical wire', 'drill', 'hammer', 'scaffolding', 'aluminum', 'glass', 'door', 'window frame', 'building material', 'blocks', 'gravel'],
+  agriculture:             ['farm', 'seed', 'tractor', 'cocoa', 'fertilizer', 'cassava', 'maize', 'poultry', 'cattle', 'tilapia', 'livestock', 'pepper', 'tomato', 'plantain', 'yam', 'fish farm', 'crop', 'harvest'],
+  services:                ['plumber', 'electrician', 'carpenter', 'painter', 'cleaner', 'cleaning service', 'tutor', 'mechanic', 'welder', 'tailor', 'photographer', 'driver', 'delivery service', 'catering', 'fumigation', 'event planner', 'barber', 'hair salon'],
+  jobs:                    ['job vacancy', 'job opening', 'hiring', 'internship', 'employment', 'wanted staff', 'teacher wanted', 'nurse wanted', 'engineer wanted', 'accountant', 'full time job', 'part time job', 'freelance job'],
+  sports:                  ['football', 'jersey', 'gym equipment', 'dumbbell', 'bicycle', 'tennis', 'basketball', 'sport gear', 'guitar', 'keyboard instrument', 'drum set', 'trumpet', 'musical instrument'],
+  pets:                    ['dog', 'cat', 'puppy', 'kitten', 'parrot', 'rabbit', 'fish tank', 'pet food', 'bird', 'aquarium', 'tortoise'],
+  food:                    ['packaged food', 'fresh food', 'drink', 'beverage', 'snack', 'juice', 'wine', 'beer', 'grocery', 'bread', 'rice', 'cooking oil', 'mineral water'],
 }
 
 function detectCategory(query) {
