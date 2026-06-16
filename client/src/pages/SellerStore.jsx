@@ -10,9 +10,8 @@ import {
 import api from '../services/api'
 import ListingCard from '../components/listings/ListingCard'
 import ListingCardSkeleton from '../components/listings/ListingCardSkeleton'
-import { MOCK_LISTINGS, SELLERS } from '../mocks/data'
-
-const BASE_URL = 'https://hoova.com.gh'
+import NotFound from './NotFound'
+const BASE_URL = 'https://hoovagh.com'
 
 const PLAN_META = {
   premium: { label: 'Premium Store', color: '#B45309', bg: '#FEF3C7', border: '#FDE68A' },
@@ -44,30 +43,19 @@ export default function SellerStore() {
     queryFn: async () => {
       try {
         return await api.get(`${apiPath}?page=${page}&limit=12`).then((r) => r.data.data)
-      } catch {
-        const baseSeller = SELLERS?.find((s) => s.id === id) || SELLERS[0]
-        const seller = {
-          ...baseSeller,
-          store_name: 'Kwame Asante Motors',
-          tagline: 'Quality cars. Real deals. Zero stress.',
-          bio: 'Ghana\'s most trusted car dealership. Over 10 years selling quality vehicles across Greater Accra. Every car is inspected, priced fairly and ready to drive.',
-          store_plan: 'pro',
-          response_rate: 97,
-          cover_image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80',
-          location: { city: 'Accra', region: 'Greater Accra', area: 'East Legon' },
-          whatsapp: baseSeller.phone,
-          working_hours: 'Mon – Sat, 8am – 6pm',
-        }
-        const listings = MOCK_LISTINGS.slice(0, 12).map((l) => ({ ...l, seller }))
-        return { ...seller, listings, total: 12, page: 1, totalPages: 1, reviews: MOCK_REVIEWS }
+      } catch (err) {
+        if (err?.response?.status === 404) return { notFound: true }
+        throw err
       }
     },
   })
 
+  if (data?.notFound) return <NotFound />
+
   // Prefer the clean slug URL; fall back to ID-based URL
   const storeSlug = data?.store_slug || slug
   const storeUrl = storeSlug
-    ? `${BASE_URL}/store/${storeSlug}`
+    ? `${BASE_URL}/${storeSlug}`
     : `${BASE_URL}/seller/${id || lookupKey}`
   const listings = data?.listings || []
   const plan = PLAN_META[data?.store_plan] || PLAN_META.basic

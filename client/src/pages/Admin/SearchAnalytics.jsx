@@ -234,7 +234,7 @@ export default function SearchAnalytics() {
         total:              liveData.total,
         unique_terms:       liveData.unique_terms,
         date_label:         dateLabel,
-      })
+      }, { timeout: 60000 })
       setAiInsights(res.data.insights)
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Unknown error'

@@ -69,8 +69,8 @@ export default function App() {
           <Route path="/messages/:id" element={<RequireAuth><Messages /></RequireAuth>} />
           <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
           <Route path="/market" element={<RequireAuth><MarketIntelligence /></RequireAuth>} />
-          <Route path="/seller/:id"    element={<SellerStore />} />
-          <Route path="/store/:slug"  element={<SellerStore />} />
+          <Route path="/seller/:id"   element={<SellerStore />} />
+          <Route path="/store/:slug" element={<SellerStore />} />
           <Route path="/buy/:category/:city" element={<CategoryCityLanding />} />
           <Route path="/buy/:category" element={<Browse />} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -98,6 +98,7 @@ export default function App() {
           <Route path="/contact"  element={<ContactUs />} />
           <Route path="/safety"   element={<SafetyTips />} />
 
+          <Route path="/:slug" element={<SellerStore />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
