@@ -188,23 +188,23 @@ export default function ListingDetail() {
       {/* ── Safety Banner ─────────────────────────────────── */}
       <div
         className="mb-5 rounded-xl overflow-hidden"
-        style={{ border: '1px solid #fcd34d', boxShadow: '0 1px 4px rgba(251,191,36,0.15)' }}
+        style={{ border: '1px solid #F8C0C8', boxShadow: '0 1px 4px rgba(184,19,101,0.08)' }}
       >
-        <div className="flex items-center gap-2.5 px-4 py-2.5" style={{ background: '#f59e0b' }}>
+        <div className="flex items-center gap-2.5 px-4 py-2.5" style={{ background: '#B81365' }}>
           <ShieldCheck className="w-4 h-4 text-white shrink-0" />
           <p className="text-sm font-bold text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
             Buy smart on Hoova
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-amber-100" style={{ background: '#fffbeb' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-y sm:divide-y-0 sm:divide-x" style={{ background: '#fdf2f5', borderColor: '#F8C0C8' }}>
           {[
             'Meet sellers in a public place — mall, bank, or police station forecourt.',
             'Inspect and test the item yourself before handing over any money.',
             'Never send MoMo or cash upfront to "reserve" or "hold" an item.',
           ].map((tip) => (
             <div key={tip} className="flex items-start gap-2 px-4 py-2.5">
-              <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: '#d97706' }} />
-              <p className="text-xs leading-relaxed" style={{ color: '#78350f' }}>{tip}</p>
+              <CheckCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: '#B81365' }} />
+              <p className="text-xs leading-relaxed" style={{ color: '#7c1d4a' }}>{tip}</p>
             </div>
           ))}
         </div>
