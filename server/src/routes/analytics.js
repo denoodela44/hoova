@@ -281,7 +281,10 @@ Be specific, reference actual search terms from the data, and keep language prac
     })
 
     res.json({ success: true, insights: message.content[0].text })
-  } catch (err) { next(err) }
+  } catch (err) {
+    console.error('[ai-insights] error:', err?.message, err?.status)
+    res.status(500).json({ success: false, error: err?.message || 'Anthropic API error' })
+  }
 })
 
 // DELETE /api/analytics/searches — wipe all search logs and trends (admin)

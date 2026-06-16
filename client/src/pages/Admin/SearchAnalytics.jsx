@@ -237,7 +237,8 @@ export default function SearchAnalytics() {
       })
       setAiInsights(res.data.insights)
     } catch (err) {
-      setAiInsights('Failed to generate insights. Check that ANTHROPIC_API_KEY is set.')
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Unknown error'
+      setAiInsights(`Error: ${msg}`)
     } finally {
       setAiLoading(false)
     }
