@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -6,7 +6,7 @@ import {
   ArrowUpRight, Hash, Flame, Clock, Tag, Minus, Target,
   Lightbulb, DollarSign, MapPin, Zap, CheckCircle, Bell,
   BookOpen, Sparkles, ShoppingBag, ChevronDown, ChevronUp,
-  Database, XCircle, Trash2,
+  Database, XCircle, Trash2, Brain, X, Download, CalendarDays,
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -110,11 +110,11 @@ const TABS = [
 ]
 
 const RANGE_OPTIONS = [
-  { label: 'Today', value: 1   },
-  { label: '7d',    value: 7   },
-  { label: '30d',   value: 30  },
-  { label: '90d',   value: 90  },
-  { label: '1Y',    value: 365 },
+  { label: 'Today',     value: 1,   single: true  },
+  { label: 'Yesterday', value: -1,  single: true  },
+  { label: '7d',        value: 7   },
+  { label: '30d',       value: 30  },
+  { label: '90d',       value: 90  },
 ]
 
 const fmtDateInput = (d) => d.toISOString().slice(0, 10)
@@ -187,6 +187,9 @@ export default function SearchAnalytics() {
   const [clearing, setClearing] = useState(false)
   const [recategorizing, setRecategorizing] = useState(false)
   const [recatResult, setRecatResult] = useState(null)
+  const [aiInsights, setAiInsights] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [showAiPanel, setShowAiPanel] = useState(false)
   const queryClient = useQueryClient()
 
   const handleClearAll = async () => {
@@ -214,13 +217,58 @@ export default function SearchAnalytics() {
     }
   }
 
+  const handleAiInsights = async () => {
+    if (!liveData) return
+    setAiLoading(true)
+    setShowAiPanel(true)
+    setAiInsights(null)
+    try {
+      const dateLabel = useCustom
+        ? `${customFrom} to ${customTo}`
+        : days === 1 ? 'today' : days === -1 ? 'yesterday' : `last ${days} days`
+      const res = await api.post('/analytics/ai-insights', {
+        top_terms:          liveData.top_terms,
+        zero_results:       liveData.zero_results,
+        category_breakdown: liveData.category_breakdown,
+        daily_volume:       liveData.daily_volume,
+        total:              liveData.total,
+        unique_terms:       liveData.unique_terms,
+        date_label:         dateLabel,
+      })
+      setAiInsights(res.data.insights)
+    } catch (err) {
+      setAiInsights('Failed to generate insights. Check that ANTHROPIC_API_KEY is set.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  const handleDownloadReport = () => {
+    if (!aiInsights) return
+    const dateLabel = useCustom ? `${customFrom}_to_${customTo}` : `${days}d`
+    const blob = new Blob([`HOOVA GHANA — SEARCH ANALYTICS REPORT\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString('en-GH')}\nPeriod: ${dateLabel}\n\n${aiInsights}`], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `hoova-insights-${dateLabel}-${new Date().toISOString().slice(0,10)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Live stats from the DB — real searches users made on the platform
   const { data: liveData } = useQuery({
     queryKey: ['admin', 'search-live', useCustom ? `${customFrom}|${customTo}` : days],
     queryFn: () => {
-      const params = useCustom
-        ? `from=${customFrom}&to=${customTo}`
-        : `days=${days}`
+      let params
+      if (useCustom) {
+        params = `from=${customFrom}&to=${customTo}`
+      } else if (days === -1) {
+        const yest = new Date(); yest.setDate(yest.getDate() - 1)
+        const y = fmtDateInput(yest)
+        params = `from=${y}&to=${y}`
+      } else {
+        params = `days=${days}`
+      }
       return api.get(`/analytics/searches?${params}`).then((r) => r.data.data)
     },
   })
@@ -260,19 +308,31 @@ export default function SearchAnalytics() {
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
-            {RANGE_OPTIONS.map((o) => (
-              <button key={o.value} onClick={() => { setDays(o.value); setUseCustom(false); setShowCustom(false) }}
-                className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
-                style={!useCustom && days === o.value ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
-                {o.label}
-              </button>
-            ))}
-            <button onClick={() => setShowCustom((v) => !v)}
-              className="px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
-              style={useCustom ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
-              Custom
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <button
+              onClick={handleAiInsights}
+              disabled={!liveData || aiLoading}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-40"
+              style={{ background: '#7e22ce' }}
+            >
+              <Brain className="w-3.5 h-3.5" />
+              {aiLoading ? 'Analysing…' : 'AI Insights'}
             </button>
+
+            <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: '#ECEAE6' }}>
+              {RANGE_OPTIONS.map((o) => (
+                <button key={o.value} onClick={() => { setDays(o.value); setUseCustom(false); setShowCustom(false) }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                  style={!useCustom && days === o.value ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                  {o.label}
+                </button>
+              ))}
+              <button onClick={() => setShowCustom((v) => !v)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={useCustom ? { background: 'white', color: '#B81365', boxShadow: '0 1px 3px rgba(0,0,0,.08)' } : { color: '#6b7280' }}>
+                <CalendarDays className="w-3 h-3" /> Custom
+              </button>
+            </div>
           </div>
 
           {/* Custom date range picker */}
@@ -291,6 +351,9 @@ export default function SearchAnalytics() {
                 className="px-3 py-1.5 rounded-xl text-xs font-bold text-white"
                 style={{ background: '#B81365' }}>
                 Apply
+              </button>
+              <button onClick={() => setShowCustom(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -362,6 +425,38 @@ export default function SearchAnalytics() {
                 <p className="text-[10px] text-gray-400 mt-0.5">categories searched</p>
               </div>
             </div>
+
+            {/* Daily volume chart — real data, clickable bars */}
+            {liveData?.daily_volume?.length > 1 && (
+              <div className="rounded-2xl bg-white p-5" style={{ border: '1px solid #f0eeeb' }}>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-gray-800">Search Volume by Day</p>
+                  <p className="text-[10px] text-gray-400">Click a bar to filter to that day</p>
+                </div>
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={liveData.daily_volume} barSize={Math.max(4, Math.min(20, 300 / liveData.daily_volume.length))}
+                    onClick={(e) => {
+                      if (!e?.activeLabel) return
+                      const day = e.activeLabel
+                      setCustomFrom(day); setCustomTo(day); setUseCustom(true); setShowCustom(false)
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0eeeb" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 9, fill: '#9ca3af' }} tickLine={false} axisLine={false}
+                      tickFormatter={(d) => new Date(d).toLocaleDateString('en-GH', { month: 'short', day: 'numeric' })}
+                      interval={Math.ceil(liveData.daily_volume.length / 8)} />
+                    <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,.08)', fontSize: 11 }}
+                      labelFormatter={(d) => new Date(d).toLocaleDateString('en-GH', { weekday: 'long', day: 'numeric', month: 'long' })}
+                      formatter={(v) => [v.toLocaleString(), 'Searches']}
+                    />
+                    <Bar dataKey="count" fill="#B81365" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
 
             {/* Category breakdown */}
             {liveData?.category_breakdown?.length > 0 && (
@@ -1539,6 +1634,76 @@ export default function SearchAnalytics() {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* ── AI Insights panel ─────────────────────────────────────────────────── */}
+      {showAiPanel && (
+        <div className="fixed inset-0 z-50 flex justify-end" style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAiPanel(false) }}>
+          <div className="w-full max-w-xl bg-white h-full flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #f0eeeb' }}>
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#f5f3ff' }}>
+                  <Brain className="w-4 h-4" style={{ color: '#7e22ce' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>AI Search Insights</p>
+                  <p className="text-[10px] text-gray-400">
+                    {useCustom ? `${customFrom} → ${customTo}` : days === 1 ? 'Today' : days === -1 ? 'Yesterday' : `Last ${days} days`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {aiInsights && (
+                  <button onClick={handleDownloadReport}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                    style={{ background: '#dcfce7', color: '#15803d' }}>
+                    <Download className="w-3.5 h-3.5" /> Download Report
+                  </button>
+                )}
+                <button onClick={() => setShowAiPanel(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {aiLoading ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                  <div className="w-10 h-10 rounded-full border-4 border-purple-100 border-t-purple-600 animate-spin" />
+                  <p className="text-sm text-gray-500 font-medium">Analysing search patterns…</p>
+                  <p className="text-xs text-gray-400 text-center max-w-xs">Claude is reading your search data and generating Ghana-specific market insights</p>
+                </div>
+              ) : aiInsights ? (
+                <div className="prose prose-sm max-w-none">
+                  {aiInsights.split('\n').map((line, i) => {
+                    if (line.startsWith('## ')) return (
+                      <h3 key={i} className="text-sm font-bold text-gray-900 mt-5 mb-2 flex items-center gap-2"
+                        style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <span className="w-1 h-4 rounded-full shrink-0" style={{ background: '#7e22ce' }} />
+                        {line.slice(3)}
+                      </h3>
+                    )
+                    if (line.startsWith('# ')) return (
+                      <h2 key={i} className="text-base font-bold text-gray-900 mt-4 mb-2">{line.slice(2)}</h2>
+                    )
+                    if (line.startsWith('- ') || line.startsWith('• ')) return (
+                      <div key={i} className="flex items-start gap-2 mb-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: '#B81365' }} />
+                        <p className="text-xs text-gray-600 leading-relaxed">{line.slice(2)}</p>
+                      </div>
+                    )
+                    if (line.startsWith('**') && line.endsWith('**')) return (
+                      <p key={i} className="text-xs font-bold text-gray-800 mt-2">{line.slice(2, -2)}</p>
+                    )
+                    if (line.trim() === '') return <div key={i} className="h-1" />
+                    return <p key={i} className="text-xs text-gray-600 leading-relaxed mb-1.5">{line}</p>
+                  })}
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
       )}
     </div>

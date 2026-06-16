@@ -222,6 +222,68 @@ Example: {"toyota corolla": "vehicles", "iphone 15 pro": "phones-tablets"}`,
   } catch (err) { next(err) }
 })
 
+// POST /api/analytics/ai-insights — AI deep analysis of search data (admin)
+router.post('/ai-insights', requireAdminToken, async (req, res, next) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(400).json({ success: false, error: 'ANTHROPIC_API_KEY not set' })
+    }
+
+    const { top_terms = [], zero_results = [], category_breakdown = [], daily_volume = [], total = 0, unique_terms = 0, date_label = 'last 30 days' } = req.body
+
+    const Anthropic = require('@anthropic-ai/sdk')
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+    const prompt = `You are a senior e-commerce analyst for Hoova Ghana, a classifieds marketplace in Ghana. Analyse this real search data from the platform and produce actionable insights.
+
+DATE RANGE: ${date_label}
+TOTAL SEARCHES: ${total.toLocaleString()}
+UNIQUE SEARCH TERMS: ${unique_terms.toLocaleString()}
+
+TOP 20 SEARCH TERMS (query · count · category):
+${top_terms.slice(0, 20).map((t, i) => `${i + 1}. "${t.query}" — ${t.count} searches${t.category_slug ? ` (${t.category_slug})` : ''}`).join('\n')}
+
+ZERO-RESULT SEARCHES (unmet demand — buyers searched but found nothing):
+${zero_results.slice(0, 10).map((t) => `• "${t.query}" — ${t.count} searches with no results`).join('\n') || 'None recorded'}
+
+CATEGORY BREAKDOWN:
+${category_breakdown.slice(0, 10).map((c) => `• ${c.category_slug}: ${c.count} searches`).join('\n') || 'No category data'}
+
+DAILY VOLUME TREND (last ${daily_volume.length} days):
+${daily_volume.slice(-14).map((d) => `${d.day}: ${d.count} searches`).join('\n') || 'No daily data'}
+
+Provide a structured analysis with these sections:
+
+## Key Trends
+What patterns stand out in the data? What's growing? What's declining?
+
+## Top Demand Gaps
+Specific products/services buyers are searching for but sellers haven't listed yet. These are direct revenue opportunities.
+
+## Category Intelligence
+Which categories are heating up? Which are underserved? What does the category mix tell us?
+
+## Seller Recommendations
+3-5 specific, actionable things sellers should do RIGHT NOW based on this data.
+
+## Platform Recommendations
+2-3 things the Hoova team should do to capitalise on these trends (e.g. targeted seller outreach, category promotions, featured slots).
+
+## Anomalies / Watch Points
+Anything unusual or worth monitoring in this data.
+
+Be specific, reference actual search terms from the data, and keep language practical and Ghana-market aware. No generic advice.`
+
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
+    })
+
+    res.json({ success: true, insights: message.content[0].text })
+  } catch (err) { next(err) }
+})
+
 // DELETE /api/analytics/searches — wipe all search logs and trends (admin)
 router.delete('/searches', requireAdminToken, async (req, res, next) => {
   try {
