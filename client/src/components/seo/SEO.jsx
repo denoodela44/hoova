@@ -141,7 +141,7 @@ export function ListingSEO({ listing }) {
       seller: {
         '@type': 'Person',
         name: listing.seller?.name,
-        ...(listing.seller?.id_verified ? { identifier: 'Ghana Card Verified' } : {}),
+        ...(listing.seller?.id_verified ? { identifier: 'Verified Seller' } : {}),
       },
     },
   }
@@ -182,7 +182,7 @@ export function ListingSEO({ listing }) {
         name: `Is it safe to buy ${listing.title} on HOOVA Ghana?`,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: `HOOVA Ghana verifies sellers using Ghana Card ID verification and displays trust signals including ratings, reviews, account age and response rate. Always inspect items before paying and prefer meeting in a safe public place in ${city}.`,
+          text: `HOOVA Ghana verifies sellers using ID verification and displays trust signals including ratings, reviews, account age and response rate. Always inspect items before paying and prefer meeting in a safe public place in ${city}.`,
         },
       },
       {
@@ -330,7 +330,7 @@ function buildCategoryFAQ(category, location) {
       name: `Is it safe to buy ${category.toLowerCase()} on HOOVA Ghana?`,
       acceptedAnswer: {
         '@type': 'Answer',
-        text: `HOOVA Ghana verifies sellers with Ghana Card verification and shows trust scores including reviews, account age and response rate. Always meet in a public place and inspect items before payment.`,
+        text: `HOOVA Ghana verifies sellers with ID verification and shows trust scores including reviews, account age and response rate. Always meet in a public place and inspect items before payment.`,
       },
     },
     {

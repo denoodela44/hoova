@@ -25,6 +25,8 @@ import AdminAnnouncements from './pages/Admin/Announcements'
 import CommandCenter from './pages/Admin/CommandCenter'
 import AdminPricing from './pages/Admin/Pricing'
 import AdminMarketing from './pages/Admin/Marketing'
+import Saved from './pages/Saved'
+import Messages from './pages/Messages'
 import MarketIntelligence from './pages/MarketIntelligence'
 import CategoryCityLanding from './pages/Seo/CategoryCityLanding'
 import SellerStore from './pages/SellerStore'
@@ -62,6 +64,9 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/post" element={<RequireAuth><PostListing /></RequireAuth>} />
           <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/saved" element={<RequireAuth><Saved /></RequireAuth>} />
+          <Route path="/messages" element={<RequireAuth><Messages /></RequireAuth>} />
+          <Route path="/messages/:id" element={<RequireAuth><Messages /></RequireAuth>} />
           <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
           <Route path="/market" element={<RequireAuth><MarketIntelligence /></RequireAuth>} />
           <Route path="/seller/:id"    element={<SellerStore />} />

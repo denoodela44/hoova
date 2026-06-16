@@ -236,7 +236,7 @@ export default function ListingCard({ listing, onSaveToggle }) {
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#dcfce7', color: '#15803d' }}>↓</span>
           )}
           {listing.negotiable && !isAuction && (
-            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#fdf2f5', color: '#B81365' }}>OBO</span>
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#fdf2f5', color: '#B81365' }}>Negotiable</span>
           )}
           {isAuction && listing.bid_count > 0 && (
             <span className="text-[10px] text-gray-400 ml-auto shrink-0">{listing.bid_count}b</span>
